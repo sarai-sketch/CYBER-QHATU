@@ -1,6 +1,6 @@
 # CYBER-QHATU
 Proyecto - Programación III
-#Integrantes:
+# Integrantes:
   - Camila Chacón
   - Abdul Montero
   - Santiago Muñoz
