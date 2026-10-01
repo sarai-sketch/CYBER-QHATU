@@ -6,7 +6,7 @@ interface MetodoPago {
 }
 
 class PagoQR(
-    var comprobanteImg: String? = null
+    var comprobanteImg: String
 ) : MetodoPago {
     fun subirComprobante(url: String) { TODO() }
     override fun validarDatos(): Boolean { TODO() }
