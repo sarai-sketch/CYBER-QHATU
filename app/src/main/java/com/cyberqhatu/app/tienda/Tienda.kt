@@ -10,8 +10,7 @@ class Tienda(
     var direccionGoogleMaps: String? = null,
     var horarioApertura: String? = null,
     var horarioCierre: String? = null,
-    var qrPago: String? = null,
-    var linkWhatsapp: String? = null,
+    var linkWhatsapp: String = null,
     var estado: EstadoTienda = EstadoTienda.ACTIVA
 ) {
     fun validarTienda() { TODO() }
