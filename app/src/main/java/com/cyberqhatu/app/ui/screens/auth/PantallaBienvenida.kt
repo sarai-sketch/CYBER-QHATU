@@ -36,7 +36,7 @@ fun PantallaBienvenida(onContinuarClicked: (String) -> Unit) {
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Tu feria 16 de Julio ahora digital. Ingresa con tu número de WhatsApp.",
+                text = "Ingresa con tu número de WhatsApp.",
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 16.dp)
