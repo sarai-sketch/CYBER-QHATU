@@ -5,19 +5,30 @@ import java.util.Date
 abstract class Usuario(
     val idUsuario: String,
     var nombre: String,
-    var telefono: String,
-    var correo: String? = null,
+    var correo: String,
+    var telefonoWhatsapp: String,
+    var fotoPerfil: String?,
+    var estadoVerificacionCI: Boolean,
     var ci: String,
-    var estadoVerificacion: Boolean = false,
-    var fotoPerfil: String? = null,
-    val fechaRegistro: Date = Date(),
-    var strikes: Int = 0
+    var fotoCI: String?,
+    var fotoBiometricaFacial: String?,
+    val fechaRegistro: Date = Date()
 ) {
-    abstract fun registrarse()
-    fun loginOTP() { TODO("Login con código OTP") }
-    fun verificarTelefono() { TODO("Verificación de teléfono") }
-    fun subirCI(urlCI: String) { TODO("Subir foto/documento de CI") }
-    fun compartirPerfil() { TODO("Compartir perfil público") }
-    fun actualizarPerfil() { TODO("Actualizar datos de perfil") }
-    fun evaluarSuspension(): Boolean { TODO("Evaluar si el usuario debe suspenderse por strikes") }
+    open fun registrarse(): Boolean {
+        // Lógica para registrar al usuario en la base de datos
+        return true
+    }
+
+    open fun solicitarVerificacionVendedor(): Boolean {
+        // Lógica para enviar la documentación de verificación al moderador
+        return true
+    }
+
+    fun agregarFavoritoProducto(idProducto: String) {
+        // Lógica para agregar un producto a la lista de favoritos
+    }
+
+    fun agregarFavoritoTienda(idTienda: String) {
+        // Lógica para agregar una tienda a la lista de favoritos
+    }
 }

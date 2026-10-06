@@ -1,22 +1,66 @@
 package com.cyberqhatu.app.usuarios
 
+import java.util.Date
+
 class Comprador(
     idUsuario: String,
     nombre: String,
-    telefono: String,
-    correo: String?,
-    ci: String
-) : Usuario(idUsuario, nombre, telefono, correo, ci) {
+    correo: String,
+    telefonoWhatsapp: String,
+    fotoPerfil: String?,
+    estadoVerificacionCI: Boolean,
+    ci: String,
+    fotoCI: String?,
+    fotoBiometricaFacial: String?,
+    fechaRegistro: Date = Date()
+) : Usuario(
+    idUsuario = idUsuario,
+    nombre = nombre,
+    correo = correo,
+    telefonoWhatsapp = telefonoWhatsapp,
+    fotoPerfil = fotoPerfil,
+    estadoVerificacionCI = estadoVerificacionCI,
+    ci = ci,
+    fotoCI = fotoCI,
+    fotoBiometricaFacial = fotoBiometricaFacial,
+    fechaRegistro = fechaRegistro
+) {
 
-    val favoritos: MutableList<String> = mutableListOf()        // ids de Producto (atributo derivado)
-    val historialCompras: MutableList<String> = mutableListOf() // ids de Pedido (atributo derivado)
+    // Atributos derivados o listas de apoyo para la app
+    val favoritos: MutableList<String> = mutableListOf()
+    val historialCompras: MutableList<String> = mutableListOf()
 
-    override fun registrarse() { TODO() }
-    fun buscarProducto(query: String) { TODO() }
-    fun guardarFavorito(idProducto: String) { TODO() }
-    fun enviarConsulta(mensaje: String) { TODO() }
-    fun solicitarCompra(idProducto: String) { TODO() }
-    fun confirmarRecepcion(idPedido: String) { TODO() }
-    fun calificarVendedor(idVendedor: String, calificacion: Int, comentario: String?) { TODO() }
-    fun reportarUsuario(idUsuarioReportado: String, motivo: String) { TODO() }
+    override fun registrarse(): Boolean {
+        // Lógica de registro para el comprador en CYBER-QHATU
+        return true
+    }
+
+    fun escanearQR() {
+        // Lógica para abrir la cámara y escanear el QR fijo de la tienda o de pago
+    }
+
+    fun abrirChatWhatsapp(telefonoVendedor: String) {
+        // Lógica para abrir la API de WhatsApp y contactar al feriante
+    }
+
+    fun reportarTienda(idTienda: String, motivo: String) {
+        // Lógica para enviar un reporte al moderador sobre una tienda irregular en la feria
+    }
+
+    // Métodos adicionales útiles para la navegación del comprador
+    fun buscarProducto(query: String) {
+        TODO("Búsqueda en el catálogo de la Feria 16 de Julio")
+    }
+
+    fun guardarFavorito(idProducto: String) {
+        agregarFavoritoProducto(idProducto)
+    }
+
+    fun confirmarRecepcion(idPedido: String) {
+        TODO("Confirmar la entrega del producto en el punto de encuentro")
+    }
+
+    fun calificarVendedor(idVendedor: String, calificacion: Int, comentario: String?) {
+        TODO("Dejar reseña y calificación al comerciante")
+    }
 }
