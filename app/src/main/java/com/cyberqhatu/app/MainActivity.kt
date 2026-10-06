@@ -4,13 +4,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.cyberqhatu.app.ui.screens.confianza.ReportarTiendaScreen
+import com.cyberqhatu.app.ui.screens.tienda.DetalleProductoScreen
 import com.cyberqhatu.app.ui.theme.CyberQhatuTheme
 
 class MainActivity : ComponentActivity() {
@@ -20,10 +20,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             CyberQhatuTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    PantallaDemoSwitcher(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
@@ -31,17 +28,29 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+fun PantallaDemoSwitcher(modifier: Modifier = Modifier) {
+    // 0 = Detalle de producto, 1 = Reportar tienda
+    var pantallaActual by remember { mutableIntStateOf(0) }
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    CyberQhatuTheme {
-        Greeting("Android")
+    Column(modifier = modifier.fillMaxSize()) {
+        TabRow(selectedTabIndex = pantallaActual) {
+            Tab(
+                selected = pantallaActual == 0,
+                onClick = { pantallaActual = 0 },
+                text = { Text("Detalle de producto") }
+            )
+            Tab(
+                selected = pantallaActual == 1,
+                onClick = { pantallaActual = 1 },
+                text = { Text("Reportar tienda") }
+            )
+        }
+
+        Box(modifier = Modifier.weight(1f)) {
+            when (pantallaActual) {
+                0 -> DetalleProductoScreen()
+                1 -> ReportarTiendaScreen()
+            }
+        }
     }
 }
