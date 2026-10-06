@@ -54,11 +54,6 @@ import com.cyberqhatu.app.ui.theme.QhatuPurple
 import com.cyberqhatu.app.ui.theme.QhatuPurpleLight
 import java.util.Locale
 
-/**
- * Pantalla 8: Inventario y Ventas (D2) - Módulo 4 Vendedor.
- * Adaptada al sistema de diseño visual Cyber Qhatu (Panel de Vendedor con estética Púrpura #5320E6,
- * Badge de Verificada en Verde Lima #BDFF38 y Botones Coral #FF644E).
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InventarioVentasScreen(
@@ -77,7 +72,7 @@ fun InventarioVentasScreen(
         coincideBusqueda && coincideFiltro
     }
 
-    // --- DIÁLOGO 1: EDITAR STOCK Y PRECIO ---
+    // stock precio
     productoAEditar?.let { prod ->
         var nuevoStockText by remember { mutableStateOf(prod.stock.toString()) }
         var nuevoPrecioText by remember { mutableStateOf(prod.precio.toString()) }
@@ -85,7 +80,7 @@ fun InventarioVentasScreen(
 
         AlertDialog(
             onDismissRequest = { productoAEditar = null },
-            title = { Text("✏️ Editar Producto", fontWeight = FontWeight.Bold, color = QhatuPurple) },
+            title = { Text("Editar Producto", fontWeight = FontWeight.Bold, color = QhatuPurple) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(prod.titulo, fontWeight = FontWeight.SemiBold)
@@ -161,14 +156,14 @@ fun InventarioVentasScreen(
         )
     }
 
-    // --- DIÁLOGO 2: REGISTRAR VENTA FÍSICA RÁPIDA ---
+    // registrar venta
     productoAVender?.let { prod ->
         var cantidadText by remember { mutableStateOf("1") }
         var metodoPago by remember { mutableStateOf("QR / Transferencia") }
 
         AlertDialog(
             onDismissRequest = { productoAVender = null },
-            title = { Text("🛒 Registrar Venta Rápida", fontWeight = FontWeight.Bold, color = QhatuPurple) },
+            title = { Text("Registrar Venta Rápida", fontWeight = FontWeight.Bold, color = QhatuPurple) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text("Producto: ${prod.titulo}", fontWeight = FontWeight.SemiBold)
@@ -253,7 +248,6 @@ fun InventarioVentasScreen(
                 .padding(bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // --- HEADER ESTILO "PANEL DE VENDEDOR" (Captura #2) ---
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -362,7 +356,7 @@ fun InventarioVentasScreen(
                 }
             }
 
-            // --- CONTENIDO DE INVENTARIO Y BÚSQUEDA ---
+            // inventario busqueda
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -380,7 +374,7 @@ fun InventarioVentasScreen(
                 OutlinedTextField(
                     value = state.textoBusqueda,
                     onValueChange = { state = state.copy(textoBusqueda = it) },
-                    placeholder = { Text("🔎 Buscar producto...") },
+                    placeholder = { Text("Buscar producto...") },
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = QhatuPurple,
                         focusedLabelColor = QhatuPurple
@@ -411,7 +405,7 @@ fun InventarioVentasScreen(
                     }
                 }
 
-                // --- LISTA DE PRODUCTOS ---
+                // lista productos
                 if (productosFiltrados.isEmpty()) {
                     Card(
                         colors = CardDefaults.cardColors(
@@ -452,9 +446,7 @@ fun InventarioVentasScreen(
     }
 }
 
-/**
- * Tarjeta individual para visualizar producto con badges estilo Cyber Qhatu (ej. "Stock 2", "Stock 14").
- */
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TarjetaProductoInventario(
@@ -488,16 +480,16 @@ fun TarjetaProductoInventario(
                         .padding(12.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = "🧶", style = MaterialTheme.typography.titleLarge)
+                    Text(text = ".", style = MaterialTheme.typography.titleLarge)
                 }
 
                 Spacer(modifier = Modifier.width(12.dp))
 
                 Column(modifier = Modifier.weight(1f)) {
-                    Row(
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalArrangement = Arrangement.SpaceBetween,
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
                             text = producto.titulo,
@@ -558,7 +550,7 @@ fun TarjetaProductoInventario(
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("✏️ Editar", style = MaterialTheme.typography.labelMedium, color = QhatuPurple)
+                    Text("️ Editar", style = MaterialTheme.typography.labelMedium, color = QhatuPurple)
                 }
 
                 Button(
@@ -570,7 +562,7 @@ fun TarjetaProductoInventario(
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("🛒 Venta Rápida", style = MaterialTheme.typography.labelMedium, color = Color.White, fontWeight = FontWeight.Bold)
+                    Text("Venta Rápida", style = MaterialTheme.typography.labelMedium, color = Color.White, fontWeight = FontWeight.Bold)
                 }
             }
         }

@@ -23,7 +23,7 @@ import com.cyberqhatu.app.ui.screens.tienda.DetalleProductoScreen
 import com.cyberqhatu.app.ui.theme.CyberQhatuTheme
 import com.cyberqhatu.app.vendedor.ui.InventarioVentasScreen
 import com.cyberqhatu.app.vendedor.ui.PublicarProductoScreen
-
+import androidx.compose.material3.Icon
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,25 +46,25 @@ fun MainNavigationApp() {
                 NavigationBarItem(
                     selected = selectedTab == 0,
                     onClick = { selectedTab = 0 },
-                    icon = { Text("🛍️", fontWeight = FontWeight.Bold) },
+                    icon = { Text(".", fontWeight = FontWeight.Bold) },
                     label = { Text("Detalle") }
                 )
                 NavigationBarItem(
                     selected = selectedTab == 1,
                     onClick = { selectedTab = 1 },
-                    icon = { Text("🚨", fontWeight = FontWeight.Bold) },
+                    icon = { Text(".", fontWeight = FontWeight.Bold) },
                     label = { Text("Reportar") }
                 )
                 NavigationBarItem(
                     selected = selectedTab == 2,
                     onClick = { selectedTab = 2 },
-                    icon = { Text("➕", fontWeight = FontWeight.Bold) },
+                    icon = { Text(".", fontWeight = FontWeight.Bold) },
                     label = { Text("Publicar") }
                 )
                 NavigationBarItem(
                     selected = selectedTab == 3,
                     onClick = { selectedTab = 3 },
-                    icon = { Text("📊", fontWeight = FontWeight.Bold) },
+                    icon = { Text(".", fontWeight = FontWeight.Bold) },
                     label = { Text("Inventario") }
                 )
             }

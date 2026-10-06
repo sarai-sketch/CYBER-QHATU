@@ -1,9 +1,6 @@
 package com.cyberqhatu.app.vendedor.ui
 
-/**
- * Estado local independiente para la Pantalla 8: Inventario y Ventas (D2).
- * Modelos de datos autocontenidos para el panel de gestión del vendedor.
- */
+
 data class ProductoInventario(
     val id: String,
     val titulo: String,

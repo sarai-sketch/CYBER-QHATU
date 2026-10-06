@@ -54,10 +54,6 @@ import com.cyberqhatu.app.ui.theme.QhatuCoral
 import com.cyberqhatu.app.ui.theme.QhatuPurple
 import com.cyberqhatu.app.ui.theme.QhatuPurpleLight
 
-/**
- * Pantalla 7: Publicar Producto (D1) - Módulo 4 Vendedor.
- * Adaptada al sistema de diseño visual de Cyber Qhatu (Púrpura #5320E6, Coral #FF644E, Lima #BDFF38).
- */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun PublicarProductoScreen(
@@ -83,7 +79,7 @@ fun PublicarProductoScreen(
             },
             title = {
                 Text(
-                    text = "🎉 ¡Producto Publicado!",
+                    text = " ¡Producto Publicado!",
                     fontWeight = FontWeight.Bold,
                     color = QhatuPurple
                 )
@@ -263,7 +259,7 @@ fun PublicarProductoScreen(
                                 verticalArrangement = Arrangement.Center
                             ) {
                                 Text(
-                                    text = "📷",
+                                    text = "Foto",
                                     style = MaterialTheme.typography.titleLarge
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
@@ -295,7 +291,7 @@ fun PublicarProductoScreen(
                                     verticalArrangement = Arrangement.Center
                                 ) {
                                     Text(
-                                        text = "🖼️",
+                                        text = ".",
                                         style = MaterialTheme.typography.titleMedium
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))
