@@ -1,19 +1,18 @@
 package com.cyberqhatu.app.confianza
 
-import java.time.LocalDateTime
+import java.util.Date
 
-data class Consulta(
+class Consulta(
     val idConsulta: String,
     val idComprador: String,
     val idTienda: String,
     val idProducto: String? = null,
     val mensaje: String,
     var respuesta: String? = null,
-    val fecha: LocalDateTime = LocalDateTime.now(),
+    val fecha: Date = Date(),
     var estado: EstadoConsulta = EstadoConsulta.PENDIENTE
 ) {
     fun enviar(): Boolean {
-        // Lógica de dominio para enviar la consulta
         return true
     }
 

@@ -2,10 +2,13 @@ package com.cyberqhatu.app.ui.screens.confianza
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,7 +26,7 @@ import androidx.compose.ui.unit.sp
 import com.cyberqhatu.app.ui.theme.*
 
 private val motivos = listOf(
-    "No entrego el producto",
+    "No entregó el producto",
     "Producto distinto al anunciado",
     "Trato irrespetuoso"
 )
@@ -36,121 +39,152 @@ fun ReportarTiendaScreen(nombreTienda: String = "Moda Andina") {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(CqLavanda)
+            .background(MaterialTheme.colorScheme.background)
     ) {
-        // Encabezado
+        // Banner Superior Encabezado
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFFB03838))
-                .padding(horizontal = 20.dp, vertical = 18.dp)
+                .clip(RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp))
+                .background(QhatuPurple)
+                .padding(horizontal = 20.dp, vertical = 20.dp)
         ) {
-            Text("Reportar tienda", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Column {
+                Text(
+                    text = "Confianza y Seguridad",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Color.White.copy(alpha = 0.8f)
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "Reportar Tienda",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
         }
 
         Column(
             modifier = Modifier
                 .padding(20.dp)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
             // Tarjeta de la tienda
             Card(
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE4E0F5)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(Modifier.padding(12.dp)) {
-                    Text(nombreTienda, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                    Text("Stock 2 \u00B7 Calle Comercio 123", fontSize = 11.sp, color = CqTextSub)
+                Column(Modifier.padding(16.dp)) {
+                    Text(nombreTienda, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
+                    Spacer(Modifier.height(4.dp))
+                    Text("Stock 2 · Calle Comercio 123", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
 
-            Spacer(Modifier.height(20.dp))
-            Text("Motivo del reporte", fontWeight = FontWeight.Bold, fontSize = 13.sp)
-            Spacer(Modifier.height(8.dp))
+            // Motivo del reporte
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Motivo del reporte *", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = QhatuPurple)
 
-            motivos.forEach { motivo ->
-                val seleccionado = motivo == motivoSeleccionado
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(if (seleccionado) Color(0xFFECE8FB) else Color.White)
-                        .border(
-                            width = if (seleccionado) 2.dp else 1.dp,
-                            color = if (seleccionado) CqIndigo else Color(0xFFE4E0F5),
-                            shape = RoundedCornerShape(10.dp)
-                        )
-                        .padding(horizontal = 10.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    RadioButton(
-                        selected = seleccionado,
-                        onClick = { motivoSeleccionado = motivo },
-                        colors = RadioButtonDefaults.colors(selectedColor = CqIndigo)
-                    )
-                    Spacer(Modifier.width(4.dp))
-                    Text(motivo, fontSize = 12.sp)
-                }
-
-            }
-
-            Spacer(Modifier.height(10.dp))
-            Text("Describe lo sucedido", fontWeight = FontWeight.Bold, fontSize = 13.sp)
-            Spacer(Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = descripcion,
-                onValueChange = { descripcion = it },
-                placeholder = { Text("Ej: El vendedor no entrego el pedido...") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(90.dp),
-                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = CqIndigo)
-            )
-
-            Spacer(Modifier.height(18.dp))
-            Text("Evidencia", fontWeight = FontWeight.Bold, fontSize = 13.sp)
-            Spacer(Modifier.height(8.dp))
-
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                repeat(3) { index ->
-                    Box(
+                motivos.forEach { motivo ->
+                    val seleccionado = motivo == motivoSeleccionado
+                    Row(
                         modifier = Modifier
-                            .size(72.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(Color.White)
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (seleccionado) QhatuPurpleLight else Color.White)
                             .border(
-                                width = if (index == 0) 2.dp else 1.dp,
-                                color = if (index == 0) CqIndigo else Color(0xFFE4E0F5),
-                                shape = RoundedCornerShape(10.dp)
-                            ),
-                        contentAlignment = Alignment.Center
+                                width = if (seleccionado) 1.5.dp else 1.dp,
+                                color = if (seleccionado) QhatuPurple else QhatuBorder,
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .clickable { motivoSeleccionado = motivo }
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(if (index == 0) "+" else "", fontSize = 20.sp, color = CqIndigo)
+                        RadioButton(
+                            selected = seleccionado,
+                            onClick = { motivoSeleccionado = motivo },
+                            colors = RadioButtonDefaults.colors(selectedColor = QhatuPurple)
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Text(motivo, fontSize = 13.sp, fontWeight = if (seleccionado) FontWeight.SemiBold else FontWeight.Normal)
                     }
                 }
             }
 
-            Spacer(Modifier.height(26.dp))
+            // Descripción
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Describe lo sucedido *", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = QhatuPurple)
 
+                OutlinedTextField(
+                    value = descripcion,
+                    onValueChange = { descripcion = it },
+                    placeholder = { Text("Ej: El vendedor no entregó el pedido a tiempo...") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = QhatuPurple,
+                        focusedLabelColor = QhatuPurple
+                    )
+                )
+            }
+
+            // Evidencia
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Evidencia (Fotos / Capturas)", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = QhatuPurple)
+
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    repeat(3) { index ->
+                        Box(
+                            modifier = Modifier
+                                .size(72.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(if (index == 0) QhatuPurpleLight else Color.White)
+                                .border(
+                                    width = 1.5.dp,
+                                    color = if (index == 0) QhatuPurple else QhatuBorder,
+                                    shape = RoundedCornerShape(12.dp)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (index == 0) {
+                                Icon(
+                                    imageVector = Icons.Default.CameraAlt,
+                                    contentDescription = "Adjuntar evidencia",
+                                    tint = QhatuPurple,
+                                    modifier = Modifier.size(28.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            // Botón enviar
             Button(
                 onClick = { /* .*/ },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp),
-                shape = RoundedCornerShape(50),
-                colors = ButtonDefaults.buttonColors(containerColor = CqCoral)
-            ) { Text("Enviar reporte") }
-
-            Spacer(Modifier.height(14.dp))
+                    .height(52.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = QhatuCoral)
+            ) {
+                Text("Enviar Reporte", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            }
 
             Text(
-                "La tienda puede refutar con su propia evidencia. Un moderador decide.",
+                "La tienda puede refutar con su propia evidencia. Un moderador revisará y tomará una decisión.",
                 fontSize = 11.sp,
-                color = CqTextSub
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

@@ -7,11 +7,11 @@ class Comprador(
     nombre: String,
     correo: String,
     telefonoWhatsapp: String,
-    fotoPerfil: String?,
-    estadoVerificacionCI: Boolean,
-    ci: String,
-    fotoCI: String?,
-    fotoBiometricaFacial: String?,
+    fotoPerfil: String? = null,
+    estadoVerificacionCI: EstadoVerificacionCI = EstadoVerificacionCI.NO_VERIFICADO,
+    ci: String? = null,
+    fotoCI: String? = null,
+    fotoBiometricaFacial: String? = null,
     fechaRegistro: Date = Date()
 ) : Usuario(
     idUsuario = idUsuario,
@@ -25,42 +25,12 @@ class Comprador(
     fotoBiometricaFacial = fotoBiometricaFacial,
     fechaRegistro = fechaRegistro
 ) {
-
-    // Atributos derivados o listas de apoyo para la app
-    val favoritos: MutableList<String> = mutableListOf()
-    val historialCompras: MutableList<String> = mutableListOf()
-
-    override fun registrarse(): Boolean {
-        // Lógica de registro para el comprador en CYBER-QHATU
-        return true
-    }
-
     fun escanearQR() {
-        // Lógica para abrir la cámara y escanear el QR fijo de la tienda o de pago
     }
 
-    fun abrirChatWhatsapp(telefonoVendedor: String) {
-        // Lógica para abrir la API de WhatsApp y contactar al feriante
+    fun abrirChatWhatsapp() {
     }
 
-    fun reportarTienda(idTienda: String, motivo: String) {
-        // Lógica para enviar un reporte al moderador sobre una tienda irregular en la feria
-    }
-
-    // Métodos adicionales útiles para la navegación del comprador
-    fun buscarProducto(query: String) {
-        TODO("Búsqueda en el catálogo de la Feria 16 de Julio")
-    }
-
-    fun guardarFavorito(idProducto: String) {
-        agregarFavoritoProducto(idProducto)
-    }
-
-    fun confirmarRecepcion(idPedido: String) {
-        TODO("Confirmar la entrega del producto en el punto de encuentro")
-    }
-
-    fun calificarVendedor(idVendedor: String, calificacion: Int, comentario: String?) {
-        TODO("Dejar reseña y calificación al comerciante")
+    fun reportarTienda() {
     }
 }

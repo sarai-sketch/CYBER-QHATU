@@ -1,6 +1,6 @@
 package com.cyberqhatu.app.confianza
 
-data class Reporte(
+class Reporte(
     val idReporte: String,
     val idReportante: String,
     val idTiendaReportada: String,
@@ -9,7 +9,6 @@ data class Reporte(
     var estado: EstadoReporte = EstadoReporte.PENDIENTE
 ) {
     fun enviar(): Boolean {
-        // Lógica de dominio para enviar el reporte
         return true
     }
 

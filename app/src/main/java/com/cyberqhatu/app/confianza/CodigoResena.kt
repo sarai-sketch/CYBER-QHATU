@@ -1,11 +1,11 @@
 package com.cyberqhatu.app.confianza
 
-import java.time.LocalDateTime
+import java.util.Date
 
-data class CodigoResena(
+class CodigoResena(
     val idCodigo: String,
     val idTienda: String,
     val codigo: String,
     var estado: EstadoCodigoResena = EstadoCodigoResena.UNUSED,
-    val fechaCreacion: LocalDateTime = LocalDateTime.now()
+    val fechaCreacion: Date = Date()
 )

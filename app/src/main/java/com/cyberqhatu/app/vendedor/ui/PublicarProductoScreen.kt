@@ -33,6 +33,9 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -258,9 +261,11 @@ fun PublicarProductoScreen(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
                             ) {
-                                Text(
-                                    text = "Foto",
-                                    style = MaterialTheme.typography.titleLarge
+                                Icon(
+                                    imageVector = Icons.Default.CameraAlt,
+                                    contentDescription = "Sube una foto",
+                                    tint = QhatuPurple,
+                                    modifier = Modifier.size(32.dp)
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
@@ -290,9 +295,11 @@ fun PublicarProductoScreen(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.Center
                                 ) {
-                                    Text(
-                                        text = ".",
-                                        style = MaterialTheme.typography.titleMedium
+                                    Icon(
+                                        imageVector = Icons.Default.CameraAlt,
+                                        contentDescription = "Foto subida",
+                                        tint = QhatuPurple,
+                                        modifier = Modifier.size(28.dp)
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(

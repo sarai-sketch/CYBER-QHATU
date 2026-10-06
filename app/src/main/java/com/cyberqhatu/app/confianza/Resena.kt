@@ -1,7 +1,8 @@
 package com.cyberqhatu.app.confianza
+
 import java.util.Date
 
-data class Resena(
+class Resena(
     val idResena: String,
     val idTienda: String,
     val idUsuario: String,
@@ -13,7 +14,6 @@ data class Resena(
     val fechaCreacion: Date = Date()
 ) {
     fun publicarResena(): Boolean {
-        // Lógica de dominio/validación para la publicación
         return true
     }
 }
