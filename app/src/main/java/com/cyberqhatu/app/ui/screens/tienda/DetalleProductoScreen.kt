@@ -197,7 +197,7 @@ fun DetalleProductoScreen(producto: Producto = productoEjemplo) {
             ResenaItem(autor = "Ana R.", comentario = "Tal cual la foto, muy buena atención y entrega rápida.")
             Spacer(Modifier.height(10.dp))
             ResenaItem(autor = "Carlos M.", comentario = "Producto 100% verificado con código seguro.")
-        }
+            }
     }
 }
 
