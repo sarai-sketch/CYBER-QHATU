@@ -15,7 +15,10 @@ data class PublicarProductoFormState(
     val imagenesUris: List<String> = emptyList(),
     val isLoading: Boolean = false,
     val mensajeError: String? = null,
-    val esExitoso: Boolean = false
+    val esExitoso: Boolean = false,
+    val tituloError: String? = null,
+    val precioError: String? = null,
+    val stockError: String? = null
 )
 
 enum class CondicionProducto(val tituloMostrar: String) {
