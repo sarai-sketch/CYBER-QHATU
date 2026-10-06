@@ -22,6 +22,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
@@ -34,6 +37,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -51,7 +55,7 @@ import androidx.compose.ui.unit.dp
 
 /**
  * Pantalla 7: Publicar Producto (D1) - Módulo 4 Vendedor.
- * Contiene formulario, selector de condición y componente ligero de carga simulada de fotos.
+ * Incluye formulario completo, validación, diálogo de confirmación y publicación.
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -70,6 +74,41 @@ fun PublicarProductoScreen(
         "Otros"
     )
 
+    // Diálogo de Confirmación de Exito
+    if (formState.esExitoso) {
+        AlertDialog(
+            onDismissRequest = {
+                formState = PublicarProductoFormState()
+            },
+            title = {
+                Text(
+                    text = "🎉 ¡Producto Publicado!",
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text("Tu producto ya está visible en CyberQhatu:")
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text("• Título: ${formState.titulo}", fontWeight = FontWeight.SemiBold)
+                    Text("• Categoría: ${formState.categoria.ifBlank { "Sin categoría" }}")
+                    Text("• Precio: S/ ${formState.precio}")
+                    Text("• Stock: ${formState.stock} unidades")
+                    Text("• Condición: ${formState.condicion.tituloMostrar}")
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        formState = PublicarProductoFormState()
+                    }
+                ) {
+                    Text("Aceptar y Crear Otro")
+                }
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -86,6 +125,58 @@ fun PublicarProductoScreen(
                 )
             )
         },
+        bottomBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(16.dp)
+            ) {
+                Button(
+                    onClick = {
+                        // Validaciones de formulario
+                        val errorTitulo = if (formState.titulo.isBlank()) "Ingresa un título válido" else null
+                        val errorPrecio = when {
+                            formState.precio.isBlank() -> "Ingresa un precio"
+                            formState.precio.toDoubleOrNull() == null || formState.precio.toDouble() <= 0 -> "Precio mayor a 0"
+                            else -> null
+                        }
+                        val errorStock = when {
+                            formState.stock.isBlank() -> "Ingresa el stock"
+                            formState.stock.toIntOrNull() == null || formState.stock.toInt() < 1 -> "Stock mínimo 1"
+                            else -> null
+                        }
+
+                        if (errorTitulo != null || errorPrecio != null || errorStock != null) {
+                            formState = formState.copy(
+                                tituloError = errorTitulo,
+                                precioError = errorPrecio,
+                                stockError = errorStock,
+                                mensajeError = "Por favor corrige los campos marcados en rojo."
+                            )
+                        } else {
+                            formState = formState.copy(
+                                mensajeError = null,
+                                esExitoso = true
+                            )
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp)
+                ) {
+                    Text(
+                        text = "🚀 Publicar Producto",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        },
         modifier = modifier.fillMaxSize()
     ) { innerPadding ->
         Column(
@@ -101,6 +192,23 @@ fun PublicarProductoScreen(
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.primary
             )
+
+            // Mensaje de Error General si existe
+            formState.mensajeError?.let { msg ->
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = msg,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(12.dp)
+                    )
+                }
+            }
 
             // --- SECCIÓN 1: FOTOS DEL PRODUCTO ---
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -119,7 +227,6 @@ fun PublicarProductoScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier.padding(vertical = 8.dp)
                 ) {
-                    // Botón ligero para agregar imagen simulada
                     item {
                         Card(
                             colors = CardDefaults.cardColors(
@@ -161,7 +268,6 @@ fun PublicarProductoScreen(
                         }
                     }
 
-                    // Lista de fotos agregadas
                     itemsIndexed(formState.imagenesUris) { index, foto ->
                         Box(
                             modifier = Modifier.size(90.dp)
@@ -191,7 +297,6 @@ fun PublicarProductoScreen(
                                 }
                             }
 
-                            // Botón eliminar imagen
                             Box(
                                 modifier = Modifier
                                     .align(Alignment.TopEnd)
@@ -371,7 +476,7 @@ fun PublicarProductoScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
