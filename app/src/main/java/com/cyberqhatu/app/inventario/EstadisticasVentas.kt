@@ -1,7 +1,5 @@
 package com.cyberqhatu.app.inventario
 
-enum class CanalVenta { ONLINE, FISICA, COMBINADO }
-
 class EstadisticasVentas(
     val idEstadistica: String,
     val idRegistro: String,
