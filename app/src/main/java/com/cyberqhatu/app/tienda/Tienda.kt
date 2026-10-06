@@ -13,8 +13,8 @@ class Tienda(
     var direccionGoogleMaps: String? = null,
     var horarioApertura: String? = null,
     var horarioCierre: String? = null,
-    var linkWhatsapp: String,
-    var qrFijoTienda: String,
+    var linkWhatsapp: String? = null,
+    var qrFijoTienda: String? = null,
     var strikes: Int = 0,
     var estado: EstadoTienda = EstadoTienda.ACTIVA
 ) {

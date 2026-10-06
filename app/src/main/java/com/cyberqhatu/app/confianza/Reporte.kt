@@ -1,18 +1,23 @@
 package com.cyberqhatu.app.confianza
 
-enum class EstadoReporte { PENDIENTE, EN_REVISION, RESUELTO }
-
-class Reporte(
+data class Reporte(
     val idReporte: String,
     val idReportante: String,
-    val idReportado: String,
-    val idPedido: String? = null,
-    var motivo: String,
-    var descripcion: String,
+    val idTiendaReportada: String,
+    val motivo: String,
+    val descripcion: String,
     var estado: EstadoReporte = EstadoReporte.PENDIENTE
 ) {
-    fun enviar() { TODO() }
-    fun refutar(descargo: String) { TODO() }
-    fun revisar() { TODO() }
-    fun resolver() { TODO() }
+    fun enviar(): Boolean {
+        // Lógica de dominio para enviar el reporte
+        return true
+    }
+
+    fun revisar() {
+        this.estado = EstadoReporte.REVISADO
+    }
+
+    fun resolver() {
+        this.estado = EstadoReporte.RESUELTO
+    }
 }

@@ -1,11 +1,19 @@
 package com.cyberqhatu.app.confianza
+import java.util.Date
 
-class Resena(
+data class Resena(
     val idResena: String,
-    val idPedido: String,
-    val idReputacion: String,
-    var calificacion: Int,
-    var comentario: String? = null
+    val idTienda: String,
+    val idUsuario: String,
+    val idCodigoResena: String? = null,
+    val rating: Int,
+    val comentario: String,
+    val source: FuenteResena,
+    val isVerified: Boolean = false,
+    val fechaCreacion: Date = Date()
 ) {
-    fun publicar() { TODO() }
+    fun publicarResena(): Boolean {
+        // Lógica de dominio/validación para la publicación
+        return true
+    }
 }
