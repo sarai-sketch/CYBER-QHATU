@@ -80,7 +80,7 @@ fun PantallaMiPerfil(
                     Text(text = "WhatsApp: $telefonoUsuario", fontSize = 14.sp)
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = if (estadoVerificacion) "Estado CI: Verificado ✅" else "Estado CI: Pendiente de aprobación ⏳",
+                        text = if (estadoVerificacion) "Estado CI: Verificado " else "Estado CI: Pendiente de aprobación ",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = if (estadoVerificacion) Color(0xFF2E7D32) else Color(0xFFC62828)
