@@ -57,39 +57,6 @@ fun MainNavigationApp() {
                 NavigationBarItem(
                     selected = selectedTab == 0,
                     onClick = { selectedTab = 0 },
-<<<<<<< HEAD
-                    icon = { Icon(imageVector = Icons.Default.Home, contentDescription = "Inicio") },
-                    label = { Text("Inicio") }
-                )
-                NavigationBarItem(
-                    selected = selectedTab == 1,
-                    onClick = { selectedTab = 1 },
-                    icon = { Icon(imageVector = Icons.Default.ShoppingBag, contentDescription = "Detalle") },
-                    label = { Text("Detalle") }
-                )
-                NavigationBarItem(
-                    selected = selectedTab == 2,
-                    onClick = { selectedTab = 2 },
-                    icon = { Icon(imageVector = Icons.Default.Warning, contentDescription = "Reportar") },
-                    label = { Text("Reportar") }
-                )
-                NavigationBarItem(
-                    selected = selectedTab == 3,
-                    onClick = { selectedTab = 3 },
-                    icon = { Icon(imageVector = Icons.Default.AddCircle, contentDescription = "Publicar") },
-                    label = { Text("Publicar") }
-                )
-                NavigationBarItem(
-                    selected = selectedTab == 4,
-                    onClick = { selectedTab = 4 },
-                    icon = { Icon(imageVector = Icons.Default.BarChart, contentDescription = "Inventario") },
-                    label = { Text("Inventario") }
-                )
-                NavigationBarItem(
-                    selected = selectedTab == 5,
-                    onClick = { selectedTab = 5 },
-                    icon = { Icon(imageVector = Icons.Default.Person, contentDescription = "Perfil") },
-=======
                     icon = {
                         Icon(
                             imageVector = Icons.Default.Storefront,
@@ -162,7 +129,6 @@ fun MainNavigationApp() {
                             contentDescription = "Perfil"
                         )
                     },
->>>>>>> a2f7c2efa8582a124fd313018b1cb5ea3d022cad
                     label = { Text("Perfil") }
                 )
             }
@@ -175,20 +141,6 @@ fun MainNavigationApp() {
                 .padding(innerPadding)
         ) {
             when (selectedTab) {
-<<<<<<< HEAD
-                0 -> PantallaBienvenida(
-                    onContinuarClicked = {
-                        selectedTab = 5 // Redirige al perfil al presionar continuar
-                    }
-                )
-                1 -> DetalleProductoScreen()
-                2 -> ReportarTiendaScreen()
-                3 -> PublicarProductoScreen(modifier = Modifier.fillMaxSize())
-                4 -> InventarioVentasScreen(modifier = Modifier.fillMaxSize())
-                5 -> PantallaMiPerfil(
-                    nombreUsuario = "Sarai Condori",
-                    correoUsuario = "sarai.condori@cyberqhatu.bo",
-=======
                 0 -> MarketplaceAppEntry() // Pantallas Módulo 2 integradas aquí
                 1 -> PantallaBienvenida(onContinuarClicked = {})
                 2 -> DetalleProductoScreen()
@@ -198,7 +150,6 @@ fun MainNavigationApp() {
                 6 -> PantallaMiPerfil(
                     nombreUsuario = "Juan Pérez",
                     correoUsuario = "juan.perez@cyberqhatu.bo",
->>>>>>> a2f7c2efa8582a124fd313018b1cb5ea3d022cad
                     telefonoUsuario = "+591 70000000",
                     estadoVerificacion = true,
                     tipoRol = "Vendedor",
