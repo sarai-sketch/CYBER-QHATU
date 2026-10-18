@@ -8,6 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -31,42 +32,42 @@ private val motivos = listOf(
     "Trato irrespetuoso"
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReportarTiendaScreen(nombreTienda: String = "Moda Andina") {
+fun ReportarTiendaScreen(
+    nombreTienda: String = "Moda Andina",
+    onBackClick: () -> Unit = {}
+) {
     var motivoSeleccionado by remember { mutableStateOf(motivos.first()) }
     var descripcion by remember { mutableStateOf("") }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
-        // Banner Superior Encabezado
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp))
-                .background(QhatuPurple)
-                .padding(horizontal = 20.dp, vertical = 20.dp)
-        ) {
-            Column {
-                Text(
-                    text = "Confianza y Seguridad",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = Color.White.copy(alpha = 0.8f)
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(text = "Reportar Tienda", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = QhatuPurple) },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = QhatuPurple
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = QhatuPurple,
+                    navigationIconContentColor = QhatuPurple,
+                    actionIconContentColor = QhatuPurple
                 )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = "Reportar Tienda",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            }
+            )
         }
-
+    ) { innerPadding ->
         Column(
             modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(20.dp)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -82,7 +83,7 @@ fun ReportarTiendaScreen(nombreTienda: String = "Moda Andina") {
                 Column(Modifier.padding(16.dp)) {
                     Text(nombreTienda, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
                     Spacer(Modifier.height(4.dp))
-                    Text("Stock 2 · Calle Comercio 123", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("Calle Comercio 123, Zona Comercial", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
 
@@ -147,51 +148,40 @@ fun ReportarTiendaScreen(nombreTienda: String = "Moda Andina") {
                                 .size(72.dp)
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(if (index == 0) QhatuPurpleLight else Color.White)
-                                .border(
-                                    width = 1.5.dp,
-                                    color = if (index == 0) QhatuPurple else QhatuBorder,
-                                    shape = RoundedCornerShape(12.dp)
-                                ),
+                                .border(1.dp, QhatuBorder, RoundedCornerShape(12.dp)),
                             contentAlignment = Alignment.Center
                         ) {
-                            if (index == 0) {
-                                Icon(
-                                    imageVector = Icons.Default.CameraAlt,
-                                    contentDescription = "Adjuntar evidencia",
-                                    tint = QhatuPurple,
-                                    modifier = Modifier.size(28.dp)
-                                )
-                            }
+                            Icon(
+                                imageVector = Icons.Default.CameraAlt,
+                                contentDescription = "Foto",
+                                tint = QhatuPurple,
+                                modifier = Modifier.size(24.dp)
+                            )
                         }
                     }
                 }
             }
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(16.dp))
 
-            // Botón enviar
             Button(
-                onClick = { /* .*/ },
+                onClick = { /* Enviar reporte */ },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = QhatuCoral)
+                    .height(50.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = QhatuPurple)
             ) {
-                Text("Enviar Reporte", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                Text("Enviar Reporte", fontSize = 15.sp, fontWeight = FontWeight.Bold)
             }
-
-            Text(
-                "La tienda puede refutar con su propia evidencia. Un moderador revisará y tomará una decisión.",
-                fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
 }
 
-@Preview(showBackground = true, widthDp = 360, heightDp = 780)
+@Preview(showBackground = true)
 @Composable
-private fun ReportarTiendaScreenPreview() {
-    ReportarTiendaScreen()
+private fun ReportarTiendaPreview() {
+    CyberQhatuTheme {
+        ReportarTiendaScreen()
+    }
 }
