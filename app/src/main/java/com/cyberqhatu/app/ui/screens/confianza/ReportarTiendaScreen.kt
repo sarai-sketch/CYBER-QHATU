@@ -96,7 +96,7 @@ fun ReportarTiendaScreen(nombreTienda: String = "Moda Andina") {
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
-                            .background(if (seleccionado) QhatuPurpleLight else Color.White)
+                            .background(if (seleccionado) QhatuLimeDark else QhatuPurpleLight)
                             .border(
                                 width = if (seleccionado) 1.5.dp else 1.dp,
                                 color = if (seleccionado) QhatuPurple else QhatuBorder,
