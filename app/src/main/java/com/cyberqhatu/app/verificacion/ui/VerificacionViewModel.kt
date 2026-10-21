@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
- * ViewModel siguiendo el patrón MVVM para administrar el estado de verificación y la persistencia Room.
+ * ViewModel siguiendo el patrón MVVM para administrar la captura del Anverso, Reverso y Selfie.
  */
 class VerificacionViewModel(
     private var repository: VerificacionRepository = VerificacionRepositoryImpl(),
@@ -46,10 +46,19 @@ class VerificacionViewModel(
         }
     }
 
-    fun setFotoCarnet(bitmap: Bitmap) {
+    fun setFotoCarnetAnverso(bitmap: Bitmap) {
         _uiState.update {
             it.copy(
-                fotoCarnet = bitmap,
+                fotoCarnetAnverso = bitmap,
+                pasoActual = PasoVerificacion.CAPTURAR_CARNET_REVERSO,
+            )
+        }
+    }
+
+    fun setFotoCarnetReverso(bitmap: Bitmap) {
+        _uiState.update {
+            it.copy(
+                fotoCarnetReverso = bitmap,
                 pasoActual = PasoVerificacion.CAPTURAR_SELFIE,
             )
         }
@@ -67,11 +76,12 @@ class VerificacionViewModel(
     }
 
     private fun procesarVerificacion() {
-        val carnet = _uiState.value.fotoCarnet ?: return
+        val anverso = _uiState.value.fotoCarnetAnverso ?: return
+        val reverso = _uiState.value.fotoCarnetReverso ?: return
         val selfie = _uiState.value.fotoSelfie ?: return
 
         viewModelScope.launch(Dispatchers.IO) {
-            val resultado = repository.verificarIdentidad(carnet, selfie)
+            val resultado = repository.verificarIdentidad(anverso, reverso, selfie)
             _uiState.update {
                 it.copy(
                     pasoActual = PasoVerificacion.RESULTADO,
@@ -84,7 +94,7 @@ class VerificacionViewModel(
 
     fun reintentar() {
         _uiState.update {
-            VerificacionUiState(pasoActual = PasoVerificacion.CAPTURAR_CARNET)
+            VerificacionUiState(pasoActual = PasoVerificacion.CAPTURAR_CARNET_ANVERSO)
         }
     }
 }

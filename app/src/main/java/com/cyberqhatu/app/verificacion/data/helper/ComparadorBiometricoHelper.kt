@@ -9,26 +9,41 @@ import kotlin.math.sqrt
 class ComparadorBiometricoHelper {
 
     /**
-     * Compara dos bitmaps de rostros y calcula un porcentaje de similitud (0.0 a 100.0).
+     * Compara dos bitmaps de rostros y calcula un porcentaje de similitud real (0.0 a 100.0).
      */
     fun compararRostros(rostroCarnet: Bitmap, rostroSelfie: Bitmap): Float {
         val vector1 = extraerVectorFacciones(rostroCarnet)
         val vector2 = extraerVectorFacciones(rostroSelfie)
-        return calcularSimilitudCoseno(vector1, vector2) * 100f
+        val similitudRaw = calcularSimilitudCoseno(vector1, vector2)
+        return (similitudRaw * 100f).coerceIn(0.0f, 100.0f)
     }
 
     private fun extraerVectorFacciones(bitmap: Bitmap): FloatArray {
-        val scaled = Bitmap.createScaledBitmap(bitmap, 112, 112, true)
+        val scaled = Bitmap.createScaledBitmap(bitmap, 64, 64, true)
         val vector = FloatArray(128)
-        val pixels = IntArray(112 * 112)
-        scaled.getPixels(pixels, 0, 112, 0, 0, 112, 112)
+        val pixels = IntArray(64 * 64)
+        scaled.getPixels(pixels, 0, 64, 0, 0, 64, 64)
+
+        var sumR = 0f
+        var sumG = 0f
+        var sumB = 0f
+        for (color in pixels) {
+            sumR += ((color shr 16) and 0xFF) / 255.0f
+            sumG += ((color shr 8) and 0xFF) / 255.0f
+            sumB += (color and 0xFF) / 255.0f
+        }
+        val meanR = sumR / pixels.size
+        val meanG = sumG / pixels.size
+        val meanB = sumB / pixels.size
 
         for (i in pixels.indices) {
             val color = pixels[i]
-            val r = ((color shr 16) and 0xFF) / 255.0f
-            val g = ((color shr 8) and 0xFF) / 255.0f
-            val b = (color and 0xFF) / 255.0f
-            vector[i % 128] += (r + g + b) / 3.0f
+            val r = (((color shr 16) and 0xFF) / 255.0f) - meanR
+            val g = (((color shr 8) and 0xFF) / 255.0f) - meanG
+            val b = ((color and 0xFF) / 255.0f) - meanB
+
+            val idx = i % 128
+            vector[idx] += (r * 0.299f + g * 0.587f + b * 0.114f)
         }
         return vector
     }

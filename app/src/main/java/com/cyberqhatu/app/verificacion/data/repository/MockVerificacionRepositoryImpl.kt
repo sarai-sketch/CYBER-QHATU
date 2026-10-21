@@ -11,13 +11,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
 /**
- * Implementación del repositorio de verificación.
- * Procesa la biometría real en el dispositivo y simula la respuesta de red del servidor.
+ * Implementación del repositorio mock para pruebas.
  */
 class MockVerificacionRepositoryImpl(
     private val detectorRostro: DetectorRostroHelper = DetectorRostroHelper(),
     private val lectorTexto: LectorTextoCIHelper = LectorTextoCIHelper(),
-    private val comparador: ComparadorBiometricoHelper = ComparadorBiometricoHelper()
+    private val comparador: ComparadorBiometricoHelper = ComparadorBiometricoHelper(),
 ) : VerificacionRepository {
 
     override fun obtenerEstadoVerificacionLocal(idUsuario: String): Flow<ResultadoVerificacion?> {
@@ -25,23 +24,20 @@ class MockVerificacionRepositoryImpl(
     }
 
     override suspend fun verificarIdentidad(
-        fotoCarnet: Bitmap,
-        fotoSelfie: Bitmap
+        fotoCarnetAnverso: Bitmap,
+        fotoCarnetReverso: Bitmap,
+        fotoSelfie: Bitmap,
     ): ResultadoVerificacion {
-        // Simular latencia de procesamiento de red
         delay(1200)
 
-        // 1. Extraer número de C.I. del carnet con OCR (si está legible)
-        val numeroCi = lectorTexto.extraerNumeroCI(fotoCarnet) ?: "7891234"
+        val ciAnverso = lectorTexto.extraerNumeroCI(fotoCarnetAnverso)
+        val ciReverso = lectorTexto.extraerNumeroCI(fotoCarnetReverso)
+        val numeroCi = ciAnverso ?: ciReverso ?: "7891234 LP"
 
-        // 2. Recortar rostro del carnet y de la selfie
-        val rostroCarnet = detectorRostro.recortarRostro(fotoCarnet) ?: fotoCarnet
+        val rostroCarnet = detectorRostro.recortarRostro(fotoCarnetAnverso) ?: fotoCarnetAnverso
         val rostroSelfie = detectorRostro.recortarRostro(fotoSelfie) ?: fotoSelfie
 
-        // 3. Comparar similitud de rostros
         val similitud = comparador.compararRostros(rostroCarnet, rostroSelfie)
-
-        // 4. Si la similitud supera el umbral (o en prueba por defecto si la foto es clara)
         val porcentajeFinal = if (similitud < 50f) 82.5f else similitud
         val esValido = porcentajeFinal >= 70.0f
 
@@ -49,7 +45,7 @@ class MockVerificacionRepositoryImpl(
             esExitoso = esValido,
             porcentajeSimilitud = porcentajeFinal,
             numeroCI = numeroCi,
-            mensajeError = if (!esValido) "El rostro de la selfie no coincide con el carnet" else null
+            mensajeError = if (!esValido) "El rostro de la selfie no coincide con el carnet" else null,
         )
     }
 }

@@ -4,11 +4,12 @@ import android.graphics.Bitmap
 import com.cyberqhatu.app.verificacion.domain.ResultadoVerificacion
 
 /**
- * Estados del flujo del proceso de verificación.
+ * Estados del flujo del proceso de verificación (Anverso C.I., Reverso C.I., Selfie).
  */
 enum class PasoVerificacion {
     INSTRUCCIONES,
-    CAPTURAR_CARNET,
+    CAPTURAR_CARNET_ANVERSO,
+    CAPTURAR_CARNET_REVERSO,
     CAPTURAR_SELFIE,
     PROCESANDO,
     RESULTADO
@@ -19,8 +20,9 @@ enum class PasoVerificacion {
  */
 data class VerificacionUiState(
     val pasoActual: PasoVerificacion = PasoVerificacion.INSTRUCCIONES,
-    val fotoCarnet: Bitmap? = null,
+    val fotoCarnetAnverso: Bitmap? = null,
+    val fotoCarnetReverso: Bitmap? = null,
     val fotoSelfie: Bitmap? = null,
     val estaCargando: Boolean = false,
-    val resultado: ResultadoVerificacion? = null
+    val resultado: ResultadoVerificacion? = null,
 )

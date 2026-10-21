@@ -78,7 +78,7 @@ fun InstruccionesVerificacionScreen(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Box(
                     modifier = Modifier
-                        .size(80.dp)
+                        .size(72.dp)
                         .background(QhatuPurple.copy(alpha = 0.1f), shape = CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
@@ -86,45 +86,54 @@ fun InstruccionesVerificacionScreen(
                         imageVector = Icons.Default.Shield,
                         contentDescription = "Seguridad",
                         tint = QhatuPurple,
-                        modifier = Modifier.size(44.dp)
+                        modifier = Modifier.size(40.dp)
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = "Verifica tu Identidad",
+                    text = "Verifica tu Identidad C.I.",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     color = QhatuPurple,
                     textAlign = TextAlign.Center
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
-                    text = "Para vender o comprar con total confianza en CyberQhatu, valida tu carnet mediante nuestro sistema biométrico seguro.",
-                    fontSize = 14.sp,
+                    text = "Valida tu Carnet de Identidad de Bolivia (Anverso y Reverso) y confirma tu rostro.",
+                    fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
 
-                Spacer(modifier = Modifier.height(28.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 PasoInstruccionCard(
                     numero = "1",
                     icon = Icons.Default.Badge,
-                    titulo = "Captura de Carnet de Identidad",
-                    descripcion = "Toma una foto clara del reverso o anverso de tu C.I. sin reflejos ni sombras."
+                    titulo = "Anverso de C.I. (Frente)",
+                    descripcion = "Foto clara del frente de tu carnet donde esté tu fotografía y datos."
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 PasoInstruccionCard(
                     numero = "2",
+                    icon = Icons.Default.Badge,
+                    titulo = "Reverso de C.I. (Atrás)",
+                    descripcion = "Foto de la parte trasera de tu carnet donde estén las huellas y firmas."
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                PasoInstruccionCard(
+                    numero = "3",
                     icon = Icons.Default.Face,
                     titulo = "Selfie Biométrica en Vivo",
-                    descripcion = "MIRA la cámara y parpadea lentamente para confirmar que eres una persona real."
+                    descripcion = "Ubicación de tu rostro en vivo frente a la cámara con buena luz."
                 )
             }
 
@@ -160,24 +169,24 @@ private fun PasoInstruccionCard(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(36.dp)
                     .background(QhatuPurple, shape = CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(imageVector = icon, contentDescription = null, tint = QhatuLime, modifier = Modifier.size(20.dp))
+                Icon(imageVector = icon, contentDescription = null, tint = QhatuLime, modifier = Modifier.size(18.dp))
             }
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(14.dp))
 
             Column {
                 Text(
                     text = "$numero. $titulo",
-                    fontSize = 15.sp,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = QhatuPurple
                 )

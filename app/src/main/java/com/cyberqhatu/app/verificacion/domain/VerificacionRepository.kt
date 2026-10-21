@@ -4,12 +4,12 @@ import android.graphics.Bitmap
 import kotlinx.coroutines.flow.Flow
 
 /**
- * Contrato del repositorio para la verificación de identidad.
- * Abstrae el procesamiento biométrico, la persistencia en Room y la comunicación con la API remota.
+ * Contrato del repositorio para la verificación de identidad (Anverso, Reverso y Selfie).
  */
 interface VerificacionRepository {
     suspend fun verificarIdentidad(
-        fotoCarnet: Bitmap,
+        fotoCarnetAnverso: Bitmap,
+        fotoCarnetReverso: Bitmap,
         fotoSelfie: Bitmap,
     ): ResultadoVerificacion
 

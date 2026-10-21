@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.map
 
 /**
  * Implementación de la arquitectura Offline-First (Fuente Única de Verdad).
- * La interfaz observa la Caché de Room y sincroniza con el servidor en segundo plano.
+ * Valida Anverso C.I., Reverso C.I. y Selfie en vivo.
  */
 class VerificacionRepositoryImpl(
     private val verificacionCacheDao: VerificacionCacheDao? = null,
@@ -31,9 +31,6 @@ class VerificacionRepositoryImpl(
     private val comparador: ComparadorBiometricoHelper = ComparadorBiometricoHelper(),
 ) : VerificacionRepository {
 
-    /**
-     * Fuente Única de Verdad: Escucha reactivamente la Caché Local de Room.
-     */
     override fun obtenerEstadoVerificacionLocal(idUsuario: String): Flow<ResultadoVerificacion?> {
         return verificacionCacheDao?.obtenerCachePorUsuario(idUsuario)?.map { cacheEntity ->
             VerificacionCacheMapper.toDomain(cacheEntity)
@@ -43,51 +40,82 @@ class VerificacionRepositoryImpl(
     }
 
     override suspend fun verificarIdentidad(
-        fotoCarnet: Bitmap,
+        fotoCarnetAnverso: Bitmap,
+        fotoCarnetReverso: Bitmap,
         fotoSelfie: Bitmap,
     ): ResultadoVerificacion {
         delay(1200)
 
-        // 1. Detección de texto y rostro con ML Kit en el dispositivo
-        val numeroCi = lectorTexto.extraerNumeroCI(fotoCarnet) ?: "7891234"
-        val rostroCarnet = detectorRostro.recortarRostro(fotoCarnet) ?: fotoCarnet
-        val rostroSelfie = detectorRostro.recortarRostro(fotoSelfie) ?: fotoSelfie
+        // 1. Detección OCR del número de C.I. en Anverso o Reverso
+        val ciAnverso = lectorTexto.extraerNumeroCI(fotoCarnetAnverso)
+        val ciReverso = lectorTexto.extraerNumeroCI(fotoCarnetReverso)
+        val numeroCi = ciAnverso ?: ciReverso
 
-        // 2. Similitud biométrica local
-        val similitud = comparador.compararRostros(rostroCarnet, rostroSelfie)
-        val porcentajeFinal = if (similitud < 50f) 82.5f else similitud
-        val esValido = porcentajeFinal >= 70.0f
+        if (numeroCi == null) {
+            return ResultadoVerificacion(
+                esExitoso = false,
+                porcentajeSimilitud = 0.0f,
+                numeroCI = null,
+                mensajeError = "No se detectó un Carnet de Identidad de Bolivia ni en el anverso ni en el reverso. Toma fotos claras de tu C.I.",
+            )
+        }
+
+        // 2. Detección del rostro en el anverso del carnet y en la selfie
+        val rostroCarnet = detectorRostro.recortarRostro(fotoCarnetAnverso)
+        if (rostroCarnet == null) {
+            return ResultadoVerificacion(
+                esExitoso = false,
+                porcentajeSimilitud = 0.0f,
+                numeroCI = numeroCi,
+                mensajeError = "No se detectó la fotografía del rostro en el anverso del carnet. Asegúrate de encuadrar el frente de tu C.I.",
+            )
+        }
+
+        val rostroSelfie = detectorRostro.recortarRostro(fotoSelfie)
+        if (rostroSelfie == null) {
+            return ResultadoVerificacion(
+                esExitoso = false,
+                porcentajeSimilitud = 0.0f,
+                numeroCI = numeroCi,
+                mensajeError = "No se detectó tu rostro en la selfie. Ubícate frente a la cámara con buena iluminación.",
+            )
+        }
+
+        // 3. Similitud biométrica real entre la cara del carnet y la selfie
+        val similitudReal = comparador.compararRostros(rostroCarnet, rostroSelfie)
+        val esValido = similitudReal >= 60.0f
 
         val resultadoLocal = ResultadoVerificacion(
             esExitoso = esValido,
-            porcentajeSimilitud = porcentajeFinal,
+            porcentajeSimilitud = similitudReal,
             numeroCI = numeroCi,
-            mensajeError = if (!esValido) "Los rostros no coinciden con suficiente claridad" else null,
+            mensajeError = if (!esValido) "El rostro de la selfie no coincide con el anverso del carnet de identidad (Similitud: ${"%.1f".format(similitudReal)}%)." else null,
         )
 
-        // 3. Escribir inmediatamente en la Caché Local de Room (Offline-First)
-        val cacheEntity = VerificacionCacheMapper.toCacheEntity(resultadoLocal, "USR-101", sincronizado = false)
-        verificacionCacheDao?.insertarCache(cacheEntity)
-        verificacionDao?.insertarVerificacion(
-            VerificacionLocalMapper.toEntity(resultadoLocal, "USR-101")
-        )
+        // 4. Si la verificación fue exitosa, escribir en la Caché Local de Room (Offline-First)
+        if (esValido) {
+            val cacheEntity = VerificacionCacheMapper.toCacheEntity(resultadoLocal, "USR-101", sincronizado = false)
+            verificacionCacheDao?.insertarCache(cacheEntity)
+            verificacionDao?.insertarVerificacion(
+                VerificacionLocalMapper.toEntity(resultadoLocal, "USR-101"),
+            )
+        }
 
-        // 4. Sincronización en segundo plano con la API remota (Retrofit)
-        if (apiService != null) {
+        // 5. Sincronización en segundo plano con la API remota (Retrofit)
+        if (apiService != null && esValido) {
             try {
                 val requestDto = VerificacionRequestDto(
                     idUsuario = "USR-101",
                     numeroCi = numeroCi,
-                    similitudCalculada = porcentajeFinal,
+                    similitudCalculada = similitudReal,
                 )
                 val response = apiService.verificarIdentidad(requestDto)
                 if (response.isSuccessful && response.body() != null) {
                     val resultadoRemoto = VerificacionMapper.toDomain(response.body()!!)
-                    verificacionCacheDao?.marcarComoSincronizado(cacheEntity.idVerificacion)
                     return resultadoRemoto
                 }
             } catch (_: Exception) {
-                // Modo Offline: La app continúa funcionando con la caché local de Room
+                // Modo Offline
             }
         }
 

@@ -145,7 +145,7 @@ fun EscanerIdentidadScreen(
         return
     }
 
-    var uiState by remember { mutableStateOf(VerificacionUiState(pasoActual = PasoVerificacion.CAPTURAR_CARNET)) }
+    var uiState by remember { mutableStateOf(VerificacionUiState(pasoActual = PasoVerificacion.CAPTURAR_CARNET_ANVERSO)) }
 
     val cameraController = remember {
         LifecycleCameraController(context).apply {
@@ -155,24 +155,26 @@ fun EscanerIdentidadScreen(
 
     LaunchedEffect(uiState.pasoActual) {
         when (uiState.pasoActual) {
-            PasoVerificacion.CAPTURAR_CARNET -> {
+            PasoVerificacion.CAPTURAR_CARNET_ANVERSO,
+            PasoVerificacion.CAPTURAR_CARNET_REVERSO -> {
                 cameraController.cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
             }
             PasoVerificacion.CAPTURAR_SELFIE -> {
                 cameraController.cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
             }
             PasoVerificacion.PROCESANDO -> {
-                uiState.fotoCarnet?.let { carnet ->
-                    uiState.fotoSelfie?.let { selfie ->
-                        val res = withContext(Dispatchers.IO) {
-                            activeRepository.verificarIdentidad(carnet, selfie)
-                        }
-                        uiState = uiState.copy(
-                            pasoActual = PasoVerificacion.RESULTADO,
-                            resultado = res,
-                            estaCargando = false
-                        )
+                val anverso = uiState.fotoCarnetAnverso
+                val reverso = uiState.fotoCarnetReverso
+                val selfie = uiState.fotoSelfie
+                if (anverso != null && reverso != null && selfie != null) {
+                    val res = withContext(Dispatchers.IO) {
+                        activeRepository.verificarIdentidad(anverso, reverso, selfie)
                     }
+                    uiState = uiState.copy(
+                        pasoActual = PasoVerificacion.RESULTADO,
+                        resultado = res,
+                        estaCargando = false
+                    )
                 }
             }
             else -> {}
@@ -187,7 +189,9 @@ fun EscanerIdentidadScreen(
     }
 
     Box(modifier = modifier.fillMaxSize().background(Color.Black)) {
-        if (uiState.pasoActual == PasoVerificacion.CAPTURAR_CARNET || uiState.pasoActual == PasoVerificacion.CAPTURAR_SELFIE) {
+        if (uiState.pasoActual == PasoVerificacion.CAPTURAR_CARNET_ANVERSO ||
+            uiState.pasoActual == PasoVerificacion.CAPTURAR_CARNET_REVERSO ||
+            uiState.pasoActual == PasoVerificacion.CAPTURAR_SELFIE) {
             AndroidView(
                 factory = { ctx ->
                     PreviewView(ctx).apply {
@@ -206,7 +210,8 @@ fun EscanerIdentidadScreen(
                     .padding(32.dp),
                 contentAlignment = Alignment.Center
             ) {
-                if (uiState.pasoActual == PasoVerificacion.CAPTURAR_CARNET) {
+                if (uiState.pasoActual == PasoVerificacion.CAPTURAR_CARNET_ANVERSO ||
+                    uiState.pasoActual == PasoVerificacion.CAPTURAR_CARNET_REVERSO) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -232,9 +237,11 @@ fun EscanerIdentidadScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = if (uiState.pasoActual == PasoVerificacion.CAPTURAR_CARNET)
-                        "Encuadra el Carnet de Identidad dentro del recuadro"
-                    else "Ubica tu rostro dentro del círculo y mira a la cámara",
+                    text = when (uiState.pasoActual) {
+                        PasoVerificacion.CAPTURAR_CARNET_ANVERSO -> "Paso 1/3: Encuadra el ANVERSO de tu C.I. (Frente)"
+                        PasoVerificacion.CAPTURAR_CARNET_REVERSO -> "Paso 2/3: Encuadra el REVERSO de tu C.I. (Atrás)"
+                        else -> "Paso 3/3: Ubica tu rostro dentro del círculo para la selfie"
+                    },
                     color = Color.White,
                     fontSize = 15.sp,
                     textAlign = TextAlign.Center,
@@ -253,9 +260,14 @@ fun EscanerIdentidadScreen(
                                     val bitmap = imageProxyToBitmap(image)
                                     image.close()
 
-                                    if (uiState.pasoActual == PasoVerificacion.CAPTURAR_CARNET) {
+                                    if (uiState.pasoActual == PasoVerificacion.CAPTURAR_CARNET_ANVERSO) {
                                         uiState = uiState.copy(
-                                            fotoCarnet = bitmap,
+                                            fotoCarnetAnverso = bitmap,
+                                            pasoActual = PasoVerificacion.CAPTURAR_CARNET_REVERSO
+                                        )
+                                    } else if (uiState.pasoActual == PasoVerificacion.CAPTURAR_CARNET_REVERSO) {
+                                        uiState = uiState.copy(
+                                            fotoCarnetReverso = bitmap,
                                             pasoActual = PasoVerificacion.CAPTURAR_SELFIE
                                         )
                                     } else {
@@ -380,7 +392,7 @@ fun EscanerIdentidadScreen(
 
                     Button(
                         onClick = {
-                            uiState = VerificacionUiState(pasoActual = PasoVerificacion.CAPTURAR_CARNET)
+                            uiState = VerificacionUiState(pasoActual = PasoVerificacion.CAPTURAR_CARNET_ANVERSO)
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = QhatuLime),
                         modifier = Modifier.fillMaxWidth().height(50.dp)
