@@ -191,6 +191,7 @@ fun DetalleProductoScreen(producto: Producto = productoEjemplo) {
             }
 
             Spacer(Modifier.height(24.dp))
+<<<<<<< HEAD
 
             Text("Reseñas (18) · 4.8", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
             Spacer(Modifier.height(12.dp))
@@ -198,6 +199,26 @@ fun DetalleProductoScreen(producto: Producto = productoEjemplo) {
             Spacer(Modifier.height(10.dp))
             ResenaItem(autor = "Carlos M.", comentario = "Producto 100% verificado con código seguro.")
             }
+=======
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    "Reseñas (18) · 4.8",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    color = QhatuPurple
+                )
+                Spacer(Modifier.height(12.dp))
+                ResenaItem(
+                    autor = "Ana R.",
+                    comentario = "Tal cual la foto, muy buena atención y entrega rápida."
+                )
+                Spacer(Modifier.height(10.dp))
+                ResenaItem(
+                    autor = "Carlos M.",
+                    comentario = "Producto 100% verificado con código seguro."
+                )
+            }}
+>>>>>>> AbdulPruebaAPI
     }
 }
 
