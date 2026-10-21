@@ -54,10 +54,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import com.cyberqhatu.app.data.local.database.QhatuDatabase
 import com.cyberqhatu.app.ui.theme.QhatuCoral
 import com.cyberqhatu.app.ui.theme.QhatuLime
 import com.cyberqhatu.app.ui.theme.QhatuPurple
-import com.cyberqhatu.app.verificacion.data.repository.MockVerificacionRepositoryImpl
+import com.cyberqhatu.app.verificacion.data.repository.VerificacionRepositoryImpl
 import com.cyberqhatu.app.verificacion.domain.VerificacionRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -67,10 +68,18 @@ fun EscanerIdentidadScreen(
     onVerificacionExitosa: (String) -> Unit,
     onVolverClick: () -> Unit,
     modifier: Modifier = Modifier,
-    repository: VerificacionRepository = remember { MockVerificacionRepositoryImpl() }
+    repository: VerificacionRepository? = null,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+
+    val activeRepository = remember(context, repository) {
+        val db = QhatuDatabase.getInstance(context)
+        repository ?: VerificacionRepositoryImpl(
+            verificacionCacheDao = db.verificacionCacheDao(),
+            verificacionDao = db.verificacionDao(),
+        )
+    }
 
     var tienePermisoCamara by remember {
         mutableStateOf(
@@ -156,7 +165,7 @@ fun EscanerIdentidadScreen(
                 uiState.fotoCarnet?.let { carnet ->
                     uiState.fotoSelfie?.let { selfie ->
                         val res = withContext(Dispatchers.IO) {
-                            repository.verificarIdentidad(carnet, selfie)
+                            activeRepository.verificarIdentidad(carnet, selfie)
                         }
                         uiState = uiState.copy(
                             pasoActual = PasoVerificacion.RESULTADO,

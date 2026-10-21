@@ -68,6 +68,7 @@ dependencies {
     implementation(libs.androidx.camera.view)
     implementation(libs.mlkit.face.detection)
     implementation(libs.mlkit.text.recognition)
+    implementation(libs.coil.compose)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)

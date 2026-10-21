@@ -20,12 +20,14 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import com.cyberqhatu.app.data.local.database.QhatuDatabase
 import com.cyberqhatu.app.ui.PantallaBienvenida
 import com.cyberqhatu.app.ui.PantallaMiPerfil
 import com.cyberqhatu.app.ui.screens.confianza.ReportarTiendaScreen
@@ -33,6 +35,7 @@ import com.cyberqhatu.app.ui.screens.tienda.DetalleProductoScreen
 import com.cyberqhatu.app.ui.theme.CyberQhatuTheme
 import com.cyberqhatu.app.vendedor.ui.InventarioVentasScreen
 import com.cyberqhatu.app.vendedor.ui.PublicarProductoScreen
+import com.cyberqhatu.app.verificacion.data.repository.VerificacionRepositoryImpl
 import com.cyberqhatu.app.verificacion.ui.EscanerIdentidadScreen
 import com.cyberqhatu.app.verificacion.ui.InstruccionesVerificacionScreen
 
@@ -50,8 +53,22 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainNavigationApp() {
+    val context = LocalContext.current
+    val repository = remember(context) {
+        val db = QhatuDatabase.getInstance(context)
+        VerificacionRepositoryImpl(
+            verificacionCacheDao = db.verificacionCacheDao(),
+            verificacionDao = db.verificacionDao(),
+        )
+    }
+
+    val estadoLocalFlow = remember(repository) {
+        repository.obtenerEstadoVerificacionLocal("USR-101")
+    }
+    val estadoLocal by estadoLocalFlow.collectAsState(initial = null)
+    val estaVerificado = estadoLocal?.esExitoso == true
+
     var selectedTab by remember { mutableIntStateOf(0) }
-    var estaVerificado by remember { mutableStateOf(false) }
     var modoVerificacionStep by remember { mutableIntStateOf(0) }
 
     if (modoVerificacionStep == 1) {
@@ -62,7 +79,6 @@ fun MainNavigationApp() {
     } else if (modoVerificacionStep == 2) {
         EscanerIdentidadScreen(
             onVerificacionExitosa = { _: String ->
-                estaVerificado = true
                 modoVerificacionStep = 0
             },
             onVolverClick = { modoVerificacionStep = 0 }

@@ -7,6 +7,8 @@ import com.cyberqhatu.app.verificacion.data.helper.LectorTextoCIHelper
 import com.cyberqhatu.app.verificacion.domain.ResultadoVerificacion
 import com.cyberqhatu.app.verificacion.domain.VerificacionRepository
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 
 /**
  * Implementación del repositorio de verificación.
@@ -17,6 +19,10 @@ class MockVerificacionRepositoryImpl(
     private val lectorTexto: LectorTextoCIHelper = LectorTextoCIHelper(),
     private val comparador: ComparadorBiometricoHelper = ComparadorBiometricoHelper()
 ) : VerificacionRepository {
+
+    override fun obtenerEstadoVerificacionLocal(idUsuario: String): Flow<ResultadoVerificacion?> {
+        return flowOf(null)
+    }
 
     override suspend fun verificarIdentidad(
         fotoCarnet: Bitmap,
