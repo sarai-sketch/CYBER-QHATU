@@ -17,6 +17,19 @@ data class User(
     val name: String? = null
 )
 
+data class VerifyEmailRequest(
+    val email: String,
+    val code: String
+)
+
+data class ResendCodeRequest(
+    val email: String
+)
+
+data class BaseResponse(
+    val message: String
+)
+
 data class AuthResponse(
     val token: String,
     val user: User

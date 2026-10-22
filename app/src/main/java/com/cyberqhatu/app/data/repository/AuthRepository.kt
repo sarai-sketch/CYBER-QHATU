@@ -7,7 +7,9 @@ import com.cyberqhatu.app.data.local.entity.AuthCacheEntity
 import com.cyberqhatu.app.data.model.AuthResponse
 import com.cyberqhatu.app.data.model.LoginRequest
 import com.cyberqhatu.app.data.model.RegisterRequest
+import com.cyberqhatu.app.data.model.ResendCodeRequest
 import com.cyberqhatu.app.data.model.User
+import com.cyberqhatu.app.data.model.VerifyEmailRequest
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
@@ -67,23 +69,46 @@ class AuthRepository(
         }
     }
 
-    suspend fun register(request: RegisterRequest): Result<AuthResponse> {
+    suspend fun register(request: RegisterRequest): Result<String> {
         return try {
             val response = apiService.register(request)
             if (response.isSuccessful && response.body() != null) {
-                val authResponse = response.body()!!
-                val currentTime = System.currentTimeMillis()
-                val cacheEntity = AuthCacheEntity(
-                    email = authResponse.user.email,
-                    userId = authResponse.user.id,
-                    userName = authResponse.user.name,
-                    timestamp = currentTime
-                )
-                cacheDao.upsert(cacheEntity)
-                tokenManager.saveToken(authResponse.token)
-                Result.success(authResponse)
+                Result.success(response.body()!!.message)
             } else {
-                Result.failure(Exception("Registration failed: ${response.code()}"))
+                val errorMsg = response.errorBody()?.string() ?: "Registration failed: ${response.code()}"
+                Result.failure(Exception(errorMsg))
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun verifyEmail(request: VerifyEmailRequest): Result<String> {
+        return try {
+            val response = apiService.verifyEmail(request)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!.message)
+            } else {
+                val errorMsg = response.errorBody()?.string() ?: "Verification failed: ${response.code()}"
+                Result.failure(Exception(errorMsg))
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun resendCode(request: ResendCodeRequest): Result<String> {
+        return try {
+            val response = apiService.resendCode(request)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!.message)
+            } else {
+                val errorMsg = response.errorBody()?.string() ?: "Resend code failed: ${response.code()}"
+                Result.failure(Exception(errorMsg))
             }
         } catch (e: CancellationException) {
             throw e

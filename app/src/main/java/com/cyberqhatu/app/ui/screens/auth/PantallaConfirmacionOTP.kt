@@ -18,13 +18,23 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+import com.cyberqhatu.app.ui.viewmodel.AuthState
+
 @Composable
 fun PantallaConfirmacionOTP(
     numeroTelefono: String = "+591 7XXXXXXX",
     onConfirmarClicked: (String) -> Unit = {},
-    onReenviarClicked: () -> Unit = {}
+    onReenviarClicked: () -> Unit = {},
+    authState: AuthState = AuthState.Idle,
+    onSuccess: () -> Unit = {}
 ) {
     var codigoOtp by remember { mutableStateOf("") }
+
+    LaunchedEffect(authState) {
+        if (authState is AuthState.VerifySuccess) {
+            onSuccess()
+        }
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -97,20 +107,36 @@ fun PantallaConfirmacionOTP(
             // Botón principal de confirmación
             Button(
                 onClick = { onConfirmarClicked(codigoOtp) },
-                enabled = codigoOtp.length == 6,
+                enabled = codigoOtp.length == 6 && authState !is AuthState.Loading,
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp)
             ) {
-                Text(
-                    text = "Confirmar e Ingresar",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
+                if (authState is AuthState.Loading) {
+                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                } else {
+                    Text(
+                        text = "Confirmar e Ingresar",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+
+            when (authState) {
+                is AuthState.Error -> {
+                    Text("Error: ${authState.message}", color = MaterialTheme.colorScheme.error)
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+                is AuthState.ResendSuccess -> {
+                    Text(authState.message, color = Color(0xFF4CAF50))
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+                else -> {}
+            }
 
             // Opción visual para reenviar código
             TextButton(onClick = onReenviarClicked) {

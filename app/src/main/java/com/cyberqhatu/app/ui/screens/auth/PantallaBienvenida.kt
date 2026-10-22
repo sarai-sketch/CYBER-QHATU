@@ -34,6 +34,9 @@ import com.cyberqhatu.app.ui.viewmodel.AuthState
 import com.cyberqhatu.app.ui.viewmodel.AuthViewModel
 import com.cyberqhatu.app.ui.viewmodel.AuthViewModelFactory
 
+import com.cyberqhatu.app.data.model.RegisterRequest
+import com.cyberqhatu.app.ui.auth.PantallaConfirmacionOTP
+
 @Composable
 fun PantallaBienvenida(
     onContinuarClicked: (String) -> Unit = {}
@@ -42,13 +45,37 @@ fun PantallaBienvenida(
     val tokenManager = remember { TokenManager(context) }
     // Using Retrofit for API verification
     val viewModel: AuthViewModel = viewModel(
-        factory = AuthViewModelFactory(AuthRepository(RetrofitClient.authApiService, QhatuDatabase.getInstance(context).authCacheDao(), tokenManager))
+        factory = AuthViewModelFactory(AuthRepository(RetrofitClient.getAuthApiService(context), QhatuDatabase.getInstance(context).authCacheDao(), tokenManager))
     )
 
     val authState by viewModel.authState.collectAsState()
 
+    var isLoginMode by remember { mutableStateOf(true) }
+    var showOtpScreen by remember { mutableStateOf(false) }
+    var registeredEmail by remember { mutableStateOf("") }
+
+    var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    if (showOtpScreen) {
+        PantallaConfirmacionOTP(
+            numeroTelefono = registeredEmail, // Using email instead of phone
+            onConfirmarClicked = { code ->
+                viewModel.verifyEmail(com.cyberqhatu.app.data.model.VerifyEmailRequest(registeredEmail, code))
+            },
+            onReenviarClicked = {
+                viewModel.resendCode(com.cyberqhatu.app.data.model.ResendCodeRequest(registeredEmail))
+            },
+            authState = authState,
+            onSuccess = {
+                isLoginMode = true
+                showOtpScreen = false
+                viewModel.resetState()
+            }
+        )
+        return
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -61,7 +88,7 @@ fun PantallaBienvenida(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             // Seccion del Logo e Identidad Visual
             Column(
@@ -70,7 +97,7 @@ fun PantallaBienvenida(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(110.dp)
+                        .size(90.dp)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.primaryContainer)
                         .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape),
@@ -79,16 +106,16 @@ fun PantallaBienvenida(
                     Icon(
                         imageVector = Icons.Default.ShoppingBag,
                         contentDescription = "Logo CyberQhatu",
-                        modifier = Modifier.size(60.dp),
+                        modifier = Modifier.size(50.dp),
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
                     text = "CYBER-QHATU",
-                    fontSize = 28.sp,
+                    fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
                     letterSpacing = 1.sp
@@ -96,7 +123,7 @@ fun PantallaBienvenida(
 
                 Text(
                     text = "Tu comercio local confiable",
-                    fontSize = 14.sp,
+                    fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.outline
                 )
             }
@@ -114,7 +141,7 @@ fun PantallaBienvenida(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "¡Bienvenido!",
+                        text = if (isLoginMode) "¡Bienvenido!" else "Crear Cuenta",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -123,13 +150,25 @@ fun PantallaBienvenida(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "Inicia sesión con tu correo electrónico para continuar",
+                        text = if (isLoginMode) "Inicia sesión con tu correo electrónico para continuar" else "Regístrate para continuar",
                         fontSize = 13.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
                     )
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    if (!isLoginMode) {
+                        OutlinedTextField(
+                            value = name,
+                            onValueChange = { name = it },
+                            label = { Text("Nombre Completo") },
+                            singleLine = true,
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
 
                     OutlinedTextField(
                         value = email,
@@ -147,7 +186,7 @@ fun PantallaBienvenida(
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     OutlinedTextField(
                         value = password,
@@ -162,12 +201,18 @@ fun PantallaBienvenida(
                     Spacer(modifier = Modifier.height(20.dp))
 
                     Button(
-                        onClick = { viewModel.login(LoginRequest(email, password)) },
+                        onClick = {
+                            if (isLoginMode) {
+                                viewModel.login(LoginRequest(email, password))
+                            } else {
+                                viewModel.register(RegisterRequest(email, password, name))
+                            }
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(52.dp),
                         shape = RoundedCornerShape(12.dp),
-                        enabled = authState !is AuthState.Loading && email.isNotBlank() && password.isNotBlank()
+                        enabled = authState !is AuthState.Loading && email.isNotBlank() && password.isNotBlank() && (isLoginMode || name.isNotBlank())
                     ) {
                         if (authState is AuthState.Loading) {
                             CircularProgressIndicator(
@@ -176,25 +221,38 @@ fun PantallaBienvenida(
                             )
                         } else {
                             Text(
-                                text = "Iniciar Sesión",
+                                text = if (isLoginMode) "Iniciar Sesión" else "Registrarse",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold
                             )
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                    when (authState) {
+                    TextButton(onClick = {
+                        isLoginMode = !isLoginMode
+                        viewModel.resetState()
+                    }) {
+                        Text(if (isLoginMode) "¿No tienes cuenta? Regístrate" else "¿Ya tienes cuenta? Inicia sesión")
+                    }
+
+                    when (val state = authState) {
                         is AuthState.Success -> {
                             Text("¡Inicio de sesión exitoso!", color = Color(0xFF4CAF50))
                             LaunchedEffect(Unit) {
                                 onContinuarClicked(email)
                             }
                         }
+                        is AuthState.RegisterSuccess -> {
+                            Text("Registro exitoso.", color = Color(0xFF4CAF50))
+                            LaunchedEffect(Unit) {
+                                registeredEmail = state.email
+                                showOtpScreen = true
+                            }
+                        }
                         is AuthState.Error -> {
-                            val error = (authState as AuthState.Error).message
-                            Text("Error: $error", color = MaterialTheme.colorScheme.error)
+                            Text("Error: ${state.message}", color = MaterialTheme.colorScheme.error)
                         }
                         else -> {}
                     }
