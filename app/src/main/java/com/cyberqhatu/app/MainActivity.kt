@@ -20,31 +20,41 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cyberqhatu.app.data.local.database.QhatuDatabase
-import com.cyberqhatu.app.ui.screens.auth.PantallaBienvenida
-import com.cyberqhatu.app.ui.screens.confianza.ReportarTiendaScreen
 import com.cyberqhatu.app.ui.PantallaMiPerfil
+import com.cyberqhatu.app.ui.screens.auth.PantallaBienvenida
+import com.cyberqhatu.app.ui.screens.auth.PantallaConfirmacionOTP
+import com.cyberqhatu.app.ui.screens.confianza.ReportarTiendaScreen
 import com.cyberqhatu.app.ui.screens.tienda.DetalleProductoScreen
 import com.cyberqhatu.app.ui.screens.tienda.MarketplaceAppEntry
 import com.cyberqhatu.app.ui.theme.CyberQhatuTheme
+import com.cyberqhatu.app.ui.viewmodel.AuthState
+import com.cyberqhatu.app.ui.viewmodel.AuthViewModel
 import com.cyberqhatu.app.vendedor.ui.InventarioVentasScreen
 import com.cyberqhatu.app.vendedor.ui.PublicarProductoScreen
 import com.cyberqhatu.app.verificacion.data.repository.VerificacionRepositoryImpl
 import com.cyberqhatu.app.verificacion.ui.EscanerIdentidadScreen
 import com.cyberqhatu.app.verificacion.ui.InstruccionesVerificacionScreen
+import com.google.firebase.auth.FirebaseAuth
+
+const val USE_AUTH_EMULATOR = false // TODO: false antes del merge
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        val isDebuggable = (applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0
+        if (isDebuggable && USE_AUTH_EMULATOR) {
+            try {
+                FirebaseAuth.getInstance().useEmulator("10.0.2.2", 9099)
+            } catch (_: Exception) {}
+        }
+
         setContent {
             CyberQhatuTheme {
                 MainNavigationApp()
@@ -56,6 +66,11 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainNavigationApp() {
     val context = LocalContext.current
+    val authViewModel: AuthViewModel = viewModel()
+    val authState by authViewModel.authState.collectAsState()
+
+    val currentUid = FirebaseAuth.getInstance().currentUser?.uid ?: "USR-GUEST"
+
     val repository = remember(context) {
         val db = QhatuDatabase.getInstance(context)
         VerificacionRepositoryImpl(
@@ -65,18 +80,51 @@ fun MainNavigationApp() {
         )
     }
 
-    val tokenManager = remember(context) { com.cyberqhatu.app.data.local.TokenManager(context) }
-    val tokenFlow = remember(tokenManager) { tokenManager.getToken() }
-    val token by tokenFlow.collectAsState(initial = null)
-    
-    val estadoLocalFlow = remember(repository, token) {
-        repository.obtenerEstadoVerificacionLocal(token ?: "USR-101")
+    val estadoLocalFlow = remember(repository, currentUid) {
+        repository.obtenerEstadoVerificacionLocal(currentUid)
     }
     val estadoLocal by estadoLocalFlow.collectAsState(initial = null)
     val estaVerificado = estadoLocal?.esExitoso == true
 
-    var selectedTab by remember { mutableIntStateOf(1) } // Empieza en PantallaBienvenida
+    var selectedTab by remember { mutableIntStateOf(0) }
     var modoVerificacionStep by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(Unit) {
+        authViewModel.checkCurrentSession()
+    }
+
+    // Flujo de navegación según estado de autenticación
+    when (val state = authState) {
+        is AuthState.EmailSent, is AuthState.EmailNotVerified -> {
+            val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: "tu correo"
+            PantallaConfirmacionOTP(
+                email = userEmail,
+                authState = state,
+                onYaVerifiqueClicked = {
+                    authViewModel.reloadAndCheckVerified()
+                },
+                onReenviarClicked = {
+                    authViewModel.resendVerificationEmail()
+                },
+                onVolverClicked = {
+                    authViewModel.logout()
+                }
+            )
+            return
+        }
+        is AuthState.Idle, is AuthState.Error -> {
+            if (FirebaseAuth.getInstance().currentUser == null || FirebaseAuth.getInstance().currentUser?.isEmailVerified == false) {
+                PantallaBienvenida(
+                    viewModel = authViewModel,
+                    onLoginExitoso = {
+                        selectedTab = 0
+                    }
+                )
+                return
+            }
+        }
+        else -> {}
+    }
 
     if (modoVerificacionStep == 1) {
         InstruccionesVerificacionScreen(
@@ -180,21 +228,24 @@ fun MainNavigationApp() {
                     .fillMaxSize()
                     .padding(innerPadding)
             ) {
+                val currentUser = FirebaseAuth.getInstance().currentUser
                 when (selectedTab) {
                     0 -> MarketplaceAppEntry()
-                    1 -> PantallaBienvenida(onContinuarClicked = { selectedTab = 0 })
+                    1 -> MarketplaceAppEntry()
                     2 -> DetalleProductoScreen()
                     3 -> ReportarTiendaScreen()
                     4 -> PublicarProductoScreen(modifier = Modifier.fillMaxSize())
                     5 -> InventarioVentasScreen(modifier = Modifier.fillMaxSize())
                     6 -> PantallaMiPerfil(
-                        nombreUsuario = "Juan Pérez",
-                        correoUsuario = "juan.perez@cyberqhatu.bo",
+                        nombreUsuario = currentUser?.displayName ?: "Usuario CyberQhatu",
+                        correoUsuario = currentUser?.email ?: "correo@cyberqhatu.bo",
                         telefonoUsuario = "+591 70000000",
                         estadoVerificacion = estaVerificado,
                         tipoRol = "Vendedor",
                         onEditarPerfilClick = {},
-                        onCerrarSesionClick = { selectedTab = 1 },
+                        onCerrarSesionClick = {
+                            authViewModel.logout()
+                        },
                         onVerificarIdentidadClick = { modoVerificacionStep = 1 }
                     )
                 }

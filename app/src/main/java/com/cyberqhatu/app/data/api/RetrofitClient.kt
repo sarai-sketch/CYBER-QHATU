@@ -1,31 +1,11 @@
 package com.cyberqhatu.app.data.api
 
-import android.content.Context
-import com.cyberqhatu.app.data.local.database.QhatuDatabase
 import com.cyberqhatu.app.verificacion.data.remote.api.VerificacionApiService
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
-    // Cambia a "false" cuando tengas tu backend real en el servidor.
-    const val USE_MOCK_BACKEND = true
-
-    // Apunta al servidor local (ejemplo: Spring Boot, Express, etc.) en el emulador de Android
-    // 10.0.2.2 es la IP para acceder a localhost de tu computadora desde el emulador
     private const val BASE_URL = "http://10.0.2.2:8080/"
-
-    fun getAuthApiService(context: Context): AuthApiService {
-        return if (USE_MOCK_BACKEND) {
-            val userServerDao = QhatuDatabase.getInstance(context).userServerDao()
-            MockAuthApiServiceImpl(context, userServerDao)
-        } else {
-            Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build()
-                .create(AuthApiService::class.java)
-        }
-    }
 
     val verificacionApiService: VerificacionApiService by lazy {
         Retrofit.Builder()
@@ -35,4 +15,3 @@ object RetrofitClient {
             .create(VerificacionApiService::class.java)
     }
 }
-

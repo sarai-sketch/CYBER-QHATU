@@ -1,5 +1,6 @@
 package com.cyberqhatu.app.ui.screens.auth
 
+import android.util.Patterns
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -8,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,62 +21,32 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.cyberqhatu.app.ui.theme.CyberQhatuTheme
-import com.cyberqhatu.app.data.local.TokenManager
-import com.cyberqhatu.app.data.local.database.QhatuDatabase
-import com.cyberqhatu.app.data.model.LoginRequest
-import com.cyberqhatu.app.data.api.RetrofitClient
-import com.cyberqhatu.app.data.repository.AuthRepository
 import com.cyberqhatu.app.ui.viewmodel.AuthState
 import com.cyberqhatu.app.ui.viewmodel.AuthViewModel
-import com.cyberqhatu.app.ui.viewmodel.AuthViewModelFactory
-
-import com.cyberqhatu.app.data.model.RegisterRequest
-import com.cyberqhatu.app.ui.auth.PantallaConfirmacionOTP
 
 @Composable
 fun PantallaBienvenida(
-    onContinuarClicked: (String) -> Unit = {}
+    viewModel: AuthViewModel,
+    onLoginExitoso: () -> Unit = {}
 ) {
-    val context = LocalContext.current
-    val tokenManager = remember { TokenManager(context) }
-    // Using Retrofit for API verification
-    val viewModel: AuthViewModel = viewModel(
-        factory = AuthViewModelFactory(AuthRepository(RetrofitClient.getAuthApiService(context), QhatuDatabase.getInstance(context).authCacheDao(), tokenManager))
-    )
-
     val authState by viewModel.authState.collectAsState()
 
     var isLoginMode by remember { mutableStateOf(true) }
-    var showOtpScreen by remember { mutableStateOf(false) }
-    var registeredEmail by remember { mutableStateOf("") }
 
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var localError by remember { mutableStateOf<String?>(null) }
 
-    if (showOtpScreen) {
-        PantallaConfirmacionOTP(
-            numeroTelefono = registeredEmail, // Using email instead of phone
-            onConfirmarClicked = { code ->
-                viewModel.verifyEmail(com.cyberqhatu.app.data.model.VerifyEmailRequest(registeredEmail, code))
-            },
-            onReenviarClicked = {
-                viewModel.resendCode(com.cyberqhatu.app.data.model.ResendCodeRequest(registeredEmail))
-            },
-            authState = authState,
-            onSuccess = {
-                isLoginMode = true
-                showOtpScreen = false
-                viewModel.resetState()
-            }
-        )
-        return
+    val isLoading = authState is AuthState.Loading
+
+    // Re-enable form after state change or error
+    LaunchedEffect(authState) {
+        if (authState is AuthState.Verified) {
+            onLoginExitoso()
+        }
     }
 
     Surface(
@@ -150,7 +122,7 @@ fun PantallaBienvenida(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = if (isLoginMode) "Inicia sesión con tu correo electrónico para continuar" else "Regístrate para continuar",
+                        text = if (isLoginMode) "Inicia sesión con tu correo electrónico" else "Regístrate para continuar",
                         fontSize = 13.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
@@ -161,8 +133,14 @@ fun PantallaBienvenida(
                     if (!isLoginMode) {
                         OutlinedTextField(
                             value = name,
-                            onValueChange = { name = it },
+                            onValueChange = {
+                                name = it
+                                localError = null
+                            },
                             label = { Text("Nombre Completo") },
+                            leadingIcon = {
+                                Icon(imageVector = Icons.Default.Person, contentDescription = "Nombre")
+                            },
                             singleLine = true,
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier.fillMaxWidth()
@@ -172,13 +150,13 @@ fun PantallaBienvenida(
 
                     OutlinedTextField(
                         value = email,
-                        onValueChange = { email = it },
+                        onValueChange = {
+                            email = it
+                            localError = null
+                        },
                         label = { Text("Correo Electrónico") },
                         leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Email,
-                                contentDescription = "Email"
-                            )
+                            Icon(imageVector = Icons.Default.Email, contentDescription = "Email")
                         },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
@@ -190,7 +168,10 @@ fun PantallaBienvenida(
 
                     OutlinedTextField(
                         value = password,
-                        onValueChange = { password = it },
+                        onValueChange = {
+                            password = it
+                            localError = null
+                        },
                         label = { Text("Contraseña") },
                         singleLine = true,
                         visualTransformation = PasswordVisualTransformation(),
@@ -202,19 +183,34 @@ fun PantallaBienvenida(
 
                     Button(
                         onClick = {
+                            localError = null
+                            // Validación Local
+                            if (email.isBlank() || password.isBlank() || (!isLoginMode && name.isBlank())) {
+                                localError = "Por favor completa todos los campos"
+                                return@Button
+                            }
+                            if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                                localError = "Ingresa un correo electrónico válido"
+                                return@Button
+                            }
+                            if (password.length < 8) {
+                                localError = "La contraseña debe tener al menos 8 caracteres"
+                                return@Button
+                            }
+
                             if (isLoginMode) {
-                                viewModel.login(LoginRequest(email, password))
+                                viewModel.login(email, password)
                             } else {
-                                viewModel.register(RegisterRequest(email, password, name))
+                                viewModel.register(name, email, password)
                             }
                         },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(52.dp),
                         shape = RoundedCornerShape(12.dp),
-                        enabled = authState !is AuthState.Loading && email.isNotBlank() && password.isNotBlank() && (isLoginMode || name.isNotBlank())
+                        enabled = !isLoading
                     ) {
-                        if (authState is AuthState.Loading) {
+                        if (isLoading) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(24.dp),
                                 color = MaterialTheme.colorScheme.onPrimary
@@ -232,34 +228,26 @@ fun PantallaBienvenida(
 
                     TextButton(onClick = {
                         isLoginMode = !isLoginMode
+                        localError = null
                         viewModel.resetState()
                     }) {
                         Text(if (isLoginMode) "¿No tienes cuenta? Regístrate" else "¿Ya tienes cuenta? Inicia sesión")
                     }
 
-                    when (val state = authState) {
-                        is AuthState.Success -> {
-                            Text("¡Inicio de sesión exitoso!", color = Color(0xFF4CAF50))
-                            LaunchedEffect(Unit) {
-                                onContinuarClicked(email)
-                            }
-                        }
-                        is AuthState.RegisterSuccess -> {
-                            Text("Registro exitoso.", color = Color(0xFF4CAF50))
-                            LaunchedEffect(Unit) {
-                                registeredEmail = state.email
-                                showOtpScreen = true
-                            }
-                        }
-                        is AuthState.Error -> {
-                            Text("Error: ${state.message}", color = MaterialTheme.colorScheme.error)
-                        }
-                        else -> {}
+                    // Feedback de errores locales o del ViewModel
+                    val displayError = localError ?: (authState as? AuthState.Error)?.message
+                    if (displayError != null) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = displayError,
+                            color = MaterialTheme.colorScheme.error,
+                            fontSize = 13.sp,
+                            textAlign = TextAlign.Center
+                        )
                     }
                 }
             }
 
-            // Pie de página
             Text(
                 text = "Al continuar, aceptas nuestros Términos y Condiciones",
                 fontSize = 11.sp,
@@ -270,4 +258,3 @@ fun PantallaBienvenida(
         }
     }
 }
-
