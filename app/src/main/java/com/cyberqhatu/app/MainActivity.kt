@@ -25,13 +25,13 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import com.cyberqhatu.app.ui.PantallaBienvenida
-import com.cyberqhatu.app.ui.PantallaMiPerfil
-import com.cyberqhatu.app.ui.screens.confianza.ReportarTiendaScreen
-import com.cyberqhatu.app.ui.screens.tienda.DetalleProductoScreen
-import com.cyberqhatu.app.ui.theme.CyberQhatuTheme
-import com.cyberqhatu.app.vendedor.ui.InventarioVentasScreen
-import com.cyberqhatu.app.vendedor.ui.PublicarProductoScreen
+import com.cyberqhatu.app.core.ui.theme.CyberQhatuTheme
+import com.cyberqhatu.app.feature.auth.ui.PantallaBienvenida
+import com.cyberqhatu.app.feature.confianza.ui.ReportarTiendaScreen
+import com.cyberqhatu.app.feature.inventario.ui.InventarioVentasScreen
+import com.cyberqhatu.app.feature.perfil.ui.PantallaMiPerfil
+import com.cyberqhatu.app.feature.publicacion.ui.PublicarProductoScreen
+import com.cyberqhatu.app.feature.tienda.ui.DetalleProductoScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -128,19 +128,19 @@ fun MainNavigationApp() {
                 .padding(innerPadding)
         ) {
             when (selectedTab) {
-                0 -> PantallaBienvenida(onContinuarClicked = {})
+                0 -> PantallaBienvenida(
+                    onContinuarClicked = {
+                        selectedTab = 5
+                    }
+                )
                 1 -> DetalleProductoScreen()
                 2 -> ReportarTiendaScreen()
                 3 -> PublicarProductoScreen(modifier = Modifier.fillMaxSize())
                 4 -> InventarioVentasScreen(modifier = Modifier.fillMaxSize())
                 5 -> PantallaMiPerfil(
-                    nombreUsuario = "Juan Pérez",
-                    correoUsuario = "juan.perez@cyberqhatu.bo",
-                    telefonoUsuario = "+591 70000000",
-                    estadoVerificacion = true,
-                    tipoRol = "Vendedor",
-                    onEditarPerfilClick = {},
-                    onCerrarSesionClick = {}
+                    onCerrarSesionClick = {
+                        selectedTab = 0
+                    }
                 )
             }
         }
