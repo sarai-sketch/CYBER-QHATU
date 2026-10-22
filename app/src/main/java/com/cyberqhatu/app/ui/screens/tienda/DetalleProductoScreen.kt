@@ -1,7 +1,17 @@
 package com.cyberqhatu.app.ui.screens.tienda
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -9,8 +19,23 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Chat
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,7 +48,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cyberqhatu.app.tienda.EstadoProducto
 import com.cyberqhatu.app.tienda.Producto
-import com.cyberqhatu.app.ui.theme.*
+import com.cyberqhatu.app.ui.theme.QhatuCoral
+import com.cyberqhatu.app.ui.theme.QhatuLime
+import com.cyberqhatu.app.ui.theme.QhatuLimeDark
+import com.cyberqhatu.app.ui.theme.QhatuPurple
+import com.cyberqhatu.app.ui.theme.QhatuPurpleLight
 
 private val productoEjemplo = Producto(
     idProducto = "P-001",
@@ -33,14 +62,14 @@ private val productoEjemplo = Producto(
     descripcion = "Chompa tejida a mano, 100% fibra de alpaca tradicional, suave al tacto y de alta durabilidad.",
     precio = 180.0,
     stock = 3,
-    estado = EstadoProducto.ACTIVO
+    estado = EstadoProducto.ACTIVO,
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetalleProductoScreen(
     producto: Producto = productoEjemplo,
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
 ) {
     Scaffold(
         topBar = {
@@ -50,7 +79,7 @@ fun DetalleProductoScreen(
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver"
+                            contentDescription = "Volver",
                         )
                     }
                 },
@@ -58,10 +87,10 @@ fun DetalleProductoScreen(
                     containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = QhatuPurple,
                     navigationIconContentColor = QhatuPurple,
-                    actionIconContentColor = QhatuPurple
-                )
+                    actionIconContentColor = QhatuPurple,
+                ),
             )
-        }
+        },
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -69,7 +98,7 @@ fun DetalleProductoScreen(
                 .padding(innerPadding)
                 .background(MaterialTheme.colorScheme.background)
                 .verticalScroll(rememberScrollState())
-                .padding(20.dp)
+                .padding(20.dp),
         ) {
             // Foto del producto
             Box(
@@ -78,21 +107,21 @@ fun DetalleProductoScreen(
                     .height(200.dp)
                     .clip(RoundedCornerShape(16.dp))
                     .background(QhatuPurpleLight),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
                         imageVector = Icons.Default.CameraAlt,
                         contentDescription = "Foto del producto",
                         tint = QhatuPurple,
-                        modifier = Modifier.size(40.dp)
+                        modifier = Modifier.size(40.dp),
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = "Foto del producto",
                         color = QhatuPurple,
                         fontWeight = FontWeight.SemiBold,
-                        fontSize = 13.sp
+                        fontSize = 13.sp,
                     )
                 }
             }
@@ -111,7 +140,7 @@ fun DetalleProductoScreen(
                 text = producto.nombre,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
-                color = QhatuPurple
+                color = QhatuPurple,
             )
 
             Spacer(Modifier.height(6.dp))
@@ -121,7 +150,7 @@ fun DetalleProductoScreen(
                     text = "Bs ${producto.precio.toInt()}",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = QhatuCoral
+                    color = QhatuCoral,
                 )
             }
 
@@ -129,7 +158,7 @@ fun DetalleProductoScreen(
             Text(
                 text = producto.descripcion,
                 fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             Spacer(Modifier.height(20.dp))
@@ -139,18 +168,18 @@ fun DetalleProductoScreen(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Row(
                     modifier = Modifier.padding(14.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Box(
                         modifier = Modifier
                             .size(46.dp)
                             .clip(CircleShape)
                             .background(QhatuPurpleLight),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) {
                         Text("MA", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = QhatuPurple)
                     }
@@ -165,7 +194,7 @@ fun DetalleProductoScreen(
                                 imageVector = Icons.Default.Star,
                                 contentDescription = "Calificación",
                                 tint = Color(0xFFFFB300),
-                                modifier = Modifier.size(14.dp)
+                                modifier = Modifier.size(14.dp),
                             )
                             Spacer(Modifier.width(4.dp))
                             Text("4.8 (126 reseñas)", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -186,7 +215,7 @@ fun DetalleProductoScreen(
                         .weight(1f)
                         .height(48.dp),
                     shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = QhatuPurple)
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = QhatuPurple),
                 ) {
                     Text("Enviar consulta", fontWeight = FontWeight.SemiBold)
                 }
@@ -197,13 +226,13 @@ fun DetalleProductoScreen(
                         .weight(1f)
                         .height(48.dp),
                     shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = QhatuCoral)
+                    colors = ButtonDefaults.buttonColors(containerColor = QhatuCoral),
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.Chat,
                         contentDescription = "WhatsApp",
                         tint = Color.White,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(18.dp),
                     )
                     Spacer(Modifier.width(6.dp))
                     Text("Abrir WhatsApp", fontWeight = FontWeight.Bold, color = Color.White)
@@ -211,38 +240,13 @@ fun DetalleProductoScreen(
             }
 
             Spacer(Modifier.height(24.dp))
-<<<<<<< HEAD
 
             Text("Reseñas (18) · 4.8", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
             Spacer(Modifier.height(12.dp))
             ResenaItem(autor = "Ana R.", comentario = "Tal cual la foto, muy buena atención y entrega rápida.")
             Spacer(Modifier.height(10.dp))
             ResenaItem(autor = "Carlos M.", comentario = "Producto 100% verificado con código seguro.")
-<<<<<<< HEAD
-            }
-=======
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    "Reseñas (18) · 4.8",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    color = QhatuPurple
-                )
-                Spacer(Modifier.height(12.dp))
-                ResenaItem(
-                    autor = "Ana R.",
-                    comentario = "Tal cual la foto, muy buena atención y entrega rápida."
-                )
-                Spacer(Modifier.height(10.dp))
-                ResenaItem(
-                    autor = "Carlos M.",
-                    comentario = "Producto 100% verificado con código seguro."
-                )
-            }}
->>>>>>> AbdulPruebaAPI
-=======
         }
->>>>>>> cam-code
     }
 }
 
@@ -250,18 +254,18 @@ fun DetalleProductoScreen(
 private fun EstadoBadge(text: String, bg: Color, fg: Color, icon: ImageVector? = null) {
     Surface(
         shape = RoundedCornerShape(8.dp),
-        color = bg
+        color = bg,
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             if (icon != null) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
                     tint = fg,
-                    modifier = Modifier.size(12.dp)
+                    modifier = Modifier.size(12.dp),
                 )
                 Spacer(Modifier.width(4.dp))
             }
@@ -276,7 +280,7 @@ private fun ResenaItem(autor: String, comentario: String) {
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -285,7 +289,7 @@ private fun ResenaItem(autor: String, comentario: String) {
                         imageVector = Icons.Default.Star,
                         contentDescription = "Estrella",
                         tint = Color(0xFFFFB300),
-                        modifier = Modifier.size(12.dp)
+                        modifier = Modifier.size(12.dp),
                     )
                 }
                 Spacer(Modifier.width(8.dp))

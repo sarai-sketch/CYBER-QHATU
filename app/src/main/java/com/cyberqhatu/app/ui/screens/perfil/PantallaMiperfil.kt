@@ -1,12 +1,32 @@
 package com.cyberqhatu.app.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -15,7 +35,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.cyberqhatu.app.ui.theme.*
+import com.cyberqhatu.app.ui.theme.CyberQhatuTheme
+import com.cyberqhatu.app.ui.theme.QhatuLime
+import com.cyberqhatu.app.ui.theme.QhatuPurple
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,11 +49,8 @@ fun PantallaMiPerfil(
     tipoRol: String,
     onEditarPerfilClick: () -> Unit,
     onCerrarSesionClick: () -> Unit,
-<<<<<<< HEAD
-    onVerificarIdentidadClick: () -> Unit = {}
-=======
-    onBackClick: () -> Unit = {}
->>>>>>> cam-code
+    onVerificarIdentidadClick: () -> Unit = {},
+    onBackClick: () -> Unit = {},
 ) {
     CyberQhatuTheme {
         Scaffold(
@@ -43,7 +62,7 @@ fun PantallaMiPerfil(
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Volver",
-                                tint = QhatuPurple
+                                tint = QhatuPurple,
                             )
                         }
                     },
@@ -51,22 +70,22 @@ fun PantallaMiPerfil(
                         containerColor = MaterialTheme.colorScheme.surface,
                         titleContentColor = QhatuPurple,
                         navigationIconContentColor = QhatuPurple,
-                        actionIconContentColor = QhatuPurple
-                    )
+                        actionIconContentColor = QhatuPurple,
+                    ),
                 )
-            }
+            },
         ) { innerPadding ->
             Surface(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding),
-                color = MaterialTheme.colorScheme.background
+                color = MaterialTheme.colorScheme.background,
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Spacer(modifier = Modifier.height(20.dp))
 
@@ -76,13 +95,13 @@ fun PantallaMiPerfil(
                             .size(100.dp)
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.primaryContainer),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) {
                         Text(
                             text = nombreUsuario.take(2).uppercase(),
                             fontSize = 32.sp,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
                     }
 
@@ -90,33 +109,16 @@ fun PantallaMiPerfil(
 
                     // Nombre del usuario
                     Text(
-<<<<<<< HEAD
-<<<<<<< HEAD
-                        text = if (estadoVerificacion) "Estado CI: Verificado " else "Estado CI: Pendiente de aprobación ",
-=======
-                        text = if (estadoVerificacion) "Estado CI: Verificado ✅" else "Estado CI: No verificado ⏳",
->>>>>>> AbdulPruebaAPI
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = if (estadoVerificacion) Color(0xFF2E7D32) else Color(0xFFC62828)
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Button(
-                        onClick = onVerificarIdentidadClick,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(if (estadoVerificacion) "Re-verificar Identidad" else "Verificar Identidad (C.I. y Rostro)")
-=======
                         text = nombreUsuario,
                         fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
                     )
 
                     // Rol actual
                     Text(
                         text = "Rol: $tipoRol",
                         fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.secondary
+                        color = MaterialTheme.colorScheme.secondary,
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
@@ -126,7 +128,7 @@ fun PantallaMiPerfil(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color.White),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(text = "Correo: $correoUsuario", fontSize = 14.sp)
@@ -134,11 +136,24 @@ fun PantallaMiPerfil(
                             Text(text = "WhatsApp: $telefonoUsuario", fontSize = 14.sp)
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = if (estadoVerificacion) "Estado CI: Verificado" else "Estado CI: Pendiente de aprobación",
+                                text = if (estadoVerificacion) "Estado CI: Verificado ✅" else "Estado CI: No verificado ⏳",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = if (estadoVerificacion) Color(0xFF2E7D32) else Color(0xFFC62828)
+                                color = if (estadoVerificacion) Color(0xFF2E7D32) else Color(0xFFC62828),
                             )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Button(
+                                onClick = onVerificarIdentidadClick,
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = QhatuLime),
+                            ) {
+                                Text(
+                                    text = if (estadoVerificacion) "Re-verificar Identidad" else "Verificar Identidad (C.I. y Rostro)",
+                                    color = QhatuPurple,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            }
                         }
                     }
 
@@ -148,7 +163,7 @@ fun PantallaMiPerfil(
                     OutlinedButton(
                         onClick = onEditarPerfilClick,
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(12.dp),
                     ) {
                         Text(text = "Editar Perfil")
                     }
@@ -159,10 +174,9 @@ fun PantallaMiPerfil(
                         onClick = onCerrarSesionClick,
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(12.dp),
                     ) {
                         Text(text = "Cerrar Sesión")
->>>>>>> cam-code
                     }
                 }
             }

@@ -24,7 +24,10 @@ sealed class AppScreen {
  * - Navegación fluida por TopAppBar y acciones contextuales.
  */
 @Composable
-fun MarketplaceAppEntry() {
+fun MarketplaceAppEntry(
+    estaVerificado: Boolean = false,
+    onVerificarIdentidadClick: () -> Unit = {}
+) {
     var currentScreen by remember { mutableStateOf<AppScreen>(AppScreen.Home) }
     var lastStoreId by remember { mutableStateOf("t1") }
 
@@ -103,7 +106,7 @@ fun MarketplaceAppEntry() {
                 nombreUsuario = "Juan Pérez",
                 correoUsuario = "juan.perez@cyberqhatu.bo",
                 telefonoUsuario = "+591 70000000",
-                estadoVerificacion = true,
+                estadoVerificacion = estaVerificado,
                 tipoRol = "Vendedor",
                 onEditarPerfilClick = {},
                 onCerrarSesionClick = {
@@ -111,7 +114,8 @@ fun MarketplaceAppEntry() {
                 },
                 onBackClick = {
                     currentScreen = AppScreen.Home
-                }
+                },
+                onVerificarIdentidadClick = onVerificarIdentidadClick
             )
         }
     }
