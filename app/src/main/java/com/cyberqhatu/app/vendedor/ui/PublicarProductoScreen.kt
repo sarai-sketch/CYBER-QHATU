@@ -34,13 +34,9 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,6 +49,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.cyberqhatu.app.ui.theme.QhatuCoral
 import com.cyberqhatu.app.ui.theme.QhatuPurple
 import com.cyberqhatu.app.ui.theme.QhatuPurpleLight
@@ -60,7 +57,8 @@ import com.cyberqhatu.app.ui.theme.QhatuPurpleLight
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun PublicarProductoScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onBackClick: () -> Unit = {}
 ) {
     var formState by remember { mutableStateOf(PublicarProductoFormState()) }
     var dropdownExpanded by remember { mutableStateOf(false) }
@@ -82,7 +80,7 @@ fun PublicarProductoScreen(
             },
             title = {
                 Text(
-                    text = " ¡Producto Publicado!",
+                    text = "Producto Publicado",
                     fontWeight = FontWeight.Bold,
                     color = QhatuPurple
                 )
@@ -113,28 +111,24 @@ fun PublicarProductoScreen(
 
     Scaffold(
         topBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp))
-                    .background(QhatuPurple)
-                    .padding(horizontal = 20.dp, vertical = 20.dp)
-            ) {
-                Column {
-                    Text(
-                        text = "Panel de vendedor",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = Color.White.copy(alpha = 0.8f)
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = "Publicar Producto (D1)",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
-            }
+            TopAppBar(
+                title = { Text(text = "Publicar Producto", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = QhatuPurple) },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = QhatuPurple
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = QhatuPurple,
+                    navigationIconContentColor = QhatuPurple,
+                    actionIconContentColor = QhatuPurple
+                )
+            )
         },
         bottomBar = {
             Box(

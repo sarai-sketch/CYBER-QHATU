@@ -34,9 +34,9 @@ private val LightColorScheme = lightColorScheme(
     onTertiary = QhatuLimeDark,
     background = QhatuBackground,
     surface = QhatuSurface,
-    onBackground = QhatuTextPrimary,
-    onSurface = QhatuTextPrimary,
-    onSurfaceVariant = QhatuTextSecondary,
+    onBackground = QhatuPurple,
+    onSurface = QhatuPurple,
+    onSurfaceVariant = QhatuPurple,
     outline = QhatuBorder
 )
 

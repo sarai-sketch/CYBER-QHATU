@@ -7,13 +7,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -33,40 +36,41 @@ private val productoEjemplo = Producto(
     estado = EstadoProducto.ACTIVO
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetalleProductoScreen(producto: Producto = productoEjemplo) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .verticalScroll(rememberScrollState())
-    ) {
-        // Banner Superior Encabezado
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp))
-                .background(QhatuPurple)
-                .padding(horizontal = 20.dp, vertical = 20.dp)
-        ) {
-            Column {
-                Text(
-                    text = "Tienda Oficial",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = Color.White.copy(alpha = 0.8f)
+fun DetalleProductoScreen(
+    producto: Producto = productoEjemplo,
+    onBackClick: () -> Unit = {}
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(text = "Detalle del Producto", fontWeight = FontWeight.Bold, fontSize = 18.sp) },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver"
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = QhatuPurple,
+                    navigationIconContentColor = QhatuPurple,
+                    actionIconContentColor = QhatuPurple
                 )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = "Detalle del Producto",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            }
+            )
         }
-
-        Column(modifier = Modifier.padding(20.dp)) {
-
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .background(MaterialTheme.colorScheme.background)
+                .verticalScroll(rememberScrollState())
+                .padding(20.dp)
+        ) {
             // Foto del producto
             Box(
                 modifier = Modifier
@@ -97,7 +101,7 @@ fun DetalleProductoScreen(producto: Producto = productoEjemplo) {
 
             // Insignias de estado
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                EstadoBadge(text = "✓ Precio verificado", bg = QhatuLime, fg = QhatuLimeDark)
+                EstadoBadge(text = "Precio verificado", bg = QhatuLime, fg = QhatuLimeDark, icon = Icons.Default.Check)
                 EstadoBadge(text = producto.estado.name, bg = QhatuPurple, fg = Color.White)
             }
 
@@ -156,7 +160,16 @@ fun DetalleProductoScreen(producto: Producto = productoEjemplo) {
                     Column(Modifier.weight(1f)) {
                         Text("Moda Andina", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = QhatuPurple)
                         Spacer(Modifier.height(2.dp))
-                        Text("★★★★★  4.8 (126 reseñas)", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = "Calificación",
+                                tint = Color(0xFFFFB300),
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(Modifier.width(4.dp))
+                            Text("4.8 (126 reseñas)", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
                     }
 
                     Text("Ver tienda ›", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = QhatuPurple)
@@ -186,6 +199,13 @@ fun DetalleProductoScreen(producto: Producto = productoEjemplo) {
                     shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = QhatuCoral)
                 ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Chat,
+                        contentDescription = "WhatsApp",
+                        tint = Color.White,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(Modifier.width(6.dp))
                     Text("Abrir WhatsApp", fontWeight = FontWeight.Bold, color = Color.White)
                 }
             }
@@ -198,6 +218,7 @@ fun DetalleProductoScreen(producto: Producto = productoEjemplo) {
             ResenaItem(autor = "Ana R.", comentario = "Tal cual la foto, muy buena atención y entrega rápida.")
             Spacer(Modifier.height(10.dp))
             ResenaItem(autor = "Carlos M.", comentario = "Producto 100% verificado con código seguro.")
+<<<<<<< HEAD
             }
 =======
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -219,18 +240,33 @@ fun DetalleProductoScreen(producto: Producto = productoEjemplo) {
                 )
             }}
 >>>>>>> AbdulPruebaAPI
+=======
+        }
+>>>>>>> cam-code
     }
 }
 
 @Composable
-private fun EstadoBadge(text: String, bg: Color, fg: Color) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(bg)
-            .padding(horizontal = 10.dp, vertical = 5.dp)
+private fun EstadoBadge(text: String, bg: Color, fg: Color, icon: ImageVector? = null) {
+    Surface(
+        shape = RoundedCornerShape(8.dp),
+        color = bg
     ) {
-        Text(text, color = fg, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+        Row(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (icon != null) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = fg,
+                    modifier = Modifier.size(12.dp)
+                )
+                Spacer(Modifier.width(4.dp))
+            }
+            Text(text, color = fg, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+        }
     }
 }
 
@@ -244,7 +280,14 @@ private fun ResenaItem(autor: String, comentario: String) {
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("★★★★★", fontSize = 12.sp, color = Color(0xFFFFB300))
+                repeat(5) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = "Estrella",
+                        tint = Color(0xFFFFB300),
+                        modifier = Modifier.size(12.dp)
+                    )
+                }
                 Spacer(Modifier.width(8.dp))
                 Text(autor, fontWeight = FontWeight.Bold, fontSize = 12.sp, color = QhatuPurple)
             }

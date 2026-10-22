@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+<<<<<<< HEAD
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -44,6 +45,10 @@ import com.cyberqhatu.app.vendedor.ui.PublicarProductoScreen
 import com.cyberqhatu.app.verificacion.data.repository.VerificacionRepositoryImpl
 import com.cyberqhatu.app.verificacion.ui.EscanerIdentidadScreen
 import com.cyberqhatu.app.verificacion.ui.InstruccionesVerificacionScreen
+=======
+import com.cyberqhatu.app.ui.screens.tienda.MarketplaceAppEntry
+import com.cyberqhatu.app.ui.theme.CyberQhatuTheme
+>>>>>>> cam-code
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,6 +56,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             CyberQhatuTheme {
+<<<<<<< HEAD
                 MainNavigationApp()
             }
         }
@@ -344,6 +350,9 @@ fun MainNavigationApp() {
                     )
                 }
 >>>>>>> AbdulPruebaAPI
+=======
+                MarketplaceAppEntry()
+>>>>>>> cam-code
             }
         }
     }

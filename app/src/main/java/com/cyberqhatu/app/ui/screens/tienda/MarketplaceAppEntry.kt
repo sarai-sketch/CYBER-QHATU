@@ -1,34 +1,118 @@
 package com.cyberqhatu.app.ui.screens.tienda
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import com.cyberqhatu.app.ui.PantallaMiPerfil
+import com.cyberqhatu.app.ui.screens.confianza.ReportarTiendaScreen
+import com.cyberqhatu.app.vendedor.ui.InventarioVentasScreen
+import com.cyberqhatu.app.vendedor.ui.PublicarProductoScreen
+
+sealed class AppScreen {
+    object Home : AppScreen()
+    data class StoreProfile(val storeId: String) : AppScreen()
+    data class ProductDetail(val productId: String) : AppScreen()
+    object Publicar : AppScreen()
+    object Inventario : AppScreen()
+    data class Reportar(val storeName: String) : AppScreen()
+    object Perfil : AppScreen()
+}
 
 /**
- * Navegador interno para el flujo de Marketplace (B1 -> B3)
+ * Navegador jerárquico principal de Cyber-Qhatu.
+ * - Sin BottomBar en ninguna pantalla.
+ * - Navegación fluida por TopAppBar y acciones contextuales.
  */
 @Composable
 fun MarketplaceAppEntry() {
-    var currentScreen by remember { mutableStateOf<MarketplaceScreen>(MarketplaceScreen.Home) }
+    var currentScreen by remember { mutableStateOf<AppScreen>(AppScreen.Home) }
+    var lastStoreId by remember { mutableStateOf("t1") }
 
     when (val screen = currentScreen) {
-        is MarketplaceScreen.Home -> {
+        is AppScreen.Home -> {
             MarketplaceHomeScreen(
                 onNavigateToStoreProfile = { storeId ->
-                    currentScreen = MarketplaceScreen.StoreProfile(storeId)
+                    lastStoreId = storeId
+                    currentScreen = AppScreen.StoreProfile(storeId)
+                },
+                onNavigateToProductDetail = { productId ->
+                    currentScreen = AppScreen.ProductDetail(productId)
+                },
+                onNavigateToPublicar = {
+                    currentScreen = AppScreen.Publicar
+                },
+                onNavigateToInventario = {
+                    currentScreen = AppScreen.Inventario
+                },
+                onNavigateToPerfil = {
+                    currentScreen = AppScreen.Perfil
                 }
             )
         }
-        is MarketplaceScreen.StoreProfile -> {
+        is AppScreen.StoreProfile -> {
+            lastStoreId = screen.storeId
             StoreProfileScreen(
                 storeId = screen.storeId,
                 onBackClick = {
-                    currentScreen = MarketplaceScreen.Home
+                    currentScreen = AppScreen.Home
+                },
+                onNavigateToProductDetail = { productId ->
+                    currentScreen = AppScreen.ProductDetail(productId)
+                },
+                onNavigateToReportar = { storeName ->
+                    currentScreen = AppScreen.Reportar(storeName)
+                }
+            )
+        }
+        is AppScreen.ProductDetail -> {
+            val producto = DomainMockData.productos.firstOrNull { it.idProducto == screen.productId }
+                ?: DomainMockData.productos.first()
+            DetalleProductoScreen(
+                producto = producto,
+                onBackClick = {
+                    currentScreen = AppScreen.Home
+                }
+            )
+        }
+        is AppScreen.Publicar -> {
+            PublicarProductoScreen(
+                modifier = Modifier.fillMaxSize(),
+                onBackClick = {
+                    currentScreen = AppScreen.Home
+                }
+            )
+        }
+        is AppScreen.Inventario -> {
+            InventarioVentasScreen(
+                modifier = Modifier.fillMaxSize(),
+                onBackClick = {
+                    currentScreen = AppScreen.Home
+                }
+            )
+        }
+        is AppScreen.Reportar -> {
+            ReportarTiendaScreen(
+                nombreTienda = screen.storeName,
+                onBackClick = {
+                    currentScreen = AppScreen.StoreProfile(lastStoreId)
+                }
+            )
+        }
+        is AppScreen.Perfil -> {
+            PantallaMiPerfil(
+                nombreUsuario = "Juan Pérez",
+                correoUsuario = "juan.perez@cyberqhatu.bo",
+                telefonoUsuario = "+591 70000000",
+                estadoVerificacion = true,
+                tipoRol = "Vendedor",
+                onEditarPerfilClick = {},
+                onCerrarSesionClick = {
+                    currentScreen = AppScreen.Home
+                },
+                onBackClick = {
+                    currentScreen = AppScreen.Home
                 }
             )
         }
     }
-}
-
-sealed class MarketplaceScreen {
-    object Home : MarketplaceScreen()
-    data class StoreProfile(val storeId: String) : MarketplaceScreen()
 }
