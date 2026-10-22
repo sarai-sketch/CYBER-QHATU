@@ -58,6 +58,9 @@ import com.cyberqhatu.app.data.local.database.QhatuDatabase
 import com.cyberqhatu.app.ui.theme.QhatuCoral
 import com.cyberqhatu.app.ui.theme.QhatuLime
 import com.cyberqhatu.app.ui.theme.QhatuPurple
+import com.cyberqhatu.app.data.local.TokenManager
+import com.cyberqhatu.app.data.api.RetrofitClient
+import kotlinx.coroutines.flow.firstOrNull
 import com.cyberqhatu.app.verificacion.data.repository.VerificacionRepositoryImpl
 import com.cyberqhatu.app.verificacion.domain.VerificacionRepository
 import kotlinx.coroutines.Dispatchers
@@ -78,7 +81,18 @@ fun EscanerIdentidadScreen(
         repository ?: VerificacionRepositoryImpl(
             verificacionCacheDao = db.verificacionCacheDao(),
             verificacionDao = db.verificacionDao(),
+            apiService = RetrofitClient.verificacionApiService
         )
+    }
+
+    val tokenManager = remember(context) { TokenManager(context) }
+    var currentUserId by remember { mutableStateOf("USR-101") }
+
+    LaunchedEffect(Unit) {
+        val token = tokenManager.getToken().firstOrNull()
+        if (token != null) {
+            currentUserId = token
+        }
     }
 
     var tienePermisoCamara by remember {
@@ -168,7 +182,7 @@ fun EscanerIdentidadScreen(
                 val selfie = uiState.fotoSelfie
                 if (anverso != null && reverso != null && selfie != null) {
                     val res = withContext(Dispatchers.IO) {
-                        activeRepository.verificarIdentidad(anverso, reverso, selfie)
+                        activeRepository.verificarIdentidad(currentUserId, anverso, reverso, selfie)
                     }
                     uiState = uiState.copy(
                         pasoActual = PasoVerificacion.RESULTADO,

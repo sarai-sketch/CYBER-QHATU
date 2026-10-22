@@ -24,6 +24,7 @@ class MockVerificacionRepositoryImpl(
     }
 
     override suspend fun verificarIdentidad(
+        idUsuario: String,
         fotoCarnetAnverso: Bitmap,
         fotoCarnetReverso: Bitmap,
         fotoSelfie: Bitmap,

@@ -61,11 +61,16 @@ fun MainNavigationApp() {
         VerificacionRepositoryImpl(
             verificacionCacheDao = db.verificacionCacheDao(),
             verificacionDao = db.verificacionDao(),
+            apiService = com.cyberqhatu.app.data.api.RetrofitClient.verificacionApiService
         )
     }
 
-    val estadoLocalFlow = remember(repository) {
-        repository.obtenerEstadoVerificacionLocal("USR-101")
+    val tokenManager = remember(context) { com.cyberqhatu.app.data.local.TokenManager(context) }
+    val tokenFlow = remember(tokenManager) { tokenManager.getToken() }
+    val token by tokenFlow.collectAsState(initial = null)
+    
+    val estadoLocalFlow = remember(repository, token) {
+        repository.obtenerEstadoVerificacionLocal(token ?: "USR-101")
     }
     val estadoLocal by estadoLocalFlow.collectAsState(initial = null)
     val estaVerificado = estadoLocal?.esExitoso == true

@@ -8,10 +8,11 @@ import kotlinx.coroutines.flow.Flow
  */
 interface VerificacionRepository {
     suspend fun verificarIdentidad(
+        idUsuario: String,
         fotoCarnetAnverso: Bitmap,
         fotoCarnetReverso: Bitmap,
         fotoSelfie: Bitmap,
     ): ResultadoVerificacion
 
-    fun obtenerEstadoVerificacionLocal(idUsuario: String = "USR-101"): Flow<ResultadoVerificacion?>
+    fun obtenerEstadoVerificacionLocal(idUsuario: String): Flow<ResultadoVerificacion?>
 }
