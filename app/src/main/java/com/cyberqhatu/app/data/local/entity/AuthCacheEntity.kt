@@ -7,7 +7,6 @@ import androidx.room.PrimaryKey
 data class AuthCacheEntity(
     @PrimaryKey
     val email: String,
-    val token: String,
     val userId: String,
     val userName: String?,
     val timestamp: Long

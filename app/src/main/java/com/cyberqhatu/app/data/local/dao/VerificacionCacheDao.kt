@@ -19,8 +19,8 @@ interface VerificacionCacheDao {
     @Query("SELECT * FROM verificaciones_cache WHERE idUsuario = :idUsuario ORDER BY timestampCache DESC LIMIT 1")
     fun obtenerCachePorUsuario(idUsuario: String): Flow<VerificacionCacheEntity?>
 
-    @Query("UPDATE verificaciones_cache SET sincronizadoServidor = 1 WHERE idVerificacion = :idVerificacion")
-    suspend fun marcarComoSincronizado(idVerificacion: String)
+    @Query("SELECT * FROM verificaciones_cache WHERE idUsuario = :idUsuario ORDER BY timestampCache DESC LIMIT 1")
+    suspend fun getCacheDirect(idUsuario: String): VerificacionCacheEntity?
 
     @Query("DELETE FROM verificaciones_cache WHERE idUsuario = :idUsuario")
     suspend fun limpiarCacheUsuario(idUsuario: String)

@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cyberqhatu.app.ui.theme.CyberQhatuTheme
 import com.cyberqhatu.app.data.local.TokenManager
+import com.cyberqhatu.app.data.local.database.QhatuDatabase
 import com.cyberqhatu.app.data.model.LoginRequest
 import com.cyberqhatu.app.data.api.RetrofitClient
 import com.cyberqhatu.app.data.repository.AuthRepository
@@ -41,7 +42,7 @@ fun PantallaBienvenida(
     val tokenManager = remember { TokenManager(context) }
     // Using Retrofit for API verification
     val viewModel: AuthViewModel = viewModel(
-        factory = AuthViewModelFactory(AuthRepository(RetrofitClient.authApiService, com.cyberqhatu.app.data.local.database.AppDatabase.getDatabase(context).authCacheDao()), tokenManager)
+        factory = AuthViewModelFactory(AuthRepository(RetrofitClient.authApiService, QhatuDatabase.getInstance(context).authCacheDao(), tokenManager))
     )
 
     val authState by viewModel.authState.collectAsState()

@@ -13,10 +13,12 @@ import com.cyberqhatu.app.verificacion.data.remote.api.VerificacionApiService
 import com.cyberqhatu.app.verificacion.data.remote.dto.VerificacionRequestDto
 import com.cyberqhatu.app.verificacion.domain.ResultadoVerificacion
 import com.cyberqhatu.app.verificacion.domain.VerificacionRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import java.util.concurrent.TimeUnit
 
 /**
  * Implementación de la arquitectura Offline-First (Fuente Única de Verdad).
@@ -31,6 +33,8 @@ class VerificacionRepositoryImpl(
     private val comparador: ComparadorBiometricoHelper = ComparadorBiometricoHelper(),
 ) : VerificacionRepository {
 
+    private val CACHE_EXPIRATION_MS = TimeUnit.HOURS.toMillis(24) // Expiración de 24 horas
+
     override fun obtenerEstadoVerificacionLocal(idUsuario: String): Flow<ResultadoVerificacion?> {
         return verificacionCacheDao?.obtenerCachePorUsuario(idUsuario)?.map { cacheEntity ->
             VerificacionCacheMapper.toDomain(cacheEntity)
@@ -44,9 +48,19 @@ class VerificacionRepositoryImpl(
         fotoCarnetReverso: Bitmap,
         fotoSelfie: Bitmap,
     ): ResultadoVerificacion {
+        val idUsuario = "USR-101"
+        val cached = verificacionCacheDao?.getCacheDirect(idUsuario)
+        val currentTime = System.currentTimeMillis()
+
+        // 1. Verificar si hay caché válida
+        if (cached != null && (currentTime - cached.timestampCache) < CACHE_EXPIRATION_MS && cached.esExitoso) {
+            val domain = VerificacionCacheMapper.toDomain(cached)
+            if (domain != null) return domain
+        }
+
         delay(1200)
 
-        // 1. Detección OCR del número de C.I. en Anverso o Reverso
+        // 2. Detección OCR del número de C.I. en Anverso o Reverso
         val ciAnverso = lectorTexto.extraerNumeroCI(fotoCarnetAnverso)
         val ciReverso = lectorTexto.extraerNumeroCI(fotoCarnetReverso)
         val numeroCi = ciAnverso ?: ciReverso
@@ -60,7 +74,7 @@ class VerificacionRepositoryImpl(
             )
         }
 
-        // 2. Detección del rostro en el anverso del carnet y en la selfie
+        // 3. Detección del rostro en el anverso del carnet y en la selfie
         val rostroCarnet = detectorRostro.recortarRostro(fotoCarnetAnverso)
         if (rostroCarnet == null) {
             return ResultadoVerificacion(
@@ -81,7 +95,7 @@ class VerificacionRepositoryImpl(
             )
         }
 
-        // 3. Similitud biométrica real entre la cara del carnet y la selfie
+        // 4. Similitud biométrica real entre la cara del carnet y la selfie
         val similitudReal = comparador.compararRostros(rostroCarnet, rostroSelfie)
         val esValido = similitudReal >= 60.0f
 
@@ -92,31 +106,42 @@ class VerificacionRepositoryImpl(
             mensajeError = if (!esValido) "El rostro de la selfie no coincide con el anverso del carnet de identidad (Similitud: ${"%.1f".format(similitudReal)}%)." else null,
         )
 
-        // 4. Si la verificación fue exitosa, escribir en la Caché Local de Room (Offline-First)
-        if (esValido) {
-            val cacheEntity = VerificacionCacheMapper.toCacheEntity(resultadoLocal, "USR-101", sincronizado = false)
-            verificacionCacheDao?.insertarCache(cacheEntity)
-            verificacionDao?.insertarVerificacion(
-                VerificacionLocalMapper.toEntity(resultadoLocal, "USR-101"),
-            )
-        }
-
-        // 5. Sincronización en segundo plano con la API remota (Retrofit)
+        // 5. Llamada a la API y guardado en caché
         if (apiService != null && esValido) {
             try {
                 val requestDto = VerificacionRequestDto(
-                    idUsuario = "USR-101",
+                    idUsuario = idUsuario,
                     numeroCi = numeroCi,
                     similitudCalculada = similitudReal,
                 )
                 val response = apiService.verificarIdentidad(requestDto)
                 if (response.isSuccessful && response.body() != null) {
                     val resultadoRemoto = VerificacionMapper.toDomain(response.body()!!)
+                    val cacheEntity = VerificacionCacheMapper.toCacheEntity(resultadoRemoto, idUsuario, sincronizado = true).copy(timestampCache = System.currentTimeMillis())
+                    verificacionCacheDao?.insertarCache(cacheEntity)
+                    verificacionDao?.insertarVerificacion(
+                        VerificacionLocalMapper.toEntity(resultadoRemoto, idUsuario),
+                    )
                     return resultadoRemoto
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (_: Exception) {
-                // Modo Offline
+                // Falla de API, caer a caché vieja si existe, si no, usar resultadoLocal
+                if (cached != null) {
+                    val domain = VerificacionCacheMapper.toDomain(cached)
+                    if (domain != null) return domain
+                }
             }
+        }
+
+        // 6. Si no hay API o falló sin caché previa, guardar resultadoLocal
+        if (esValido) {
+            val cacheEntity = VerificacionCacheMapper.toCacheEntity(resultadoLocal, idUsuario, sincronizado = false).copy(timestampCache = System.currentTimeMillis())
+            verificacionCacheDao?.insertarCache(cacheEntity)
+            verificacionDao?.insertarVerificacion(
+                VerificacionLocalMapper.toEntity(resultadoLocal, idUsuario),
+            )
         }
 
         return resultadoLocal

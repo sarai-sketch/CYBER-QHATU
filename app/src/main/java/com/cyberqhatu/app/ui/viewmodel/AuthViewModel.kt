@@ -2,7 +2,6 @@ package com.cyberqhatu.app.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cyberqhatu.app.data.local.TokenManager
 import com.cyberqhatu.app.data.model.AuthResponse
 import com.cyberqhatu.app.data.model.LoginRequest
 import com.cyberqhatu.app.data.model.RegisterRequest
@@ -20,8 +19,7 @@ sealed class AuthState {
 }
 
 class AuthViewModel(
-    private val repository: AuthRepository,
-    private val tokenManager: TokenManager
+    private val repository: AuthRepository
 ) : ViewModel() {
 
     private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
@@ -30,9 +28,8 @@ class AuthViewModel(
     fun login(request: LoginRequest) {
         _authState.value = AuthState.Loading
         viewModelScope.launch {
-            repository.loginWithCache(request).collect { result ->
+            repository.login(request).collect { result ->
                 result.onSuccess { response ->
-                    tokenManager.saveToken(response.token)
                     _authState.value = AuthState.Success(response)
                 }.onFailure { exception ->
                     _authState.value = AuthState.Error(exception.message ?: "An unknown error occurred")
@@ -46,7 +43,6 @@ class AuthViewModel(
         viewModelScope.launch {
             val result = repository.register(request)
             result.onSuccess { response ->
-                tokenManager.saveToken(response.token)
                 _authState.value = AuthState.Success(response)
             }.onFailure { exception ->
                 _authState.value = AuthState.Error(exception.message ?: "An unknown error occurred")
