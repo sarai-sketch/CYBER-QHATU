@@ -59,6 +59,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainNavigationApp() {
+<<<<<<< Updated upstream
     val context = LocalContext.current
     val repository = remember(context) {
         val db = QhatuDatabase.getInstance(context)
@@ -67,6 +68,9 @@ fun MainNavigationApp() {
             verificacionDao = db.verificacionDao(),
         )
     }
+=======
+    var selectedTab by remember { mutableIntStateOf(1) } // Empieza en la Pantalla de Bienvenida (Login)
+>>>>>>> Stashed changes
 
 <<<<<<< HEAD
     Scaffold(
@@ -208,7 +212,9 @@ fun MainNavigationApp() {
                     correoUsuario = "sarai.condori@cyberqhatu.bo",
 =======
                 0 -> MarketplaceAppEntry() // Pantallas Módulo 2 integradas aquí
-                1 -> PantallaBienvenida(onContinuarClicked = {})
+                1 -> PantallaBienvenida(onContinuarClicked = { 
+                    selectedTab = 0 // Redirigir al inicio después de un login exitoso
+                })
                 2 -> DetalleProductoScreen()
                 3 -> ReportarTiendaScreen()
                 4 -> PublicarProductoScreen(modifier = Modifier.fillMaxSize())

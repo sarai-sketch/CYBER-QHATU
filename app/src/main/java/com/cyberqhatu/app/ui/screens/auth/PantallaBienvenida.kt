@@ -13,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+<<<<<<< Updated upstream
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -27,6 +28,36 @@ fun PantallaBienvenida(
     onContinuarClicked: (String) -> Unit = {},
 ) {
     var telefono by remember { mutableStateOf("") }
+=======
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.cyberqhatu.app.data.local.TokenManager
+import com.cyberqhatu.app.data.model.LoginRequest
+import com.cyberqhatu.app.data.repository.AuthRepository
+import com.cyberqhatu.app.ui.viewmodel.AuthState
+import com.cyberqhatu.app.ui.viewmodel.AuthViewModel
+import com.cyberqhatu.app.ui.viewmodel.AuthViewModelFactory
+
+@Composable
+fun PantallaBienvenida(
+    onContinuarClicked: (String) -> Unit
+) {
+    val context = LocalContext.current
+    val tokenManager = remember { TokenManager(context) }
+    val viewModel: AuthViewModel = viewModel(
+        factory = AuthViewModelFactory(AuthRepository(), tokenManager)
+    )
+
+    val authState by viewModel.authState.collectAsState()
+
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+>>>>>>> Stashed changes
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -41,6 +72,7 @@ fun PantallaBienvenida(
         ) {
             Spacer(modifier = Modifier.height(20.dp))
 
+<<<<<<< Updated upstream
             // Seccion del Logo e Identidad Visual
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -77,6 +109,75 @@ fun PantallaBienvenida(
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.outline
                 )
+=======
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Inicia sesión con tu correo electrónico.",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Campo de texto para correo
+            OutlinedTextField(
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Correo Electrónico") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Campo de texto para contraseña
+            OutlinedTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = { Text("Contraseña") },
+                singleLine = true,
+                visualTransformation = PasswordVisualTransformation(),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Botón de acción para iniciar sesión
+            Button(
+                onClick = { viewModel.login(LoginRequest(email, password)) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                enabled = authState !is AuthState.Loading
+            ) {
+                if (authState is AuthState.Loading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                } else {
+                    Text(text = "Iniciar Sesión", fontSize = 16.sp)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Manejar los estados de la petición
+            when (authState) {
+                is AuthState.Success -> {
+                    Text("¡Inicio de sesión exitoso!", color = Color(0xFF4CAF50))
+                    LaunchedEffect(Unit) {
+                        onContinuarClicked(email)
+                    }
+                }
+                is AuthState.Error -> {
+                    val error = (authState as AuthState.Error).message
+                    Text("Error: $error", color = MaterialTheme.colorScheme.error)
+                }
+                else -> {}
+>>>>>>> Stashed changes
             }
 
             // Seccion de Formulario de Ingreso
@@ -156,6 +257,7 @@ fun PantallaBienvenida(
         }
     }
 }
+<<<<<<< Updated upstream
 
 @Preview(showBackground = true)
 @Composable
@@ -164,3 +266,5 @@ private fun PantallaBienvenidaPreview() {
         PantallaBienvenida()
     }
 }
+=======
+>>>>>>> Stashed changes
