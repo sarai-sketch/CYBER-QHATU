@@ -27,15 +27,11 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-<<<<<<< HEAD
-=======
 import androidx.compose.ui.platform.LocalContext
 import com.cyberqhatu.app.data.local.database.QhatuDatabase
-import com.cyberqhatu.app.ui.PantallaBienvenida
->>>>>>> AbdulPruebaAPI
-import com.cyberqhatu.app.ui.PantallaMiPerfil
 import com.cyberqhatu.app.ui.screens.auth.PantallaBienvenida
 import com.cyberqhatu.app.ui.screens.confianza.ReportarTiendaScreen
+import com.cyberqhatu.app.ui.PantallaMiPerfil
 import com.cyberqhatu.app.ui.screens.tienda.DetalleProductoScreen
 import com.cyberqhatu.app.ui.screens.tienda.MarketplaceAppEntry
 import com.cyberqhatu.app.ui.theme.CyberQhatuTheme
@@ -59,7 +55,6 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainNavigationApp() {
-<<<<<<< Updated upstream
     val context = LocalContext.current
     val repository = remember(context) {
         val db = QhatuDatabase.getInstance(context)
@@ -68,177 +63,14 @@ fun MainNavigationApp() {
             verificacionDao = db.verificacionDao(),
         )
     }
-=======
-    var selectedTab by remember { mutableIntStateOf(1) } // Empieza en la Pantalla de Bienvenida (Login)
->>>>>>> Stashed changes
 
-<<<<<<< HEAD
-    Scaffold(
-        bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    selected = selectedTab == 0,
-                    onClick = { selectedTab = 0 },
-<<<<<<< HEAD
-                    icon = { Icon(imageVector = Icons.Default.Home, contentDescription = "Inicio") },
-                    label = { Text("Inicio") }
-                )
-                NavigationBarItem(
-                    selected = selectedTab == 1,
-                    onClick = { selectedTab = 1 },
-                    icon = { Icon(imageVector = Icons.Default.ShoppingBag, contentDescription = "Detalle") },
-                    label = { Text("Detalle") }
-                )
-                NavigationBarItem(
-                    selected = selectedTab == 2,
-                    onClick = { selectedTab = 2 },
-                    icon = { Icon(imageVector = Icons.Default.Warning, contentDescription = "Reportar") },
-                    label = { Text("Reportar") }
-                )
-                NavigationBarItem(
-                    selected = selectedTab == 3,
-                    onClick = { selectedTab = 3 },
-                    icon = { Icon(imageVector = Icons.Default.AddCircle, contentDescription = "Publicar") },
-                    label = { Text("Publicar") }
-                )
-                NavigationBarItem(
-                    selected = selectedTab == 4,
-                    onClick = { selectedTab = 4 },
-                    icon = { Icon(imageVector = Icons.Default.BarChart, contentDescription = "Inventario") },
-                    label = { Text("Inventario") }
-                )
-                NavigationBarItem(
-                    selected = selectedTab == 5,
-                    onClick = { selectedTab = 5 },
-                    icon = { Icon(imageVector = Icons.Default.Person, contentDescription = "Perfil") },
-=======
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Default.Storefront,
-                            contentDescription = "Marketplace"
-                        )
-                    },
-                    label = { Text("Market") }
-                )
-                NavigationBarItem(
-                    selected = selectedTab == 1,
-                    onClick = { selectedTab = 1 },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Default.Home,
-                            contentDescription = "Inicio"
-                        )
-                    },
-                    label = { Text("Inicio") }
-                )
-                NavigationBarItem(
-                    selected = selectedTab == 2,
-                    onClick = { selectedTab = 2 },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Default.ShoppingBag,
-                            contentDescription = "Detalle"
-                        )
-                    },
-                    label = { Text("Detalle") }
-                )
-                NavigationBarItem(
-                    selected = selectedTab == 3,
-                    onClick = { selectedTab = 3 },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Default.Warning,
-                            contentDescription = "Reportar"
-                        )
-                    },
-                    label = { Text("Reportar") }
-                )
-                NavigationBarItem(
-                    selected = selectedTab == 4,
-                    onClick = { selectedTab = 4 },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Default.AddCircle,
-                            contentDescription = "Publicar"
-                        )
-                    },
-                    label = { Text("Publicar") }
-                )
-                NavigationBarItem(
-                    selected = selectedTab == 5,
-                    onClick = { selectedTab = 5 },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Default.BarChart,
-                            contentDescription = "Inventario"
-                        )
-                    },
-                    label = { Text("Inventario") }
-                )
-                NavigationBarItem(
-                    selected = selectedTab == 6,
-                    onClick = { selectedTab = 6 },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = "Perfil"
-                        )
-                    },
->>>>>>> a2f7c2efa8582a124fd313018b1cb5ea3d022cad
-                    label = { Text("Perfil") }
-                )
-            }
-        },
-        modifier = Modifier.fillMaxSize()
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            when (selectedTab) {
-<<<<<<< HEAD
-                0 -> PantallaBienvenida(
-                    onContinuarClicked = {
-                        selectedTab = 5 // Redirige al perfil al presionar continuar
-                    }
-                )
-                1 -> DetalleProductoScreen()
-                2 -> ReportarTiendaScreen()
-                3 -> PublicarProductoScreen(modifier = Modifier.fillMaxSize())
-                4 -> InventarioVentasScreen(modifier = Modifier.fillMaxSize())
-                5 -> PantallaMiPerfil(
-                    nombreUsuario = "Sarai Condori",
-                    correoUsuario = "sarai.condori@cyberqhatu.bo",
-=======
-                0 -> MarketplaceAppEntry() // Pantallas Módulo 2 integradas aquí
-                1 -> PantallaBienvenida(onContinuarClicked = { 
-                    selectedTab = 0 // Redirigir al inicio después de un login exitoso
-                })
-                2 -> DetalleProductoScreen()
-                3 -> ReportarTiendaScreen()
-                4 -> PublicarProductoScreen(modifier = Modifier.fillMaxSize())
-                5 -> InventarioVentasScreen(modifier = Modifier.fillMaxSize())
-                6 -> PantallaMiPerfil(
-                    nombreUsuario = "Juan Pérez",
-                    correoUsuario = "juan.perez@cyberqhatu.bo",
->>>>>>> a2f7c2efa8582a124fd313018b1cb5ea3d022cad
-                    telefonoUsuario = "+591 70000000",
-                    estadoVerificacion = true,
-                    tipoRol = "Vendedor",
-                    onEditarPerfilClick = {},
-                    onCerrarSesionClick = {
-                        selectedTab = 0
-                    }
-                )
-=======
     val estadoLocalFlow = remember(repository) {
         repository.obtenerEstadoVerificacionLocal("USR-101")
     }
     val estadoLocal by estadoLocalFlow.collectAsState(initial = null)
     val estaVerificado = estadoLocal?.esExitoso == true
 
-    var selectedTab by remember { mutableIntStateOf(0) }
+    var selectedTab by remember { mutableIntStateOf(1) } // Empieza en PantallaBienvenida
     var modoVerificacionStep by remember { mutableIntStateOf(0) }
 
     if (modoVerificacionStep == 1) {
@@ -262,6 +94,17 @@ fun MainNavigationApp() {
                         onClick = { selectedTab = 0 },
                         icon = {
                             Icon(
+                                imageVector = Icons.Default.Storefront,
+                                contentDescription = "Marketplace"
+                            )
+                        },
+                        label = { Text("Market") }
+                    )
+                    NavigationBarItem(
+                        selected = selectedTab == 1,
+                        onClick = { selectedTab = 1 },
+                        icon = {
+                            Icon(
                                 imageVector = Icons.Default.Home,
                                 contentDescription = "Inicio"
                             )
@@ -269,8 +112,8 @@ fun MainNavigationApp() {
                         label = { Text("Inicio") }
                     )
                     NavigationBarItem(
-                        selected = selectedTab == 1,
-                        onClick = { selectedTab = 1 },
+                        selected = selectedTab == 2,
+                        onClick = { selectedTab = 2 },
                         icon = {
                             Icon(
                                 imageVector = Icons.Default.ShoppingBag,
@@ -280,8 +123,8 @@ fun MainNavigationApp() {
                         label = { Text("Detalle") }
                     )
                     NavigationBarItem(
-                        selected = selectedTab == 2,
-                        onClick = { selectedTab = 2 },
+                        selected = selectedTab == 3,
+                        onClick = { selectedTab = 3 },
                         icon = {
                             Icon(
                                 imageVector = Icons.Default.Warning,
@@ -291,8 +134,8 @@ fun MainNavigationApp() {
                         label = { Text("Reportar") }
                     )
                     NavigationBarItem(
-                        selected = selectedTab == 3,
-                        onClick = { selectedTab = 3 },
+                        selected = selectedTab == 4,
+                        onClick = { selectedTab = 4 },
                         icon = {
                             Icon(
                                 imageVector = Icons.Default.AddCircle,
@@ -302,8 +145,8 @@ fun MainNavigationApp() {
                         label = { Text("Publicar") }
                     )
                     NavigationBarItem(
-                        selected = selectedTab == 4,
-                        onClick = { selectedTab = 4 },
+                        selected = selectedTab == 5,
+                        onClick = { selectedTab = 5 },
                         icon = {
                             Icon(
                                 imageVector = Icons.Default.BarChart,
@@ -313,8 +156,8 @@ fun MainNavigationApp() {
                         label = { Text("Inventario") }
                     )
                     NavigationBarItem(
-                        selected = selectedTab == 5,
-                        onClick = { selectedTab = 5 },
+                        selected = selectedTab == 6,
+                        onClick = { selectedTab = 6 },
                         icon = {
                             Icon(
                                 imageVector = Icons.Default.Person,
@@ -333,23 +176,23 @@ fun MainNavigationApp() {
                     .padding(innerPadding)
             ) {
                 when (selectedTab) {
-                    0 -> PantallaBienvenida(onContinuarClicked = {})
-                    1 -> DetalleProductoScreen()
-                    2 -> ReportarTiendaScreen()
-                    3 -> PublicarProductoScreen(modifier = Modifier.fillMaxSize())
-                    4 -> InventarioVentasScreen(modifier = Modifier.fillMaxSize())
-                    5 -> PantallaMiPerfil(
+                    0 -> MarketplaceAppEntry()
+                    1 -> PantallaBienvenida(onContinuarClicked = { selectedTab = 0 })
+                    2 -> DetalleProductoScreen()
+                    3 -> ReportarTiendaScreen()
+                    4 -> PublicarProductoScreen(modifier = Modifier.fillMaxSize())
+                    5 -> InventarioVentasScreen(modifier = Modifier.fillMaxSize())
+                    6 -> PantallaMiPerfil(
                         nombreUsuario = "Juan Pérez",
                         correoUsuario = "juan.perez@cyberqhatu.bo",
                         telefonoUsuario = "+591 70000000",
                         estadoVerificacion = estaVerificado,
                         tipoRol = "Vendedor",
                         onEditarPerfilClick = {},
-                        onCerrarSesionClick = {},
+                        onCerrarSesionClick = { selectedTab = 1 },
                         onVerificarIdentidadClick = { modoVerificacionStep = 1 }
                     )
                 }
->>>>>>> AbdulPruebaAPI
             }
         }
     }

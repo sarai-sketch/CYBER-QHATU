@@ -30,12 +30,13 @@ class AuthViewModel(
     fun login(request: LoginRequest) {
         _authState.value = AuthState.Loading
         viewModelScope.launch {
-            val result = repository.login(request)
-            result.onSuccess { response ->
-                tokenManager.saveToken(response.token)
-                _authState.value = AuthState.Success(response)
-            }.onFailure { exception ->
-                _authState.value = AuthState.Error(exception.message ?: "An unknown error occurred")
+            repository.loginWithCache(request).collect { result ->
+                result.onSuccess { response ->
+                    tokenManager.saveToken(response.token)
+                    _authState.value = AuthState.Success(response)
+                }.onFailure { exception ->
+                    _authState.value = AuthState.Error(exception.message ?: "An unknown error occurred")
+                }
             }
         }
     }

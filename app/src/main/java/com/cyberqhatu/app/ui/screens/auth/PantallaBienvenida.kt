@@ -7,37 +7,27 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-<<<<<<< Updated upstream
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cyberqhatu.app.ui.theme.CyberQhatuTheme
-
-@Composable
-fun PantallaBienvenida(
-    onContinuarClicked: (String) -> Unit = {},
-) {
-    var telefono by remember { mutableStateOf("") }
-=======
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cyberqhatu.app.data.local.TokenManager
 import com.cyberqhatu.app.data.model.LoginRequest
+import com.cyberqhatu.app.data.api.RetrofitClient
 import com.cyberqhatu.app.data.repository.AuthRepository
 import com.cyberqhatu.app.ui.viewmodel.AuthState
 import com.cyberqhatu.app.ui.viewmodel.AuthViewModel
@@ -45,19 +35,19 @@ import com.cyberqhatu.app.ui.viewmodel.AuthViewModelFactory
 
 @Composable
 fun PantallaBienvenida(
-    onContinuarClicked: (String) -> Unit
+    onContinuarClicked: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
     val tokenManager = remember { TokenManager(context) }
+    // Using Retrofit for API verification
     val viewModel: AuthViewModel = viewModel(
-        factory = AuthViewModelFactory(AuthRepository(), tokenManager)
+        factory = AuthViewModelFactory(AuthRepository(RetrofitClient.authApiService, com.cyberqhatu.app.data.local.database.AppDatabase.getDatabase(context).authCacheDao()), tokenManager)
     )
 
     val authState by viewModel.authState.collectAsState()
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
->>>>>>> Stashed changes
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -72,7 +62,6 @@ fun PantallaBienvenida(
         ) {
             Spacer(modifier = Modifier.height(20.dp))
 
-<<<<<<< Updated upstream
             // Seccion del Logo e Identidad Visual
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -109,75 +98,6 @@ fun PantallaBienvenida(
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.outline
                 )
-=======
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Inicia sesión con tu correo electrónico.",
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Campo de texto para correo
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Correo Electrónico") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Campo de texto para contraseña
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Contraseña") },
-                singleLine = true,
-                visualTransformation = PasswordVisualTransformation(),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Botón de acción para iniciar sesión
-            Button(
-                onClick = { viewModel.login(LoginRequest(email, password)) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                enabled = authState !is AuthState.Loading
-            ) {
-                if (authState is AuthState.Loading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                } else {
-                    Text(text = "Iniciar Sesión", fontSize = 16.sp)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Manejar los estados de la petición
-            when (authState) {
-                is AuthState.Success -> {
-                    Text("¡Inicio de sesión exitoso!", color = Color(0xFF4CAF50))
-                    LaunchedEffect(Unit) {
-                        onContinuarClicked(email)
-                    }
-                }
-                is AuthState.Error -> {
-                    val error = (authState as AuthState.Error).message
-                    Text("Error: $error", color = MaterialTheme.colorScheme.error)
-                }
-                else -> {}
->>>>>>> Stashed changes
             }
 
             // Seccion de Formulario de Ingreso
@@ -202,7 +122,7 @@ fun PantallaBienvenida(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "Ingresa con tu número de WhatsApp para continuar",
+                        text = "Inicia sesión con tu correo electrónico para continuar",
                         fontSize = 13.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
@@ -211,18 +131,29 @@ fun PantallaBienvenida(
                     Spacer(modifier = Modifier.height(24.dp))
 
                     OutlinedTextField(
-                        value = telefono,
-                        onValueChange = { telefono = it },
-                        label = { Text("Número de WhatsApp") },
-                        prefix = { Text("+591 ", fontWeight = FontWeight.Bold) },
+                        value = email,
+                        onValueChange = { email = it },
+                        label = { Text("Correo Electrónico") },
                         leadingIcon = {
                             Icon(
-                                imageVector = Icons.Default.Phone,
-                                contentDescription = "Telefono"
+                                imageVector = Icons.Default.Email,
+                                contentDescription = "Email"
                             )
                         },
                         singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        label = { Text("Contraseña") },
+                        singleLine = true,
+                        visualTransformation = PasswordVisualTransformation(),
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -230,18 +161,41 @@ fun PantallaBienvenida(
                     Spacer(modifier = Modifier.height(20.dp))
 
                     Button(
-                        onClick = { onContinuarClicked(telefono) },
+                        onClick = { viewModel.login(LoginRequest(email, password)) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(52.dp),
                         shape = RoundedCornerShape(12.dp),
-                        enabled = telefono.isNotBlank()
+                        enabled = authState !is AuthState.Loading && email.isNotBlank() && password.isNotBlank()
                     ) {
-                        Text(
-                            text = "Continuar con WhatsApp",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
+                        if (authState is AuthState.Loading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        } else {
+                            Text(
+                                text = "Iniciar Sesión",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    when (authState) {
+                        is AuthState.Success -> {
+                            Text("¡Inicio de sesión exitoso!", color = Color(0xFF4CAF50))
+                            LaunchedEffect(Unit) {
+                                onContinuarClicked(email)
+                            }
+                        }
+                        is AuthState.Error -> {
+                            val error = (authState as AuthState.Error).message
+                            Text("Error: $error", color = MaterialTheme.colorScheme.error)
+                        }
+                        else -> {}
                     }
                 }
             }
@@ -257,14 +211,4 @@ fun PantallaBienvenida(
         }
     }
 }
-<<<<<<< Updated upstream
 
-@Preview(showBackground = true)
-@Composable
-private fun PantallaBienvenidaPreview() {
-    CyberQhatuTheme {
-        PantallaBienvenida()
-    }
-}
-=======
->>>>>>> Stashed changes

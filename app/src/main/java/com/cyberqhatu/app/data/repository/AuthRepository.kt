@@ -1,50 +1,85 @@
 package com.cyberqhatu.app.data.repository
 
+import com.cyberqhatu.app.data.api.AuthApiService
+import com.cyberqhatu.app.data.local.dao.AuthCacheDao
+import com.cyberqhatu.app.data.local.entity.AuthCacheEntity
 import com.cyberqhatu.app.data.model.AuthResponse
 import com.cyberqhatu.app.data.model.LoginRequest
 import com.cyberqhatu.app.data.model.RegisterRequest
 import com.cyberqhatu.app.data.model.User
-import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import java.util.concurrent.TimeUnit
 
-class AuthRepository(private val auth: FirebaseAuth = FirebaseAuth.getInstance()) {
-    suspend fun login(request: LoginRequest): Result<AuthResponse> {
-        return try {
-            val result = auth.signInWithEmailAndPassword(request.email, request.password).await()
-            val firebaseUser = result.user
-            if (firebaseUser != null) {
-                val token = firebaseUser.uid 
-                val user = User(
-                    id = firebaseUser.uid,
-                    email = firebaseUser.email ?: "",
-                    name = firebaseUser.displayName
-                )
-                Result.success(AuthResponse(token, user))
+class AuthRepository(
+    private val apiService: AuthApiService,
+    private val cacheDao: AuthCacheDao
+) {
+    // Cache valid for 1 hour
+    private val CACHE_EXPIRATION_MS = TimeUnit.HOURS.toMillis(1)
+
+    fun loginWithCache(request: LoginRequest): Flow<Result<AuthResponse>> = flow {
+        // 1. Try Cache First
+        val cached = cacheDao.getAuthCacheByEmail(request.email)
+        val currentTime = System.currentTimeMillis()
+        
+        if (cached != null && (currentTime - cached.timestamp) < CACHE_EXPIRATION_MS) {
+            val user = User(id = cached.userId, email = cached.email, name = cached.userName)
+            emit(Result.success(AuthResponse(cached.token, user)))
+            return@flow
+        }
+
+        // 2. If no cache or expired, call API
+        try {
+            val response = apiService.login(request)
+            if (response.isSuccessful) {
+                val authResponse = response.body()
+                if (authResponse != null) {
+                    // 3. Save to Cache
+                    val cacheEntity = AuthCacheEntity(
+                        email = authResponse.user.email,
+                        token = authResponse.token,
+                        userId = authResponse.user.id,
+                        userName = authResponse.user.name,
+                        timestamp = currentTime
+                    )
+                    cacheDao.upsert(cacheEntity)
+                    emit(Result.success(authResponse))
+                } else {
+                    emit(Result.failure(Exception("Respuesta vacía de la API")))
+                }
             } else {
-                Result.failure(Exception("Login failed: User is null"))
+                emit(Result.failure(Exception("Error de API: ${response.code()}")))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            emit(Result.failure(e))
         }
     }
 
     suspend fun register(request: RegisterRequest): Result<AuthResponse> {
         return try {
-            val result = auth.createUserWithEmailAndPassword(request.email, request.password).await()
-            val firebaseUser = result.user
-            if (firebaseUser != null) {
-                val token = firebaseUser.uid
-                val user = User(
-                    id = firebaseUser.uid,
-                    email = firebaseUser.email ?: "",
-                    name = request.name ?: firebaseUser.displayName
+            val response = apiService.register(request)
+            if (response.isSuccessful && response.body() != null) {
+                val authResponse = response.body()!!
+                val cacheEntity = AuthCacheEntity(
+                    email = authResponse.user.email,
+                    token = authResponse.token,
+                    userId = authResponse.user.id,
+                    userName = authResponse.user.name,
+                    timestamp = System.currentTimeMillis()
                 )
-                Result.success(AuthResponse(token, user))
+                cacheDao.upsert(cacheEntity)
+                Result.success(authResponse)
             } else {
-                Result.failure(Exception("Registration failed: User is null"))
+                Result.failure(Exception("Registration failed: ${response.code()}"))
             }
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
+
+    suspend fun clearCache() {
+        cacheDao.clearAll()
+    }
 }
+
