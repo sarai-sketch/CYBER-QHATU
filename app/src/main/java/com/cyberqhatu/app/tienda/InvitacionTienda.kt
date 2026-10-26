@@ -2,13 +2,6 @@ package com.cyberqhatu.app.tienda
 
 import java.util.Date
 
-enum class EstadoInvitacion {
-    PENDIENTE,
-    ACEPTADA,
-    RECHAZADA,
-    CANCELADA
-}
-
 class InvitacionTienda(
     val idInvitacion: String,
     val idTienda: String,
