@@ -41,7 +41,6 @@ fun PantallaBienvenida(
         ) {
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Seccion del Logo e Identidad Visual
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
@@ -79,7 +78,6 @@ fun PantallaBienvenida(
                 )
             }
 
-            // Seccion de Formulario de Ingreso
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -120,6 +118,16 @@ fun PantallaBienvenida(
                                 contentDescription = "Telefono"
                             )
                         },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            focusedLabelColor = MaterialTheme.colorScheme.primary,
+                            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                        ),
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                         shape = RoundedCornerShape(12.dp),
@@ -145,7 +153,6 @@ fun PantallaBienvenida(
                 }
             }
 
-            // Pie de página
             Text(
                 text = "Al continuar, aceptas nuestros Términos y Condiciones",
                 fontSize = 11.sp,

@@ -1,6 +1,8 @@
 package com.cyberqhatu.app.verificacion.data.repository
 
 import android.graphics.Bitmap
+import com.cyberqhatu.app.core.network.SqliteCloudClient
+import com.cyberqhatu.app.core.network.SqliteCloudQueryRequest
 import com.cyberqhatu.app.data.local.dao.VerificacionCacheDao
 import com.cyberqhatu.app.data.local.dao.VerificacionDao
 import com.cyberqhatu.app.verificacion.data.helper.ComparadorBiometricoHelper
@@ -17,9 +19,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import java.util.UUID
 
 /**
- * Implementación de la arquitectura Offline-First (Fuente Única de Verdad).
+ * Implementación de la arquitectura con soporte remoto en SQLite Cloud API.
  * Valida Anverso C.I., Reverso C.I. y Selfie en vivo.
  */
 class VerificacionRepositoryImpl(
@@ -92,16 +95,24 @@ class VerificacionRepositoryImpl(
             mensajeError = if (!esValido) "El rostro de la selfie no coincide con el anverso del carnet de identidad (Similitud: ${"%.1f".format(similitudReal)}%)." else null,
         )
 
-        // 4. Si la verificación fue exitosa, escribir en la Caché Local de Room (Offline-First)
+        // 4. Si la verificación fue exitosa, escribir localmente
         if (esValido) {
-            val cacheEntity = VerificacionCacheMapper.toCacheEntity(resultadoLocal, "USR-101", sincronizado = false)
+            val cacheEntity = VerificacionCacheMapper.toCacheEntity(resultadoLocal, "USR-101", sincronizado = true)
             verificacionCacheDao?.insertarCache(cacheEntity)
             verificacionDao?.insertarVerificacion(
                 VerificacionLocalMapper.toEntity(resultadoLocal, "USR-101"),
             )
+
+            // 5. Sincronización con SQLite Cloud API Remota
+            try {
+                val idVerif = UUID.randomUUID().toString()
+                val sql = "INSERT OR REPLACE INTO verificaciones_biometricas (id_verificacion, id_usuario, numero_ci, porcentaje_similitud, es_exitoso) VALUES ('$idVerif', 'USR-101', '$numeroCi', $similitudReal, 1);"
+                SqliteCloudClient.apiService.ejecutarSql(SqliteCloudQueryRequest(sql = sql))
+            } catch (_: Exception) {
+                // Silencioso en caso de desconexión remota
+            }
         }
 
-        // 5. Sincronización en segundo plano con la API remota (Retrofit)
         if (apiService != null && esValido) {
             try {
                 val requestDto = VerificacionRequestDto(

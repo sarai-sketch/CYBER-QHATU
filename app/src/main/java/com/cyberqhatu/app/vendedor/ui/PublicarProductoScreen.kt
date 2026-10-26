@@ -41,18 +41,27 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cyberqhatu.app.data.local.database.QhatuDatabase
+import com.cyberqhatu.app.feature.tienda.data.repository.ProductoRepository
+import com.cyberqhatu.app.feature.tienda.data.repository.SqliteCloudProductoRepository
+import com.cyberqhatu.app.tienda.EstadoProducto
+import com.cyberqhatu.app.tienda.Producto
 import com.cyberqhatu.app.ui.theme.QhatuCoral
 import com.cyberqhatu.app.ui.theme.QhatuPurple
 import com.cyberqhatu.app.ui.theme.QhatuPurpleLight
+import kotlinx.coroutines.launch
+import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -60,8 +69,28 @@ fun PublicarProductoScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {}
 ) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val repository = remember(context) {
+        ProductoRepository(QhatuDatabase.getInstance(context).productoDao())
+    }
+    val sqliteCloudRepository = remember { SqliteCloudProductoRepository() }
+
     var formState by remember { mutableStateOf(PublicarProductoFormState()) }
     var dropdownExpanded by remember { mutableStateOf(false) }
+
+    val textFieldColors = OutlinedTextFieldDefaults.colors(
+        focusedContainerColor = MaterialTheme.colorScheme.surface,
+        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+        focusedLabelColor = QhatuPurple,
+        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        focusedBorderColor = QhatuPurple,
+        unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+        focusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+        unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+    )
 
     val categoriasDisponibles = listOf(
         "Ropa y Calzado",
@@ -72,7 +101,6 @@ fun PublicarProductoScreen(
         "Otros"
     )
 
-    // Diálogo de Confirmación con el tema visual de Cyber Qhatu
     if (formState.esExitoso) {
         AlertDialog(
             onDismissRequest = {
@@ -80,14 +108,14 @@ fun PublicarProductoScreen(
             },
             title = {
                 Text(
-                    text = "Producto Publicado",
+                    text = " ¡Producto Publicado!",
                     fontWeight = FontWeight.Bold,
                     color = QhatuPurple
                 )
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text("Tu producto ya está disponible en la tienda de Cyber Qhatu:")
+                    Text("Tu producto fue guardado en SQLite Cloud (API) y en la caché local:")
                     Spacer(modifier = Modifier.height(4.dp))
                     Text("• Título: ${formState.titulo}", fontWeight = FontWeight.SemiBold)
                     Text("• Categoría: ${formState.categoria.ifBlank { "Sin categoría" }}")
@@ -137,7 +165,6 @@ fun PublicarProductoScreen(
                     .background(MaterialTheme.colorScheme.background)
                     .padding(16.dp)
             ) {
-                // Botón Naranja Coral Característico
                 Button(
                     onClick = {
                         val errorTitulo = if (formState.titulo.isBlank()) "Ingresa un título válido" else null
@@ -160,10 +187,24 @@ fun PublicarProductoScreen(
                                 mensajeError = "Por favor corrige los campos requeridos en el formulario."
                             )
                         } else {
-                            formState = formState.copy(
-                                mensajeError = null,
-                                esExitoso = true
-                            )
+                            coroutineScope.launch {
+                                val nuevoProducto = Producto(
+                                    idProducto = UUID.randomUUID().toString(),
+                                    idTienda = "T-101",
+                                    idCategoria = formState.categoria.ifBlank { "General" },
+                                    nombre = formState.titulo,
+                                    descripcion = formState.descripcion,
+                                    precio = formState.precio.toDoubleOrNull() ?: 0.0,
+                                    stock = formState.stock.toIntOrNull() ?: 1,
+                                    estado = EstadoProducto.ACTIVO
+                                )
+                                repository.guardarProducto(nuevoProducto)
+                                sqliteCloudRepository.guardarProductoRemoto(nuevoProducto)
+                                formState = formState.copy(
+                                    mensajeError = null,
+                                    esExitoso = true
+                                )
+                            }
                         }
                     },
                     colors = ButtonDefaults.buttonColors(
@@ -210,7 +251,6 @@ fun PublicarProductoScreen(
                 }
             }
 
-            // --- SECCIÓN 1: FOTOS DEL PRODUCTO ---
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     text = "Fotos del Producto",
@@ -331,7 +371,6 @@ fun PublicarProductoScreen(
                 }
             }
 
-            // --- SECCIÓN 2: CONDICIÓN DEL PRODUCTO ---
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     text = "Condición del Producto *",
@@ -365,7 +404,6 @@ fun PublicarProductoScreen(
                 }
             }
 
-            // --- SECCIÓN 3: INFORMACIÓN BÁSICA DEL PRODUCTO ---
             Text(
                 text = "Información General",
                 style = MaterialTheme.typography.titleMedium,
@@ -388,10 +426,7 @@ fun PublicarProductoScreen(
                         Text(text = it, color = MaterialTheme.colorScheme.error)
                     }
                 },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = QhatuPurple,
-                    focusedLabelColor = QhatuPurple
-                ),
+                colors = textFieldColors,
                 shape = RoundedCornerShape(12.dp),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
@@ -409,10 +444,7 @@ fun PublicarProductoScreen(
                     readOnly = true,
                     label = { Text("Categoría *") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded) },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = QhatuPurple,
-                        focusedLabelColor = QhatuPurple
-                    ),
+                    colors = textFieldColors,
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier
                         .menuAnchor()
@@ -439,7 +471,6 @@ fun PublicarProductoScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Precio (Bs)
                 OutlinedTextField(
                     value = formState.precio,
                     onValueChange = { nuevoPrecio ->
@@ -458,17 +489,13 @@ fun PublicarProductoScreen(
                             Text(text = it, color = MaterialTheme.colorScheme.error)
                         }
                     },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = QhatuPurple,
-                        focusedLabelColor = QhatuPurple
-                    ),
+                    colors = textFieldColors,
                     shape = RoundedCornerShape(12.dp),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     singleLine = true,
                     modifier = Modifier.weight(1f)
                 )
 
-                // Stock Disponible
                 OutlinedTextField(
                     value = formState.stock,
                     onValueChange = { nuevoStock ->
@@ -487,10 +514,7 @@ fun PublicarProductoScreen(
                             Text(text = it, color = MaterialTheme.colorScheme.error)
                         }
                     },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = QhatuPurple,
-                        focusedLabelColor = QhatuPurple
-                    ),
+                    colors = textFieldColors,
                     shape = RoundedCornerShape(12.dp),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
@@ -504,10 +528,7 @@ fun PublicarProductoScreen(
                 onValueChange = { formState = formState.copy(descripcion = it) },
                 label = { Text("Descripción del producto") },
                 placeholder = { Text("Añade detalles sobre la confección, material, tallas y envíos...") },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = QhatuPurple,
-                    focusedLabelColor = QhatuPurple
-                ),
+                colors = textFieldColors,
                 shape = RoundedCornerShape(12.dp),
                 minLines = 3,
                 maxLines = 5,

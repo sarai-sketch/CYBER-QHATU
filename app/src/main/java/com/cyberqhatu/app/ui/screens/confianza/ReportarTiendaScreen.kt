@@ -41,6 +41,17 @@ fun ReportarTiendaScreen(
     var motivoSeleccionado by remember { mutableStateOf(motivos.first()) }
     var descripcion by remember { mutableStateOf("") }
 
+    val textFieldColors = OutlinedTextFieldDefaults.colors(
+        focusedContainerColor = MaterialTheme.colorScheme.surface,
+        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+        focusedBorderColor = QhatuPurple,
+        unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+        focusedLabelColor = QhatuPurple,
+        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -73,7 +84,6 @@ fun ReportarTiendaScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            // Tarjeta de la tienda
             Card(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -87,7 +97,6 @@ fun ReportarTiendaScreen(
                 }
             }
 
-            // Motivo del reporte
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("Motivo del reporte *", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = QhatuPurple)
 
@@ -97,7 +106,7 @@ fun ReportarTiendaScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
-                            .background(if (seleccionado) QhatuLimeDark else QhatuPurpleLight)
+                            .background(if (seleccionado) QhatuPurpleLight else Color.White)
                             .border(
                                 width = if (seleccionado) 1.5.dp else 1.dp,
                                 color = if (seleccionado) QhatuPurple else QhatuBorder,
@@ -113,12 +122,16 @@ fun ReportarTiendaScreen(
                             colors = RadioButtonDefaults.colors(selectedColor = QhatuPurple)
                         )
                         Spacer(Modifier.width(6.dp))
-                        Text(motivo, fontSize = 13.sp, fontWeight = if (seleccionado) FontWeight.SemiBold else FontWeight.Normal)
+                        Text(
+                            text = motivo,
+                            fontSize = 13.sp,
+                            fontWeight = if (seleccionado) FontWeight.Bold else FontWeight.Normal,
+                            color = if (seleccionado) QhatuPurple else MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 }
             }
 
-            // Descripción
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("Describe lo sucedido *", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = QhatuPurple)
 
@@ -130,14 +143,10 @@ fun ReportarTiendaScreen(
                         .fillMaxWidth()
                         .height(100.dp),
                     shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = QhatuPurple,
-                        focusedLabelColor = QhatuPurple
-                    )
+                    colors = textFieldColors
                 )
             }
 
-            // Evidencia
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("Evidencia (Fotos / Capturas)", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = QhatuPurple)
 
