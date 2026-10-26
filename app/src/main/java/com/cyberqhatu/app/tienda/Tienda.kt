@@ -1,8 +1,5 @@
 package com.cyberqhatu.app.tienda
 
-enum class TipoTienda { FISICA, VIRTUAL, HIBRIDA }
-enum class EstadoTienda { ACTIVA, SUSPENDIDA }
-
 class Tienda(
     val idTienda: String,
     val idPropietario: String,

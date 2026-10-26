@@ -2,13 +2,6 @@ package com.cyberqhatu.app.usuarios
 
 import java.util.Date
 
-enum class EstadoVerificacionCI {
-    NO_VERIFICADO,
-    PENDIENTE,
-    VERIFICADO,
-    RECHAZADO
-}
-
 abstract class Usuario(
     val idUsuario: String,
     var nombre: String,
