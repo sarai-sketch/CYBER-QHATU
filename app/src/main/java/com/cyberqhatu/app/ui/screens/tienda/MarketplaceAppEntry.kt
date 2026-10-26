@@ -8,16 +8,6 @@ import com.cyberqhatu.app.ui.screens.confianza.ReportarTiendaScreen
 import com.cyberqhatu.app.vendedor.ui.InventarioVentasScreen
 import com.cyberqhatu.app.vendedor.ui.PublicarProductoScreen
 
-sealed class AppScreen {
-    object Home : AppScreen()
-    data class StoreProfile(val storeId: String) : AppScreen()
-    data class ProductDetail(val productId: String) : AppScreen()
-    object Publicar : AppScreen()
-    object Inventario : AppScreen()
-    data class Reportar(val storeName: String) : AppScreen()
-    object Perfil : AppScreen()
-}
-
 /**
  * Navegador jerárquico principal de Cyber-Qhatu.
  * - Sin BottomBar en ninguna pantalla.

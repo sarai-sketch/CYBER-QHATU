@@ -2,8 +2,6 @@ package com.cyberqhatu.app.tienda
 
 import java.util.Date
 
-enum class EstadoConsulta { PENDIENTE, RESPONDIDA }
-
 class Consulta(
     val idConsulta: String,
     val idComprador: String,

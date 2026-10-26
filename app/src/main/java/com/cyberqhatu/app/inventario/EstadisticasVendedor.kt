@@ -1,11 +1,5 @@
 package com.cyberqhatu.app.inventario
 
-enum class PeriodoEstadistica {
-    DIA,
-    SEMANA,
-    MES
-}
-
 class EstadisticasVendedor(
     val idEstadistica: String,
     val idVendedor: String,
