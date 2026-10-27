@@ -1,5 +1,7 @@
 package com.cyberqhatu.app.ui.screens.tienda
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -16,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -255,8 +258,16 @@ fun DetalleProductoScreen(
                         Text("Enviar consulta", fontWeight = FontWeight.SemiBold)
                     }
 
+                    val context = LocalContext.current
                     Button(
-                        onClick = { /* . */ },
+                        onClick = {
+                            val mensaje = Uri.encode("Hola, vi tu producto '${producto.nombre}' en CyberQhatu y me interesa consultar.")
+                            val url = "https://api.whatsapp.com/send?phone=+59170000000&text=$mensaje"
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                            try {
+                                context.startActivity(intent)
+                            } catch (_: Exception) {}
+                        },
                         modifier = Modifier
                             .weight(1f)
                             .height(48.dp),

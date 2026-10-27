@@ -204,6 +204,7 @@ fun MainNavigationApp() {
                             nombreUsuario = nombreMostrado,
                             correoUsuario = currentUserEmail,
                             telefonoUsuario = "+591 70000000",
+                            estadoVerificacion = estaVerificado,
                             tipoRol = rolMostrado,
                             onEditarPerfilClick = {},
                             onCerrarSesionClick = {
@@ -289,7 +290,7 @@ fun MainNavigationApp() {
                     is RootScreen.Reportar -> {
                         ReportarTiendaScreen(
                             nombreTienda = screen.storeName,
-                            onEnviar = { motivo, descripcion ->
+                            onEnviar = { motivo: String, descripcion: String ->
                                 ModeracionStore.enviarReporte(screen.storeId, screen.storeName, motivo, descripcion)
                                 currentScreen = RootScreen.StoreProfile(screen.storeId)
                             },

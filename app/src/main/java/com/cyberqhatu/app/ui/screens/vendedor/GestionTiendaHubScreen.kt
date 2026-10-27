@@ -1,5 +1,7 @@
 package com.cyberqhatu.app.ui.screens.vendedor
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -8,7 +10,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddBox
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Store
 import androidx.compose.material3.*
@@ -189,6 +193,63 @@ fun GestionTiendaHubScreen(
                     )
                 }
 
+                var logoUri by remember { mutableStateOf<String?>(null) }
+                var portadaUri by remember { mutableStateOf<String?>(null) }
+                var descripcionTienda by remember { mutableStateOf("Tienda especializada en prendas tradicionales y artesanía fina en la Feria 16 de Julio.") }
+                var horarioApertura by remember { mutableStateOf("08:00") }
+                var horarioCierre by remember { mutableStateOf("18:00") }
+                var mostrarDialogoInfo by remember { mutableStateOf(false) }
+
+                val logoPicker = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
+                    if (uri != null) logoUri = uri.toString()
+                }
+
+                val portadaPicker = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
+                    if (uri != null) portadaUri = uri.toString()
+                }
+
+                if (mostrarDialogoInfo) {
+                    AlertDialog(
+                        onDismissRequest = { mostrarDialogoInfo = false },
+                        title = { Text("Editar Información de Tienda", fontWeight = FontWeight.Bold) },
+                        text = {
+                            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                OutlinedTextField(
+                                    value = descripcionTienda,
+                                    onValueChange = { descripcionTienda = it },
+                                    label = { Text("Descripción de la tienda") },
+                                    minLines = 2,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    OutlinedTextField(
+                                        value = horarioApertura,
+                                        onValueChange = { horarioApertura = it },
+                                        label = { Text("Apertura") },
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    OutlinedTextField(
+                                        value = horarioCierre,
+                                        onValueChange = { horarioCierre = it },
+                                        label = { Text("Cierre") },
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                            }
+                        },
+                        confirmButton = {
+                            Button(onClick = { mostrarDialogoInfo = false }) {
+                                Text("Guardar Cambios")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { mostrarDialogoInfo = false }) {
+                                Text("Cancelar")
+                            }
+                        }
+                    )
+                }
+
                 Spacer(Modifier.height(8.dp))
 
                 // Opciones del Hub
@@ -197,6 +258,20 @@ fun GestionTiendaHubScreen(
                     descripcion = "Visualiza cómo ven los compradores tu puesto",
                     icon = Icons.Default.Store,
                     onClick = onVerPerfilTienda
+                )
+
+                BotonOpcionHub(
+                    titulo = "Modificar Descripción y Horarios",
+                    descripcion = "Cambia el texto informativo y los horarios de atención",
+                    icon = Icons.Default.Edit,
+                    onClick = { mostrarDialogoInfo = true }
+                )
+
+                BotonOpcionHub(
+                    titulo = "Cambiar Foto de Logo o Portada",
+                    descripcion = "Sube desde la galería del teléfono la imagen oficial de tu puesto",
+                    icon = Icons.Default.Image,
+                    onClick = { logoPicker.launch("image/*") }
                 )
 
                 BotonOpcionHub(

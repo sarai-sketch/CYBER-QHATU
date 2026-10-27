@@ -29,6 +29,7 @@ fun PantallaMiPerfil(
     correoUsuario: String,
     telefonoUsuario: String,
     tipoRol: String,
+    estadoVerificacion: Boolean = false,
     onEditarPerfilClick: () -> Unit,
     onCerrarSesionClick: () -> Unit,
     onVerificarIdentidadClick: () -> Unit = {},
@@ -150,6 +151,15 @@ fun PantallaMiPerfil(
                                 Icon(Icons.Default.Phone, contentDescription = null, tint = QhatuPurple, modifier = Modifier.size(20.dp))
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Text(text = telefonoUsuario, fontSize = 14.sp)
+                            }
+
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = if (estadoVerificacion) "Estado C.I.: Verificado ✅" else "Estado C.I.: No verificado ⏳",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = if (estadoVerificacion) Color(0xFF2E7D32) else Color(0xFFC62828)
+                                )
                             }
                         }
                     }
