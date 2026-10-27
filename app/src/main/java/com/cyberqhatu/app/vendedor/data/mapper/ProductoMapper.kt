@@ -12,16 +12,14 @@ object ProductoMapper {
         precio: Double,
         descripcion: String,
         categoria: String,
-        stock: Int,
-        imagenUri: String? = null
+        stock: Int
     ): ProductoEntity {
         return ProductoEntity(
             nombre = nombre,
             precio = precio,
             descripcion = descripcion,
-            categoria = categoria,
-            stock = stock,
-            imagenUri = imagenUri
+            idCategoria = categoria,
+            stock = stock
         )
     }
 
@@ -29,7 +27,7 @@ object ProductoMapper {
         return Producto(
             idProducto = entity.idProducto,
             idTienda = entity.idTienda,
-            idCategoria = entity.categoria,
+            idCategoria = entity.idCategoria,
             nombre = entity.nombre,
             descripcion = entity.descripcion,
             precio = entity.precio,

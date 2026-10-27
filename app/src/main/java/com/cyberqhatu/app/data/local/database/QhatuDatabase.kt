@@ -7,20 +7,22 @@ import androidx.room.RoomDatabase
 import com.cyberqhatu.app.data.local.dao.ProductoDao
 import com.cyberqhatu.app.data.local.dao.VerificacionCacheDao
 import com.cyberqhatu.app.data.local.dao.VerificacionDao
+import com.cyberqhatu.app.data.local.entity.MovimientoInventarioEntity
 import com.cyberqhatu.app.data.local.entity.ProductoEntity
 import com.cyberqhatu.app.data.local.entity.VerificacionCacheEntity
 import com.cyberqhatu.app.data.local.entity.VerificacionEntity
 
 /**
- * Base de datos principal de Room con soporte para Caché Local Offline-First y Productos.
+ * Base de datos principal de Room con soporte para Caché Local, Productos e Inventario.
  */
 @Database(
     entities = [
         VerificacionEntity::class,
         VerificacionCacheEntity::class,
-        ProductoEntity::class
+        ProductoEntity::class,
+        MovimientoInventarioEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false,
 )
 abstract class QhatuDatabase : RoomDatabase() {

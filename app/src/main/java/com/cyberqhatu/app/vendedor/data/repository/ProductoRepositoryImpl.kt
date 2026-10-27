@@ -26,8 +26,7 @@ class ProductoRepositoryImpl(
             precio = precio,
             descripcion = descripcion,
             categoria = categoria,
-            stock = stock,
-            imagenUri = imagenUri
+            stock = stock
         )
         productoDao.insertarProducto(entity)
     }

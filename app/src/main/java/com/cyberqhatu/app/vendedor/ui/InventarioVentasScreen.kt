@@ -24,23 +24,31 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cyberqhatu.app.data.local.database.QhatuDatabase
+import com.cyberqhatu.app.feature.tienda.data.repository.ProductoRepository
+import com.cyberqhatu.app.feature.tienda.data.repository.SqliteCloudProductoRepository
+import com.cyberqhatu.app.tienda.EstadoProducto
 import com.cyberqhatu.app.ui.theme.QhatuCoral
 import com.cyberqhatu.app.ui.theme.QhatuLime
 import com.cyberqhatu.app.ui.theme.QhatuLimeDark
 import com.cyberqhatu.app.ui.theme.QhatuPurple
 import com.cyberqhatu.app.ui.theme.QhatuPurpleLight
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,12 +57,53 @@ fun InventarioVentasScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {}
 ) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val repository = remember(context) {
+        ProductoRepository(QhatuDatabase.getInstance(context).productoDao())
+    }
+    val sqliteCloudRepository = remember { SqliteCloudProductoRepository() }
+
+    val productosRoomFlow = remember(repository) {
+        repository.obtenerTodosLosProductos()
+    }
+    val productosRoom by productosRoomFlow.collectAsState(initial = emptyList())
+
     var state by remember { mutableStateOf(ResumenVentasState()) }
+
+    val productosInventario = if (productosRoom.isNotEmpty()) {
+        productosRoom.map { p ->
+            ProductoInventario(
+                id = p.idProducto,
+                titulo = p.nombre,
+                categoria = p.idCategoria,
+                precio = p.precio,
+                stock = p.stock,
+                ventasRealizadas = 0,
+                estado = if (p.stock > 0) EstadoInventario.ACTIVO else EstadoInventario.AGOTADO
+            )
+        }
+    } else {
+        state.listaProductos
+    }
 
     var productoAEditar by remember { mutableStateOf<ProductoInventario?>(null) }
     var productoAVender by remember { mutableStateOf<ProductoInventario?>(null) }
 
-    val productosFiltrados = state.listaProductos.filter { prod ->
+    val textFieldColors = OutlinedTextFieldDefaults.colors(
+        focusedContainerColor = MaterialTheme.colorScheme.surface,
+        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+        focusedLabelColor = QhatuPurple,
+        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        focusedBorderColor = QhatuPurple,
+        unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+        focusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+        unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+    )
+
+    val productosFiltrados = productosInventario.filter { prod ->
         val coincideBusqueda = prod.titulo.contains(state.textoBusqueda, ignoreCase = true) ||
                 prod.categoria.contains(state.textoBusqueda, ignoreCase = true)
         val coincideFiltro = state.filtroSeleccionado == EstadoInventario.TODOS ||
@@ -62,7 +111,7 @@ fun InventarioVentasScreen(
         coincideBusqueda && coincideFiltro
     }
 
-    // stock precio
+    // Editar producto
     productoAEditar?.let { prod ->
         var nuevoStockText by remember { mutableStateOf(prod.stock.toString()) }
         var nuevoPrecioText by remember { mutableStateOf(prod.precio.toString()) }
@@ -80,7 +129,7 @@ fun InventarioVentasScreen(
                         onValueChange = { nuevoStockText = it },
                         label = { Text("Stock Disponible") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = QhatuPurple),
+                        colors = textFieldColors,
                         shape = RoundedCornerShape(12.dp),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
@@ -91,7 +140,7 @@ fun InventarioVentasScreen(
                         onValueChange = { nuevoPrecioText = it },
                         label = { Text("Precio (Bs)") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = QhatuPurple),
+                        colors = textFieldColors,
                         shape = RoundedCornerShape(12.dp),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
@@ -118,19 +167,22 @@ fun InventarioVentasScreen(
                     onClick = {
                         val stockInt = nuevoStockText.toIntOrNull() ?: prod.stock
                         val precioDouble = nuevoPrecioText.toDoubleOrNull() ?: prod.precio
-                        val estadoFinal = if (stockInt <= 0) EstadoInventario.AGOTADO else nuevoEstado
+                        val estadoFinal = if (stockInt <= 0) EstadoProducto.OCULTO else EstadoProducto.ACTIVO
 
-                        val listaActualizada = state.listaProductos.map { p ->
-                            if (p.id == prod.id) {
-                                p.copy(stock = stockInt, precio = precioDouble, estado = estadoFinal)
-                            } else p
+                        coroutineScope.launch {
+                            repository.actualizarProducto(
+                                idProducto = prod.id,
+                                nuevoStock = stockInt,
+                                nuevoPrecio = precioDouble,
+                                nuevoEstado = estadoFinal
+                            )
+                            sqliteCloudRepository.actualizarStockYPrecioRemoto(
+                                idProducto = prod.id,
+                                nuevoStock = stockInt,
+                                nuevoPrecio = precioDouble,
+                                nuevoEstado = estadoFinal
+                            )
                         }
-
-                        state = state.copy(
-                            listaProductos = listaActualizada,
-                            productosActivos = listaActualizada.count { it.estado == EstadoInventario.ACTIVO },
-                            productosAgotados = listaActualizada.count { it.estado == EstadoInventario.AGOTADO }
-                        )
                         productoAEditar = null
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = QhatuPurple)
@@ -146,7 +198,7 @@ fun InventarioVentasScreen(
         )
     }
 
-    // registrar venta
+    // Registrar venta
     productoAVender?.let { prod ->
         var cantidadText by remember { mutableStateOf("1") }
         var metodoPago by remember { mutableStateOf("QR / Transferencia") }
@@ -164,7 +216,7 @@ fun InventarioVentasScreen(
                         onValueChange = { cantidadText = it },
                         label = { Text("Cantidad a vender") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = QhatuPurple),
+                        colors = textFieldColors,
                         shape = RoundedCornerShape(12.dp),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
@@ -191,26 +243,26 @@ fun InventarioVentasScreen(
                     onClick = {
                         val cantInt = cantidadText.toIntOrNull() ?: 1
                         if (cantInt > 0 && cantInt <= prod.stock) {
-                            val nuevoStock = prod.stock - cantInt
-                            val ingresoVenta = prod.precio * cantInt
-
-                            val listaActualizada = state.listaProductos.map { p ->
-                                if (p.id == prod.id) {
-                                    p.copy(
-                                        stock = nuevoStock,
-                                        ventasRealizadas = p.ventasRealizadas + cantInt,
-                                        estado = if (nuevoStock == 0) EstadoInventario.AGOTADO else p.estado
-                                    )
-                                } else p
+                            coroutineScope.launch {
+                                repository.registrarVentaRapida(
+                                    idProducto = prod.id,
+                                    cantidad = cantInt,
+                                    stockActual = prod.stock,
+                                    precioUnitario = prod.precio
+                                )
+                                val nuevoStock = (prod.stock - cantInt).coerceAtLeast(0)
+                                val nuevoEstado = if (nuevoStock == 0) EstadoProducto.OCULTO else EstadoProducto.ACTIVO
+                                sqliteCloudRepository.actualizarStockYPrecioRemoto(
+                                    idProducto = prod.id,
+                                    nuevoStock = nuevoStock,
+                                    nuevoPrecio = prod.precio,
+                                    nuevoEstado = nuevoEstado
+                                )
+                                state = state.copy(
+                                    totalIngresos = state.totalIngresos + (prod.precio * cantInt),
+                                    totalVentasMes = state.totalVentasMes + 1
+                                )
                             }
-
-                            state = state.copy(
-                                listaProductos = listaActualizada,
-                                totalIngresos = state.totalIngresos + ingresoVenta,
-                                totalVentasMes = state.totalVentasMes + 1,
-                                productosActivos = listaActualizada.count { it.estado == EstadoInventario.ACTIVO },
-                                productosAgotados = listaActualizada.count { it.estado == EstadoInventario.AGOTADO }
-                            )
                         }
                         productoAVender = null
                     },
@@ -228,7 +280,6 @@ fun InventarioVentasScreen(
     }
 
     Scaffold(
-        modifier = modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
                 title = { Text(text = "Inventario y Ventas", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = QhatuPurple) },
@@ -248,7 +299,8 @@ fun InventarioVentasScreen(
                     actionIconContentColor = QhatuPurple
                 )
             )
-        }
+        },
+        modifier = modifier.fillMaxSize()
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -286,7 +338,6 @@ fun InventarioVentasScreen(
                             )
                         }
 
-                        // Badge Lima de Verificada
                         Box(
                             modifier = Modifier
                                 .clip(CircleShape)
@@ -294,7 +345,7 @@ fun InventarioVentasScreen(
                                 .padding(horizontal = 12.dp, vertical = 6.dp)
                         ) {
                             Text(
-                                text = "Verificada",
+                                text = "✓ Verificada",
                                 style = MaterialTheme.typography.labelMedium,
                                 color = QhatuLimeDark,
                                 fontWeight = FontWeight.Bold
@@ -302,12 +353,10 @@ fun InventarioVentasScreen(
                         }
                     }
 
-                    // Fila de Métricas (Ingresos y Ventas estilo captura #2)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        // Tarjeta Ingresos
                         Card(
                             colors = CardDefaults.cardColors(
                                 containerColor = Color.White.copy(alpha = 0.18f)
@@ -335,7 +384,6 @@ fun InventarioVentasScreen(
                             }
                         }
 
-                        // Tarjeta Ventas
                         Card(
                             colors = CardDefaults.cardColors(
                                 containerColor = Color.White.copy(alpha = 0.18f)
@@ -366,7 +414,6 @@ fun InventarioVentasScreen(
                 }
             }
 
-            // inventario busqueda
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -380,21 +427,16 @@ fun InventarioVentasScreen(
                     color = QhatuPurple
                 )
 
-                // Buscador
                 OutlinedTextField(
                     value = state.textoBusqueda,
                     onValueChange = { state = state.copy(textoBusqueda = it) },
                     placeholder = { Text("Buscar producto...") },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = QhatuPurple,
-                        focusedLabelColor = QhatuPurple
-                    ),
+                    colors = textFieldColors,
                     shape = RoundedCornerShape(14.dp),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // Chips de Filtro por Estado
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
@@ -415,7 +457,6 @@ fun InventarioVentasScreen(
                     }
                 }
 
-                // lista productos
                 if (productosFiltrados.isEmpty()) {
                     Card(
                         colors = CardDefaults.cardColors(
@@ -456,7 +497,6 @@ fun InventarioVentasScreen(
     }
 }
 
-
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TarjetaProductoInventario(
@@ -482,7 +522,6 @@ fun TarjetaProductoInventario(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Miniatura de Producto
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(12.dp))
@@ -509,7 +548,6 @@ fun TarjetaProductoInventario(
                             maxLines = 1
                         )
 
-                        // Badge de Stock característico de las capturas (ej. "Stock 2")
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
@@ -550,7 +588,6 @@ fun TarjetaProductoInventario(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Botones de Acción (Editar / Venta Rápida con Coral)
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxWidth()

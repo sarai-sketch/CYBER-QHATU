@@ -5,17 +5,22 @@ import androidx.room.PrimaryKey
 import java.util.UUID
 
 /**
- * Entidad de Room para almacenar los productos registrados por los vendedores.
+ * Entidad local Room para persistencia de Productos.
  */
-@Entity(tableName = "productos")
+@Entity(tableName = "productos_local")
 data class ProductoEntity(
     @PrimaryKey val idProducto: String = UUID.randomUUID().toString(),
     val idTienda: String = "t1",
+    val idCategoria: String = "c1",
+    val marca: String? = null,
+    val modelo: String? = null,
     val nombre: String,
-    val precio: Double,
     val descripcion: String,
-    val categoria: String,
+    val precio: Double,
+    val precioCompra: Double? = null,
     val stock: Int,
-    val imagenUri: String? = null,
+    val stockMinimo: Int? = null,
+    val estado: String = "ACTIVO",
+    val etiquetaPrecioTransparente: Boolean = false,
     val fechaCreacion: Long = System.currentTimeMillis()
 )
