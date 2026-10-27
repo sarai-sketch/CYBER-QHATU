@@ -12,11 +12,11 @@ class Reporte(
         return true
     }
 
-    fun revisar() {
-        this.estado = EstadoReporte.REVISADO
+    fun aceptar() {
+        this.estado = EstadoReporte.ACEPTADO
     }
 
-    fun resolver() {
-        this.estado = EstadoReporte.RESUELTO
+    fun rechazar() {
+        this.estado = EstadoReporte.RECHAZADO
     }
 }

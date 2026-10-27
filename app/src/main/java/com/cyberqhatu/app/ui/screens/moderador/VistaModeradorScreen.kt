@@ -1,4 +1,4 @@
-package com.cyberqhatu.app.ui.screens.roles
+package com.cyberqhatu.app.ui.screens.moderador
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -6,9 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ReportProblem
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,36 +15,25 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cyberqhatu.app.confianza.EstadoReporte
+import com.cyberqhatu.app.confianza.ModeracionStore
 import com.cyberqhatu.app.ui.theme.QhatuCoral
 import com.cyberqhatu.app.ui.theme.QhatuPurple
 
-data class ReporteItem(
-    val id: String,
-    val tienda: String,
-    val motivo: String,
-    val descripcion: String,
-    var estado: String // "Pendiente", "Aprobado (Sancionado)", "Desestimado"
-)
-
 /**
  * Vista del Moderador:
- * - Bandeja de reportes de tiendas y productos enviados por los compradores.
- * - Validación de veracidad y toma de decisiones (sancionar tienda o desestimar).
+ * - Bandeja de reportes de tiendas enviadas por los compradores.
+ * - Sanción con strikes o desestimación del reporte.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VistaModeradorScreen(
     onCerrarSesion: () -> Unit = {}
 ) {
-    var reportes by remember {
-        mutableStateOf(
-            listOf(
-                ReporteItem("R-001", "Moda Andina", "No entregó el producto", "Compré un aguayo hace 5 días y no responden los mensajes.", "Pendiente"),
-                ReporteItem("R-002", "Artesanías El Alto", "Producto distinto al anunciado", "El tamaño del ekeko recibido es la mitad del publicado.", "Pendiente"),
-                ReporteItem("R-003", "TecnoBolivia", "Trato irrespetuoso", "El vendedor fue grosero cuando reclamé por garantía.", "Pendiente")
-            )
-        )
-    }
+    var reporteSeleccionadoId by remember { mutableStateOf<String?>(null) }
+    var textoApelacionRespuesta by remember { mutableStateOf("") }
+
+    val reportes = ModeracionStore.reportes
 
     Scaffold(
         topBar = {
@@ -71,18 +58,19 @@ fun VistaModeradorScreen(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.ReportProblem, contentDescription = null, tint = QhatuCoral)
                 Spacer(Modifier.width(8.dp))
-                Text("Reportes Pendientes de Revisión", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
+                Text("Reportes Ciudadanos de Tiendas", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
             }
 
             Spacer(Modifier.height(16.dp))
 
-            if (reportes.all { it.estado != "Pendiente" }) {
+            if (reportes.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No hay reportes pendientes por revisar.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("No hay reportes registrados por los compradores.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             } else {
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     items(reportes) { reporte ->
+                        val strikesActuales = ModeracionStore.strikesDe(reporte.idTienda)
                         Card(
                             shape = RoundedCornerShape(14.dp),
                             colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -95,24 +83,32 @@ fun VistaModeradorScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(reporte.tienda, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
+                                    Column {
+                                        Text(reporte.nombreTienda, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
+                                        Text("Strikes de la tienda: $strikesActuales / ${ModeracionStore.LIMITE_STRIKES}", fontSize = 12.sp, color = Color.Gray)
+                                    }
+
                                     Surface(
                                         shape = RoundedCornerShape(6.dp),
                                         color = when (reporte.estado) {
-                                            "Pendiente" -> Color(0xFFFFF3E0)
-                                            "Sancionado" -> Color(0xFFFFEBEE)
-                                            else -> Color(0xFFE8F5E9)
+                                            EstadoReporte.PENDIENTE -> Color(0xFFFFF3E0)
+                                            EstadoReporte.ACEPTADO -> Color(0xFFFFEBEE)
+                                            EstadoReporte.RECHAZADO -> Color(0xFFE8F5E9)
                                         }
                                     ) {
                                         Text(
-                                            text = reporte.estado,
+                                            text = when (reporte.estado) {
+                                                EstadoReporte.PENDIENTE -> "Pendiente"
+                                                EstadoReporte.ACEPTADO -> "Sancionado (Strike)"
+                                                EstadoReporte.RECHAZADO -> "Desestimado"
+                                            },
                                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = when (reporte.estado) {
-                                                "Pendiente" -> Color(0xFFE65100)
-                                                "Sancionado" -> Color(0xFFC62828)
-                                                else -> Color(0xFF2E7D32)
+                                                EstadoReporte.PENDIENTE -> Color(0xFFE65100)
+                                                EstadoReporte.ACEPTADO -> Color(0xFFC62828)
+                                                EstadoReporte.RECHAZADO -> Color(0xFF2E7D32)
                                             }
                                         )
                                     }
@@ -123,29 +119,25 @@ fun VistaModeradorScreen(
                                 Spacer(Modifier.height(4.dp))
                                 Text(reporte.descripcion, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
-                                if (reporte.estado == "Pendiente") {
+                                if (reporte.estado == EstadoReporte.PENDIENTE) {
                                     Spacer(Modifier.height(12.dp))
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
                                         OutlinedButton(
-                                            onClick = {
-                                                reportes = reportes.map { if (it.id == reporte.id) it.copy(estado = "Desestimado") else it }
-                                            },
+                                            onClick = { ModeracionStore.resolver(reporte.id, aceptar = false) },
                                             modifier = Modifier.weight(1f)
                                         ) {
                                             Text("Desestimar", color = Color.Gray)
                                         }
 
                                         Button(
-                                            onClick = {
-                                                reportes = reportes.map { if (it.id == reporte.id) it.copy(estado = "Sancionado") else it }
-                                            },
+                                            onClick = { ModeracionStore.resolver(reporte.id, aceptar = true) },
                                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                                             modifier = Modifier.weight(1f)
                                         ) {
-                                            Text("Sancionar Tienda")
+                                            Text("Aceptar (Aviso/Strike)")
                                         }
                                     }
                                 }

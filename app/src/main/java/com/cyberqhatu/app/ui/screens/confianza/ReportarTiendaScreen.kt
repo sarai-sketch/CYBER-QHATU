@@ -36,6 +36,7 @@ private val motivos = listOf(
 @Composable
 fun ReportarTiendaScreen(
     nombreTienda: String = "Moda Andina",
+    onEnviar: (motivo: String, descripcion: String) -> Unit = { _, _ -> },
     onBackClick: () -> Unit = {}
 ) {
     var motivoSeleccionado by remember { mutableStateOf(motivos.first()) }
@@ -92,8 +93,6 @@ fun ReportarTiendaScreen(
             ) {
                 Column(Modifier.padding(16.dp)) {
                     Text(nombreTienda, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
-                    Spacer(Modifier.height(4.dp))
-                    Text("Calle Comercio 123, Zona Comercial", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
 
@@ -174,7 +173,8 @@ fun ReportarTiendaScreen(
             Spacer(Modifier.height(16.dp))
 
             Button(
-                onClick = { /* Enviar reporte */ },
+                onClick = { onEnviar(motivoSeleccionado, descripcion.trim()) },
+                enabled = descripcion.isNotBlank(),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),

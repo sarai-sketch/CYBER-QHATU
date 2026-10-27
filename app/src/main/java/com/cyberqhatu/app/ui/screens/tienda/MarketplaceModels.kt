@@ -1,5 +1,6 @@
 package com.cyberqhatu.app.ui.screens.tienda
 
+import androidx.compose.runtime.mutableStateListOf
 import com.cyberqhatu.app.tienda.Categoria
 import com.cyberqhatu.app.tienda.EstadoProducto
 import com.cyberqhatu.app.tienda.EstadoTienda
@@ -43,7 +44,7 @@ object DomainMockData {
         )
     )
 
-    val tiendas = listOf(
+    val tiendas = mutableStateListOf(
         Tienda(
             idTienda = "t1",
             idPropietario = "u1",

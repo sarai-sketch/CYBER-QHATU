@@ -20,7 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.cyberqhatu.app.tienda.Producto
+import com.cyberqhatu.app.tienda.FavoritoTienda
 import com.cyberqhatu.app.ui.theme.*
 
 /**
@@ -30,9 +30,11 @@ import com.cyberqhatu.app.ui.theme.*
 @Composable
 fun StoreProfileScreen(
     storeId: String = "t1",
+    isLoggedIn: Boolean = false,
     onBackClick: () -> Unit = {},
     onNavigateToProductDetail: (productId: String) -> Unit = {},
-    onNavigateToReportar: (storeName: String) -> Unit = {}
+    onNavigateToReportar: (storeName: String) -> Unit = {},
+    onRequireLogin: () -> Unit = {}
 ) {
     CyberQhatuTheme {
         val tienda = DomainMockData.tiendas.firstOrNull { it.idTienda == storeId }
@@ -55,6 +57,37 @@ fun StoreProfileScreen(
                         }
                     },
                     actions = {
+                        var esFavorito by remember {
+                            mutableStateOf(DomainMockData.favoritosTiendas.any { it.idTienda == tienda.idTienda })
+                        }
+                        IconButton(
+                            onClick = {
+                                if (!isLoggedIn) {
+                                    onRequireLogin()
+                                } else {
+                                    esFavorito = !esFavorito
+                                    if (esFavorito) {
+                                        if (DomainMockData.favoritosTiendas.none { it.idTienda == tienda.idTienda }) {
+                                            DomainMockData.favoritosTiendas.add(
+                                                FavoritoTienda(
+                                                    idFavorito = System.currentTimeMillis().toString(),
+                                                    idUsuario = "USR-101",
+                                                    idTienda = tienda.idTienda
+                                                )
+                                            )
+                                        }
+                                    } else {
+                                        DomainMockData.favoritosTiendas.removeAll { it.idTienda == tienda.idTienda }
+                                    }
+                                }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = if (esFavorito) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                contentDescription = "Favorito Tienda",
+                                tint = if (esFavorito) Color.Red else QhatuPurple
+                            )
+                        }
                         IconButton(onClick = { onNavigateToReportar(tienda.nombre) }) {
                             Icon(
                                 imageVector = Icons.Default.Warning,
@@ -120,201 +153,123 @@ fun StoreProfileScreen(
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(72.dp)
+                                    .size(70.dp)
                                     .clip(CircleShape)
-                                    .background(QhatuPurpleLight),
+                                    .background(QhatuPurple.copy(alpha = 0.1f)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Store,
-                                    contentDescription = "Tienda",
+                                    imageVector = Icons.Default.Storefront,
+                                    contentDescription = null,
                                     tint = QhatuPurple,
                                     modifier = Modifier.size(36.dp)
                                 )
                             }
                             Spacer(modifier = Modifier.height(12.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.LocationOn,
-                                    contentDescription = "Ubicación",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    text = tienda.direccionGoogleMaps ?: "Comercio Local, El Alto",
-                                    fontSize = 13.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    fontWeight = FontWeight.Medium
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.Star,
-                                    contentDescription = "Calificación",
-                                    tint = Color(0xFFFFB300),
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    text = "${reputacion ?: 5.0} (${ventas ?: 10} transacciones exitosas - Nivel ALTO)",
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = tienda.nombre,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = QhatuPurple
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = tienda.descripcion,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                            Spacer(modifier = Modifier.height(16.dp))
+
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceEvenly
+                                horizontalArrangement = Arrangement.SpaceAround
                             ) {
-                                Surface(
-                                    color = QhatuLime.copy(alpha = 0.2f),
-                                    shape = RoundedCornerShape(8.dp)
-                                ) {
-                                    Text(
-                                        text = "Horario: ${tienda.horarioApertura ?: "06:00"} - ${tienda.horarioCierre ?: "18:00"}",
-                                        fontSize = 11.sp,
-                                        color = QhatuLimeDark,
-                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                                        fontWeight = FontWeight.Bold
-                                    )
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFFFC107), modifier = Modifier.size(16.dp))
+                                        Spacer(Modifier.width(4.dp))
+                                        Text(text = "$reputacion", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                    }
+                                    Text("Reputación", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
-                                Surface(
-                                    color = QhatuPurpleLight,
-                                    shape = RoundedCornerShape(8.dp)
-                                ) {
-                                    Text(
-                                        text = "Tipo: ${tienda.tipo}",
-                                        fontSize = 11.sp,
-                                        color = QhatuPurple,
-                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                                        fontWeight = FontWeight.Bold
-                                    )
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(text = "$ventas+", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
+                                    Text("Ventas exitosas", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
-                            }
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Button(
-                                onClick = { /* Abrir enlace de WhatsApp */ },
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(containerColor = QhatuCoral),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.Chat,
-                                    contentDescription = "WhatsApp",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(text = "Contactar por WhatsApp", color = Color.White, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                    // Botón de Contacto WhatsApp
+                    Button(
+                        onClick = { /* Abrir enlace WhatsApp */ },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = QhatuCoral)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Chat,
+                            contentDescription = "WhatsApp",
+                            tint = Color.White,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text("Contactar por WhatsApp", fontWeight = FontWeight.Bold, color = Color.White)
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "Catálogo del Puesto (${productosDeTienda.size} productos)",
-                        fontSize = 18.sp,
+                        text = "Productos de este Puesto",
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = QhatuPurple
                     )
 
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    productosDeTienda.forEach { producto ->
-                        DomainStoreProductCard(
-                            producto = producto,
-                            onClick = { onNavigateToProductDetail(producto.idProducto) }
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
+                    if (productosDeTienda.isEmpty()) {
+                        Text("No hay productos publicados en este puesto.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    } else {
+                        productosDeTienda.forEach { producto ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { onNavigateToProductDetail(producto.idProducto) },
+                                shape = RoundedCornerShape(14.dp),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(60.dp)
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .background(QhatuPurple.copy(alpha = 0.1f)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.ShoppingBag,
+                                            contentDescription = null,
+                                            tint = QhatuPurple,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(producto.nombre, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = QhatuPurple)
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text("Bs. ${producto.precio}", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = QhatuCoral)
+                                    }
+                                }
+                            }
+                        }
                     }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun DomainStoreProductCard(
-    producto: Producto,
-    onClick: () -> Unit
-) {
-    val categoria = DomainMockData.categorias.firstOrNull { it.idCategoria == producto.idCategoria }
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = producto.nombre,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = QhatuPurple,
-                    modifier = Modifier.weight(1f)
-                )
-                Text(
-                    text = "Bs. ${producto.precio}",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = QhatuCoral
-                )
-            }
-            Spacer(modifier = Modifier.height(4.dp))
-            if (producto.marca != null || producto.modelo != null) {
-                Text(
-                    text = "Marca: ${producto.marca ?: "-"} | Modelo: ${producto.modelo ?: "-"}",
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Text(
-                text = producto.descripcion,
-                fontSize = 13.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = QhatuPurpleLight
-                ) {
-                    Text(
-                        text = categoria?.nombre ?: "Categoría",
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        fontSize = 11.sp,
-                        color = QhatuPurple,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = Color(0xFFFFF3E0)
-                ) {
-                    Text(
-                        text = "Stock: ${producto.stock} unidades",
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        fontSize = 11.sp,
-                        color = Color(0xFFE65100),
-                        fontWeight = FontWeight.Medium
-                    )
                 }
             }
         }
