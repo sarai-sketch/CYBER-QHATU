@@ -1,17 +1,7 @@
 package com.cyberqhatu.app.ui.screens.tienda
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,40 +9,20 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Chat
-import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cyberqhatu.app.tienda.EstadoProducto
+import com.cyberqhatu.app.tienda.FavoritoProducto
 import com.cyberqhatu.app.tienda.Producto
-import com.cyberqhatu.app.ui.theme.QhatuCoral
-import com.cyberqhatu.app.ui.theme.QhatuLime
-import com.cyberqhatu.app.ui.theme.QhatuLimeDark
-import com.cyberqhatu.app.ui.theme.QhatuPurple
-import com.cyberqhatu.app.ui.theme.QhatuPurpleLight
+import com.cyberqhatu.app.ui.theme.*
 
 private val productoEjemplo = Producto(
     idProducto = "P-001",
@@ -69,17 +39,53 @@ private val productoEjemplo = Producto(
 @Composable
 fun DetalleProductoScreen(
     producto: Producto = productoEjemplo,
+    isLoggedIn: Boolean = false,
     onBackClick: () -> Unit = {},
+    onRequireLogin: () -> Unit = {}
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "Detalle del Producto", fontWeight = FontWeight.Bold, fontSize = 18.sp) },
+                title = { Text(text = "Detalle del Producto", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = QhatuPurple) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Volver",
+                            tint = QhatuPurple
+                        )
+                    }
+                },
+                actions = {
+                    var esFavorito by remember {
+                        mutableStateOf(DomainMockData.favoritosProductos.any { it.idProducto == producto.idProducto })
+                    }
+                    IconButton(
+                        onClick = {
+                            if (!isLoggedIn) {
+                                onRequireLogin()
+                            } else {
+                                esFavorito = !esFavorito
+                                if (esFavorito) {
+                                    if (DomainMockData.favoritosProductos.none { it.idProducto == producto.idProducto }) {
+                                        DomainMockData.favoritosProductos.add(
+                                            FavoritoProducto(
+                                                idFavorito = System.currentTimeMillis().toString(),
+                                                idUsuario = "USR-101",
+                                                idProducto = producto.idProducto
+                                            )
+                                        )
+                                    }
+                                } else {
+                                    DomainMockData.favoritosProductos.removeAll { it.idProducto == producto.idProducto }
+                                }
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = if (esFavorito) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = "Favorito Producto",
+                            tint = if (esFavorito) Color.Red else QhatuPurple
                         )
                     }
                 },
@@ -97,179 +103,185 @@ fun DetalleProductoScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .background(MaterialTheme.colorScheme.background)
-                .verticalScroll(rememberScrollState())
-                .padding(20.dp),
+                .verticalScroll(rememberScrollState()),
         ) {
-            // Foto del producto
+            // Banner Superior Encabezado
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(QhatuPurpleLight),
-                contentAlignment = Alignment.Center,
+                    .clip(RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp))
+                    .background(QhatuPurple)
+                    .padding(horizontal = 20.dp, vertical = 20.dp),
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        imageVector = Icons.Default.CameraAlt,
-                        contentDescription = "Foto del producto",
-                        tint = QhatuPurple,
-                        modifier = Modifier.size(40.dp),
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
+                Column {
                     Text(
-                        text = "Foto del producto",
-                        color = QhatuPurple,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 13.sp,
+                        text = "Producto Verificado en Feria",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = Color.White.copy(alpha = 0.8f),
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = producto.nombre,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
                     )
                 }
             }
 
-            Spacer(Modifier.height(16.dp))
-
-            // Insignias de estado
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                EstadoBadge(text = "Precio verificado", bg = QhatuLime, fg = QhatuLimeDark, icon = Icons.Default.Check)
-                EstadoBadge(text = producto.estado.name, bg = QhatuPurple, fg = Color.White)
-            }
-
-            Spacer(Modifier.height(14.dp))
-
-            Text(
-                text = producto.nombre,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                color = QhatuPurple,
-            )
-
-            Spacer(Modifier.height(6.dp))
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "Bs ${producto.precio.toInt()}",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = QhatuCoral,
-                )
-            }
-
-            Spacer(Modifier.height(8.dp))
-            Text(
-                text = producto.descripcion,
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-
-            Spacer(Modifier.height(20.dp))
-
-            // Tarjeta de la tienda
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                modifier = Modifier.fillMaxWidth(),
+            Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                Row(
-                    modifier = Modifier.padding(14.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+                // Tarjeta de información principal
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(46.dp)
-                            .clip(CircleShape)
-                            .background(QhatuPurpleLight),
-                        contentAlignment = Alignment.Center,
+                    Column(
+                        modifier = Modifier.padding(20.dp),
                     ) {
-                        Text("MA", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = QhatuPurple)
-                    }
-
-                    Spacer(Modifier.width(12.dp))
-
-                    Column(Modifier.weight(1f)) {
-                        Text("Moda Andina", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = QhatuPurple)
-                        Spacer(Modifier.height(2.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.Star,
-                                contentDescription = "Calificación",
-                                tint = Color(0xFFFFB300),
-                                modifier = Modifier.size(14.dp),
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                text = "Bs. ${producto.precio}",
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = QhatuCoral,
                             )
-                            Spacer(Modifier.width(4.dp))
-                            Text("4.8 (126 reseñas)", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = QhatuLimeDark.copy(alpha = 0.15f),
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = null,
+                                        tint = QhatuLimeDark,
+                                        modifier = Modifier.size(14.dp),
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "Código Seguro",
+                                        color = QhatuLimeDark,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 12.sp,
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = producto.descripcion,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+
+                // Tarjeta de Información del Puesto / Vendedor
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(50.dp)
+                                .clip(CircleShape)
+                                .background(QhatuPurple.copy(alpha = 0.1f)),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CameraAlt,
+                                contentDescription = null,
+                                tint = QhatuPurple,
+                                modifier = Modifier.size(24.dp),
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Puesto Don Carlos",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 15.sp,
+                                color = QhatuPurple,
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = null,
+                                    tint = Color(0xFFFFC107),
+                                    modifier = Modifier.size(14.dp),
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "4.8 (126 reseñas)",
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
                         }
                     }
-
-                    Text("Ver tienda ›", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = QhatuPurple)
-                }
-            }
-
-            Spacer(Modifier.height(20.dp))
-
-            // Botones de acción
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                OutlinedButton(
-                    onClick = { /* . */ },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(48.dp),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = QhatuPurple),
-                ) {
-                    Text("Enviar consulta", fontWeight = FontWeight.SemiBold)
                 }
 
-                Button(
-                    onClick = { /* . */ },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(48.dp),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = QhatuCoral),
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Chat,
-                        contentDescription = "WhatsApp",
-                        tint = Color.White,
-                        modifier = Modifier.size(18.dp),
-                    )
-                    Spacer(Modifier.width(6.dp))
-                    Text("Abrir WhatsApp", fontWeight = FontWeight.Bold, color = Color.White)
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Botones de acción
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    OutlinedButton(
+                        onClick = { /* . */ },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = QhatuPurple),
+                    ) {
+                        Text("Enviar consulta", fontWeight = FontWeight.SemiBold)
+                    }
+
+                    Button(
+                        onClick = { /* . */ },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = QhatuCoral),
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Chat,
+                            contentDescription = "WhatsApp",
+                            tint = Color.White,
+                            modifier = Modifier.size(18.dp),
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Text("Abrir WhatsApp", fontWeight = FontWeight.Bold, color = Color.White)
+                    }
                 }
+
+                Spacer(Modifier.height(24.dp))
+
+                Text("Reseñas (18) · 4.8", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
+                Spacer(Modifier.height(12.dp))
+                ResenaItem(autor = "Ana R.", comentario = "Tal cual la foto, muy buena atención y entrega rápida.")
+                Spacer(Modifier.height(10.dp))
+                ResenaItem(autor = "Carlos M.", comentario = "Producto 100% verificado con código seguro.")
             }
-
-            Spacer(Modifier.height(24.dp))
-
-            Text("Reseñas (18) · 4.8", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
-            Spacer(Modifier.height(12.dp))
-            ResenaItem(autor = "Ana R.", comentario = "Tal cual la foto, muy buena atención y entrega rápida.")
-            Spacer(Modifier.height(10.dp))
-            ResenaItem(autor = "Carlos M.", comentario = "Producto 100% verificado con código seguro.")
-        }
-    }
-}
-
-@Composable
-private fun EstadoBadge(text: String, bg: Color, fg: Color, icon: ImageVector? = null) {
-    Surface(
-        shape = RoundedCornerShape(8.dp),
-        color = bg,
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            if (icon != null) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = fg,
-                    modifier = Modifier.size(12.dp),
-                )
-                Spacer(Modifier.width(4.dp))
-            }
-            Text(text, color = fg, fontSize = 11.sp, fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -277,32 +289,15 @@ private fun EstadoBadge(text: String, bg: Color, fg: Color, icon: ImageVector? =
 @Composable
 private fun ResenaItem(autor: String, comentario: String) {
     Card(
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                repeat(5) {
-                    Icon(
-                        imageVector = Icons.Default.Star,
-                        contentDescription = "Estrella",
-                        tint = Color(0xFFFFB300),
-                        modifier = Modifier.size(12.dp),
-                    )
-                }
-                Spacer(Modifier.width(8.dp))
-                Text(autor, fontWeight = FontWeight.Bold, fontSize = 12.sp, color = QhatuPurple)
-            }
-            Spacer(Modifier.height(4.dp))
-            Text(comentario, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(text = autor, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = QhatuPurple)
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(text = comentario, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
-}
-
-@Preview(showBackground = true, widthDp = 360, heightDp = 780)
-@Composable
-private fun DetalleProductoScreenPreview() {
-    DetalleProductoScreen()
 }

@@ -2,6 +2,6 @@ package com.cyberqhatu.app.confianza
 
 enum class EstadoReporte {
     PENDIENTE,
-    REVISADO,
-    RESUELTO
+    ACEPTADO,   // el moderador aceptó el reporte: se pone un strike a la tienda
+    RECHAZADO   // el moderador rechazó el reporte: sin sanción
 }

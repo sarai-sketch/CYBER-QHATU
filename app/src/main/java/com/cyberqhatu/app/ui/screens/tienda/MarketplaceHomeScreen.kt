@@ -19,6 +19,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cyberqhatu.app.tienda.Categoria
+import com.cyberqhatu.app.tienda.FavoritoProducto
+import com.cyberqhatu.app.tienda.FavoritoTienda
 import com.cyberqhatu.app.tienda.Producto
 import com.cyberqhatu.app.tienda.Tienda
 import com.cyberqhatu.app.ui.theme.*
@@ -29,10 +31,15 @@ import com.cyberqhatu.app.ui.theme.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MarketplaceHomeScreen(
+    isLoggedIn: Boolean = false,
+    isTiendaCreada: Boolean = false,
+    avisosTienda: Int = 0,
     onNavigateToStoreProfile: (storeId: String) -> Unit = {},
     onNavigateToProductDetail: (productId: String) -> Unit = {},
     onNavigateToPublicar: () -> Unit = {},
     onNavigateToInventario: () -> Unit = {},
+    onNavigateToTiendaHub: () -> Unit = {},
+    onNavigateToFavoritos: () -> Unit = {},
     onNavigateToPerfil: () -> Unit = {}
 ) {
     CyberQhatuTheme {
@@ -75,19 +82,23 @@ fun MarketplaceHomeScreen(
                         }
                     },
                     actions = {
-                        IconButton(onClick = onNavigateToPublicar) {
-                            Icon(
-                                imageVector = Icons.Default.AddCircle,
-                                contentDescription = "Publicar Producto",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
+                        if (isTiendaCreada) {
+                            IconButton(onClick = onNavigateToTiendaHub) {
+                                Icon(
+                                    imageVector = Icons.Default.Storefront,
+                                    contentDescription = "Mi Tienda",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
                         }
-                        IconButton(onClick = onNavigateToInventario) {
-                            Icon(
-                                imageVector = Icons.Default.BarChart,
-                                contentDescription = "Inventario y Ventas",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
+                        if (isLoggedIn) {
+                            IconButton(onClick = onNavigateToFavoritos) {
+                                Icon(
+                                    imageVector = Icons.Default.Favorite,
+                                    contentDescription = "Favoritos",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
                         }
                         IconButton(onClick = onNavigateToPerfil) {
                             Icon(
@@ -128,322 +139,281 @@ fun MarketplaceHomeScreen(
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         },
-                        shape = RoundedCornerShape(16.dp),
+                        shape = RoundedCornerShape(14.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.surface,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                            focusedBorderColor = MaterialTheme.colorScheme.primary
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                            disabledContainerColor = Color.White,
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
                         ),
                         singleLine = true
                     )
                 }
 
-                // Banner
+                // Categorías
+                item {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            text = "Categorías",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            val allCategories = listOf(Categoria("c0", "Todos", "")) + DomainMockData.categorias
+                            items(allCategories) { categoria ->
+                                val isSelected = selectedCategoryName == categoria.nombre
+                                FilterChip(
+                                    selected = isSelected,
+                                    onClick = { selectedCategoryName = categoria.nombre },
+                                    label = { Text(categoria.nombre) },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                        selectedLabelColor = Color.White
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Banner Promocional de Confianza
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer
+                        )
                     ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.Verified,
-                                    contentDescription = "Verificado",
-                                    tint = MaterialTheme.colorScheme.onPrimary,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Verified,
+                                contentDescription = "Verificado",
+                                modifier = Modifier.size(36.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Column {
                                 Text(
-                                    text = "Catálogo Oficial de Comercios Locales",
-                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    text = "Garantía Cyber-Qhatu",
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp
+                                    fontSize = 15.sp,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = "Comercios locales verificados con identidad biométrica.",
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                                 )
                             }
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "Precios transparentes y contacto directo vía WhatsApp con los puestos y tiendas.",
-                                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
-                                fontSize = 13.sp
-                            )
                         }
                     }
                 }
 
-                // Categorías
+                // Sección Tiendas Destacadas
                 item {
-                    Text(
-                        text = "Categorías de Productos",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        item {
-                            CategoryChip(
-                                name = "Todos",
-                                isSelected = selectedCategoryName == "Todos",
-                                onClick = { selectedCategoryName = "Todos" }
-                            )
-                        }
-                        items(DomainMockData.categorias) { cat ->
-                            CategoryChip(
-                                name = cat.nombre,
-                                isSelected = selectedCategoryName == cat.nombre,
-                                onClick = { selectedCategoryName = cat.nombre }
-                            )
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            text = "Puestos y Tiendas Verificadas",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            items(DomainMockData.tiendas) { tienda ->
+                                Card(
+                                    modifier = Modifier
+                                        .width(160.dp)
+                                        .clickable { onNavigateToStoreProfile(tienda.idTienda) },
+                                    shape = RoundedCornerShape(14.dp),
+                                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                                ) {
+                                    Column(modifier = Modifier.padding(12.dp)) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .height(80.dp)
+                                                .clip(RoundedCornerShape(10.dp))
+                                                .background(MaterialTheme.colorScheme.surfaceVariant),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Storefront,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.primary,
+                                                modifier = Modifier.size(32.dp)
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.height(8.dp))
+
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                text = tienda.nombre,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 13.sp,
+                                                maxLines = 1,
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                            var esFavTienda by remember {
+                                                mutableStateOf(DomainMockData.favoritosTiendas.any { it.idTienda == tienda.idTienda })
+                                            }
+                                            IconButton(
+                                                onClick = {
+                                                    if (!isLoggedIn) {
+                                                        onNavigateToPerfil()
+                                                    } else {
+                                                        esFavTienda = !esFavTienda
+                                                        if (esFavTienda) {
+                                                            if (DomainMockData.favoritosTiendas.none { it.idTienda == tienda.idTienda }) {
+                                                                DomainMockData.favoritosTiendas.add(
+                                                                    FavoritoTienda(
+                                                                        idFavorito = System.currentTimeMillis().toString(),
+                                                                        idUsuario = "USR-101",
+                                                                        idTienda = tienda.idTienda
+                                                                    )
+                                                                )
+                                                            }
+                                                        } else {
+                                                            DomainMockData.favoritosTiendas.removeAll { it.idTienda == tienda.idTienda }
+                                                        }
+                                                    }
+                                                },
+                                                modifier = Modifier.size(24.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = if (esFavTienda && isLoggedIn) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                                    contentDescription = "Favorito",
+                                                    tint = if (esFavTienda && isLoggedIn) Color.Red else Color.Gray,
+                                                    modifier = Modifier.size(18.dp)
+                                                )
+                                            }
+                                        }
+
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(
+                                                imageVector = Icons.Default.Star,
+                                                contentDescription = "Calificación",
+                                                tint = Color(0xFFFFC107),
+                                                modifier = Modifier.size(12.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(2.dp))
+                                            Text(
+                                                text = "${DomainMockData.reputaciones[tienda.idTienda] ?: 4.8} (${DomainMockData.transacciones[tienda.idTienda] ?: 50})",
+                                                fontSize = 11.sp,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
 
-                // Tiendas Destacadas
+                // Sección Productos
                 item {
                     Text(
-                        text = "Puestos y Tiendas Registradas",
+                        text = "Productos Disponibles",
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(DomainMockData.tiendas) { tienda ->
-                            DomainStoreCard(
-                                tienda = tienda,
-                                onClick = { onNavigateToStoreProfile(tienda.idTienda) }
-                            )
-                        }
-                    }
-                }
-
-                // Catálogo de Productos
-                item {
-                    Text(
-                        text = "Productos en Venta (${filteredProducts.size})",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
                 items(filteredProducts) { producto ->
-                    val tienda = DomainMockData.tiendas.firstOrNull { it.idTienda == producto.idTienda }
-                    DomainProductCard(
-                        producto = producto,
-                        tienda = tienda,
-                        onProductClick = { onNavigateToProductDetail(producto.idProducto) },
-                        onStoreClick = {
-                            if (tienda != null) {
-                                onNavigateToStoreProfile(tienda.idTienda)
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onNavigateToProductDetail(producto.idProducto) },
+                        shape = RoundedCornerShape(14.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(70.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.ShoppingBag,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(28.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = producto.nombre,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = producto.descripcion,
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 2
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = "Bs. ${producto.precio}",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+
+                            var esFavProd by remember {
+                                mutableStateOf(DomainMockData.favoritosProductos.any { it.idProducto == producto.idProducto })
+                            }
+                            IconButton(
+                                onClick = {
+                                    if (!isLoggedIn) {
+                                        onNavigateToPerfil()
+                                    } else {
+                                        esFavProd = !esFavProd
+                                        if (esFavProd) {
+                                            if (DomainMockData.favoritosProductos.none { it.idProducto == producto.idProducto }) {
+                                                DomainMockData.favoritosProductos.add(
+                                                    FavoritoProducto(
+                                                        idFavorito = System.currentTimeMillis().toString(),
+                                                        idUsuario = "USR-101",
+                                                        idProducto = producto.idProducto
+                                                    )
+                                                )
+                                            }
+                                        } else {
+                                            DomainMockData.favoritosProductos.removeAll { it.idProducto == producto.idProducto }
+                                        }
+                                    }
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = if (esFavProd && isLoggedIn) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                    contentDescription = "Favorito Producto",
+                                    tint = if (esFavProd && isLoggedIn) Color.Red else Color.Gray
+                                )
                             }
                         }
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun CategoryChip(
-    name: String,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    val backgroundColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
-    val contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
-
-    Surface(
-        modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
-            .clickable(onClick = onClick),
-        color = backgroundColor,
-        shadowElevation = if (isSelected) 4.dp else 1.dp
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = name,
-                color = contentColor,
-                fontSize = 13.sp,
-                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-            )
-        }
-    }
-}
-
-@Composable
-fun DomainStoreCard(
-    tienda: Tienda,
-    onClick: () -> Unit
-) {
-    val reputacion = DomainMockData.reputaciones[tienda.idTienda]
-    val ventas = DomainMockData.transacciones[tienda.idTienda]
-
-    Card(
-        modifier = Modifier
-            .width(170.dp)
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(12.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.primaryContainer),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Store,
-                    contentDescription = "Tienda",
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = tienda.nombre,
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1
-            )
-            Text(
-                text = tienda.direccionGoogleMaps ?: "Comercio Local",
-                fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Default.Star,
-                    contentDescription = "Reputación",
-                    tint = Color(0xFFF57C00),
-                    modifier = Modifier.size(12.dp)
-                )
-                Spacer(modifier = Modifier.width(2.dp))
-                Text(
-                    text = "${reputacion ?: 5.0} (${ventas ?: 10} ventas)",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color(0xFFF57C00)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun DomainProductCard(
-    producto: Producto,
-    tienda: Tienda?,
-    onProductClick: () -> Unit,
-    onStoreClick: () -> Unit
-) {
-    val categoria = DomainMockData.categorias.firstOrNull { it.idCategoria == producto.idCategoria }
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onProductClick),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = categoria?.nombre ?: "General",
-                    fontSize = 11.sp,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = "Bs. ${producto.precio}",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF2E7D32)
-                )
-            }
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = producto.nombre,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            if (producto.marca != null || producto.modelo != null) {
-                Text(
-                    text = "Marca: ${producto.marca ?: "-"} | Modelo: ${producto.modelo ?: "-"}",
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = producto.descripcion,
-                fontSize = 13.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable(onClick = onStoreClick)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Store,
-                        contentDescription = "Puesto",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(14.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = tienda?.nombre ?: "Puesto Local",
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-                if (producto.etiquetaPrecioTransparente) {
-                    Surface(
-                        color = Color(0xFFE8F5E9),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            text = "Precio Transparente",
-                            fontSize = 10.sp,
-                            color = Color(0xFF2E7D32),
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                            fontWeight = FontWeight.Bold
-                        )
                     }
                 }
             }
