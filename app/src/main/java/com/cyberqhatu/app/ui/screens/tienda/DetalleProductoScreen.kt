@@ -1,5 +1,7 @@
 package com.cyberqhatu.app.ui.screens.tienda
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -11,27 +13,47 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cyberqhatu.app.tienda.EstadoProducto
+import com.cyberqhatu.app.tienda.FavoritoProducto
 import com.cyberqhatu.app.tienda.Producto
 import com.cyberqhatu.app.ui.theme.*
+
+private val productoEjemplo = Producto(
+    idProducto = "P-001",
+    idTienda = "T-001",
+    idCategoria = "CAT-001",
+    nombre = "Chompa de Alpaca Fina",
+    descripcion = "Chompa tejida a mano, 100% fibra de alpaca tradicional, suave al tacto y de alta durabilidad.",
+    precio = 180.0,
+    stock = 3,
+    estado = EstadoProducto.ACTIVO,
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetalleProductoScreen(
-    producto: Producto = DomainMockData.productos.first(),
-    onBackClick: () -> Unit = {}
+    producto: Producto = productoEjemplo,
+    isLoggedIn: Boolean = false,
+    onBackClick: () -> Unit = {},
+    onRequireLogin: () -> Unit = {}
 ) {
+    val context = LocalContext.current
+
     CyberQhatuTheme {
         Scaffold(
             topBar = {
@@ -43,6 +65,39 @@ fun DetalleProductoScreen(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Volver",
                                 tint = QhatuPurple
+                            )
+                        }
+                    },
+                    actions = {
+                        var esFavorito by remember {
+                            mutableStateOf(DomainMockData.favoritosProductos.any { it.idProducto == producto.idProducto })
+                        }
+                        IconButton(
+                            onClick = {
+                                if (!isLoggedIn) {
+                                    onRequireLogin()
+                                } else {
+                                    esFavorito = !esFavorito
+                                    if (esFavorito) {
+                                        if (DomainMockData.favoritosProductos.none { it.idProducto == producto.idProducto }) {
+                                            DomainMockData.favoritosProductos.add(
+                                                FavoritoProducto(
+                                                    idFavorito = System.currentTimeMillis().toString(),
+                                                    idUsuario = "USR-101",
+                                                    idProducto = producto.idProducto
+                                                )
+                                            )
+                                        }
+                                    } else {
+                                        DomainMockData.favoritosProductos.removeAll { it.idProducto == producto.idProducto }
+                                    }
+                                }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = if (esFavorito) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                contentDescription = "Favorito Producto",
+                                tint = if (esFavorito) Color.Red else QhatuPurple
                             )
                         }
                     },
@@ -175,7 +230,14 @@ fun DetalleProductoScreen(
                     }
 
                     Button(
-                        onClick = { /* . */ },
+                        onClick = {
+                            val mensaje = Uri.encode("Hola, vi tu producto '${producto.nombre}' en CyberQhatu y me interesa consultar.")
+                            val url = "https://api.whatsapp.com/send?phone=+59170000000&text=$mensaje"
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                            try {
+                                context.startActivity(intent)
+                            } catch (_: Exception) {}
+                        },
                         modifier = Modifier
                             .weight(1f)
                             .height(48.dp),

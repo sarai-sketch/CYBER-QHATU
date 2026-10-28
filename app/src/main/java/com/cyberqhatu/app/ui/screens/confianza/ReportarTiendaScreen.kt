@@ -1,5 +1,7 @@
 package com.cyberqhatu.app.ui.screens.confianza
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,10 +22,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.cyberqhatu.app.ui.theme.*
 
 private val motivos = listOf(
@@ -36,10 +40,21 @@ private val motivos = listOf(
 @Composable
 fun ReportarTiendaScreen(
     nombreTienda: String = "Moda Andina",
+    onEnviar: (motivo: String, descripcion: String) -> Unit = { _, _ -> },
     onBackClick: () -> Unit = {}
 ) {
     var motivoSeleccionado by remember { mutableStateOf(motivos.first()) }
     var descripcion by remember { mutableStateOf("") }
+    var evidenciasUris by remember { mutableStateOf<List<String>>(emptyList()) }
+
+    val evidenceGalleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetMultipleContents()
+    ) { uris ->
+        if (uris.isNotEmpty()) {
+            val novUris = uris.map { it.toString() }
+            evidenciasUris = (evidenciasUris + novUris).take(3)
+        }
+    }
 
     val textFieldColors = OutlinedTextFieldDefaults.colors(
         focusedContainerColor = MaterialTheme.colorScheme.surface,
@@ -92,8 +107,6 @@ fun ReportarTiendaScreen(
             ) {
                 Column(Modifier.padding(16.dp)) {
                     Text(nombreTienda, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
-                    Spacer(Modifier.height(4.dp))
-                    Text("Calle Comercio 123, Zona Comercial", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
 
@@ -150,21 +163,45 @@ fun ReportarTiendaScreen(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("Evidencia (Fotos / Capturas)", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = QhatuPurple)
 
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    repeat(3) { index ->
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(72.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(QhatuPurpleLight)
+                            .border(1.5.dp, QhatuPurple, RoundedCornerShape(12.dp))
+                            .clickable {
+                                evidenceGalleryLauncher.launch("image/*")
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                imageVector = Icons.Default.CameraAlt,
+                                contentDescription = "Adjuntar Foto",
+                                tint = QhatuPurple,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Text("Adjuntar", fontSize = 10.sp, color = QhatuPurple, fontWeight = FontWeight.Bold)
+                        }
+                    }
+
+                    evidenciasUris.forEachIndexed { index, uriStr ->
                         Box(
                             modifier = Modifier
                                 .size(72.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(if (index == 0) QhatuPurpleLight else Color.White)
-                                .border(1.dp, QhatuBorder, RoundedCornerShape(12.dp)),
-                            contentAlignment = Alignment.Center
+                                .background(Color.White)
+                                .border(1.dp, QhatuBorder, RoundedCornerShape(12.dp))
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.CameraAlt,
-                                contentDescription = "Foto",
-                                tint = QhatuPurple,
-                                modifier = Modifier.size(24.dp)
+                            AsyncImage(
+                                model = uriStr,
+                                contentDescription = "Evidencia $index",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
                             )
                         }
                     }
@@ -174,7 +211,8 @@ fun ReportarTiendaScreen(
             Spacer(Modifier.height(16.dp))
 
             Button(
-                onClick = { /* Enviar reporte */ },
+                onClick = { onEnviar(motivoSeleccionado, descripcion.trim()) },
+                enabled = descripcion.isNotBlank(),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),

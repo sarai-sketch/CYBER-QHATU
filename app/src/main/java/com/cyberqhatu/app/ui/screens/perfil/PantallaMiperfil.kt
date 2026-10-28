@@ -1,32 +1,15 @@
 package com.cyberqhatu.app.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Storefront
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,8 +28,8 @@ fun PantallaMiPerfil(
     nombreUsuario: String,
     correoUsuario: String,
     telefonoUsuario: String,
-    estadoVerificacion: Boolean,
     tipoRol: String,
+    estadoVerificacion: Boolean = false,
     onEditarPerfilClick: () -> Unit,
     onCerrarSesionClick: () -> Unit,
     onVerificarIdentidadClick: () -> Unit = {},
@@ -87,85 +70,132 @@ fun PantallaMiPerfil(
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                    // Avatar simulado del usuario
-                    Box(
-                        modifier = Modifier
-                            .size(100.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primaryContainer),
-                        contentAlignment = Alignment.Center,
+                    // Tarjeta de Cabecera de Perfil
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                     ) {
-                        Text(
-                            text = nombreUsuario.take(2).uppercase(),
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(88.dp)
+                                    .clip(CircleShape)
+                                    .background(QhatuPurple),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    text = nombreUsuario.take(2).uppercase(),
+                                    fontSize = 30.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White,
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            Text(
+                                text = nombreUsuario,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            Surface(
+                                shape = RoundedCornerShape(20.dp),
+                                color = QhatuPurple.copy(alpha = 0.1f)
+                            ) {
+                                Text(
+                                    text = "Rol: $tipoRol",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = QhatuPurple,
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                                )
+                            }
+                        }
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
-                    // Nombre del usuario
-                    Text(
-                        text = nombreUsuario,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                    )
-
-                    // Rol actual
-                    Text(
-                        text = "Rol: $tipoRol",
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.secondary,
-                    )
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // Tarjeta de información general
+                    // Tarjeta de información de contacto
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color.White),
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                     ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(text = "Correo: $correoUsuario", fontSize = 14.sp)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(text = "WhatsApp: $telefonoUsuario", fontSize = 14.sp)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = if (estadoVerificacion) "Estado CI: Verificado ✅" else "Estado CI: No verificado ⏳",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = if (estadoVerificacion) Color(0xFF2E7D32) else Color(0xFFC62828),
-                            )
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Button(
-                                onClick = onVerificarIdentidadClick,
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(12.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = QhatuLime),
-                            ) {
+                        Column(
+                            modifier = Modifier.padding(20.dp),
+                            verticalArrangement = Arrangement.spacedBy(14.dp)
+                        ) {
+                            Text("Información de Contacto", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = QhatuPurple)
+
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Email, contentDescription = null, tint = QhatuPurple, modifier = Modifier.size(20.dp))
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(text = correoUsuario, fontSize = 14.sp)
+                            }
+
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Phone, contentDescription = null, tint = QhatuPurple, modifier = Modifier.size(20.dp))
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(text = telefonoUsuario, fontSize = 14.sp)
+                            }
+
+                            Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                    text = if (estadoVerificacion) "Re-verificar Identidad" else "Verificar Identidad (C.I. y Rostro)",
-                                    color = QhatuPurple,
-                                    fontWeight = FontWeight.Bold,
+                                    text = if (estadoVerificacion) "Estado C.I.: Verificado ✅" else "Estado C.I.: No verificado ⏳",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = if (estadoVerificacion) Color(0xFF2E7D32) else Color(0xFFC62828)
                                 )
                             }
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Botón para Empezar a Vender (Lleva a la pantalla de verificación de identidad)
+                    Button(
+                        onClick = onVerificarIdentidadClick,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(54.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = QhatuLime),
+                    ) {
+                        Icon(Icons.Default.Storefront, contentDescription = null, tint = QhatuPurple)
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            text = "Empezar a Vender",
+                            color = QhatuPurple,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.weight(1f))
 
                     // Botones de gestión del perfil
                     OutlinedButton(
                         onClick = onEditarPerfilClick,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
                         shape = RoundedCornerShape(12.dp),
                     ) {
-                        Text(text = "Editar Perfil")
+                        Text(text = "Editar Perfil", fontWeight = FontWeight.SemiBold)
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -173,11 +203,15 @@ fun PantallaMiPerfil(
                     Button(
                         onClick = onCerrarSesionClick,
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
                         shape = RoundedCornerShape(12.dp),
                     ) {
-                        Text(text = "Cerrar Sesión")
+                        Text(text = "Cerrar Sesión", fontWeight = FontWeight.Bold)
                     }
+
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
         }

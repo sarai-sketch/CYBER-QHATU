@@ -13,7 +13,7 @@ import com.cyberqhatu.app.data.local.entity.VerificacionCacheEntity
 import com.cyberqhatu.app.data.local.entity.VerificacionEntity
 
 /**
- * Base de datos principal de Room con soporte para Caché Local e Inventario.
+ * Base de datos principal de Room con soporte para Caché Local, Productos e Inventario.
  */
 @Database(
     entities = [
