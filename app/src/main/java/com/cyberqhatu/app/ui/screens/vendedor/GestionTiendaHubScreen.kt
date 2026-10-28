@@ -5,8 +5,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddBox
@@ -17,10 +17,6 @@ import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Store
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import com.cyberqhatu.app.confianza.EstadoApelacion
-import com.cyberqhatu.app.confianza.EstadoReporte
-import com.cyberqhatu.app.confianza.ModeracionStore
-import com.cyberqhatu.app.confianza.ReporteTienda
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,6 +24,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cyberqhatu.app.confianza.EstadoApelacion
+import com.cyberqhatu.app.confianza.EstadoReporte
+import com.cyberqhatu.app.confianza.ModeracionStore
+import com.cyberqhatu.app.confianza.ReporteTienda
 import com.cyberqhatu.app.ui.theme.QhatuPurple
 
 /**
@@ -51,10 +51,10 @@ fun GestionTiendaHubScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Gestión de Mi Tienda", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = QhatuPurple) },
+                title = { Text("Gestión de Mi Tienda", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver", tint = MaterialTheme.colorScheme.primary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -80,7 +80,6 @@ fun GestionTiendaHubScreen(
                 var reporteApelando by remember { mutableStateOf<ReporteTienda?>(null) }
                 var textoApelacion by remember { mutableStateOf("") }
 
-                // Al abrir el panel, la tienda ya "vio" los avisos (se quita la insignia del inicio)
                 LaunchedEffect(Unit) { ModeracionStore.marcarVistos(idTienda) }
 
                 Card(
@@ -92,16 +91,15 @@ fun GestionTiendaHubScreen(
                         modifier = Modifier.padding(20.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.Store, contentDescription = null, modifier = Modifier.size(40.dp), tint = QhatuPurple)
+                        Icon(Icons.Default.Store, contentDescription = null, modifier = Modifier.size(40.dp), tint = MaterialTheme.colorScheme.onPrimaryContainer)
                         Spacer(Modifier.width(16.dp))
                         Column {
-                            Text(nombreTienda, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
-                            Text("Administra tus productos, inventario y equipo de trabajo.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                            Text(nombreTienda, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                            Text("Administra tus productos, inventario y equipo de trabajo.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f))
                         }
                     }
                 }
 
-                // Estado de strikes de la tienda
                 Card(
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
@@ -113,7 +111,8 @@ fun GestionTiendaHubScreen(
                         Text(
                             "Strikes: $strikes de ${ModeracionStore.LIMITE_STRIKES}",
                             fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp
+                            fontSize = 15.sp,
+                            color = Color.Black
                         )
                         Text(
                             when {
@@ -121,23 +120,23 @@ fun GestionTiendaHubScreen(
                                 strikes > 0 -> "Tienes strikes activos. Si crees que es un error, puedes apelar."
                                 else -> "Tu tienda no tiene sanciones."
                             },
-                            fontSize = 12.sp
+                            fontSize = 12.sp,
+                            color = Color.Black.copy(alpha = 0.8f)
                         )
                     }
                 }
 
-                // Reportes recibidos (aviso a la tienda) con opción de apelar
                 if (misReportes.isNotEmpty()) {
-                    Text("Reportes recibidos", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
+                    Text("Reportes recibidos", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.primary)
                     misReportes.forEach { r ->
                         Card(
                             shape = RoundedCornerShape(14.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                Text("${r.id} · ${r.motivo}", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                Text("${r.id} · ${r.motivo}", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
                                 Text(
                                     r.descripcion,
                                     fontSize = 12.sp,
@@ -153,7 +152,8 @@ fun GestionTiendaHubScreen(
                                         else -> "Reporte aceptado: se aplicó un strike a tu tienda."
                                     },
                                     fontSize = 12.sp,
-                                    fontWeight = FontWeight.SemiBold
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                                 if (r.estado == EstadoReporte.ACEPTADO && r.estadoApelacion == EstadoApelacion.NINGUNA) {
                                     OutlinedButton(onClick = { reporteApelando = r; textoApelacion = "" }) {
@@ -204,10 +204,6 @@ fun GestionTiendaHubScreen(
                     if (uri != null) logoUri = uri.toString()
                 }
 
-                val portadaPicker = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
-                    if (uri != null) portadaUri = uri.toString()
-                }
-
                 if (mostrarDialogoInfo) {
                     AlertDialog(
                         onDismissRequest = { mostrarDialogoInfo = false },
@@ -252,7 +248,6 @@ fun GestionTiendaHubScreen(
 
                 Spacer(Modifier.height(8.dp))
 
-                // Opciones del Hub
                 BotonOpcionHub(
                     titulo = "Ver Perfil de la Tienda",
                     descripcion = "Visualiza cómo ven los compradores tu puesto",
@@ -309,7 +304,7 @@ fun BotonOpcionHub(
     Card(
         onClick = onClick,
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -321,15 +316,15 @@ fun BotonOpcionHub(
         ) {
             Surface(
                 shape = RoundedCornerShape(10.dp),
-                color = QhatuPurple.copy(alpha = 0.1f)
+                color = MaterialTheme.colorScheme.primaryContainer
             ) {
                 Box(modifier = Modifier.padding(12.dp), contentAlignment = Alignment.Center) {
-                    Icon(icon, contentDescription = null, tint = QhatuPurple)
+                    Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
                 }
             }
             Spacer(Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(titulo, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = QhatuPurple)
+                Text(titulo, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
                 Spacer(Modifier.height(2.dp))
                 Text(descripcion, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }

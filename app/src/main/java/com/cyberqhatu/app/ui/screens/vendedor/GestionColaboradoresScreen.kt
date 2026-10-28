@@ -41,10 +41,10 @@ fun GestionColaboradoresScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Gestión de Administradores de Tienda", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = QhatuPurple) },
+                title = { Text("Gestión de Administradores de Tienda", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver", tint = MaterialTheme.colorScheme.primary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -71,7 +71,7 @@ fun GestionColaboradoresScreen(
                     .fillMaxSize()
                     .padding(20.dp)
             ) {
-                Text("Equipo de Administración", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = QhatuPurple)
+                Text("Equipo de Administración", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary)
                 Spacer(Modifier.height(4.dp))
                 Text("Los administradores colaboradores tienen las mismas funciones para gestionar inventario y productos.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
@@ -81,7 +81,7 @@ fun GestionColaboradoresScreen(
                     items(colaboradores) { colab ->
                         Card(
                             shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
@@ -93,9 +93,9 @@ fun GestionColaboradoresScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column {
-                                    Text(colab.nombre, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                    Text(colab.nombre, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
                                     Spacer(Modifier.height(2.dp))
-                                    Text(colab.rol, fontSize = 12.sp, color = QhatuPurple)
+                                    Text(colab.rol, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
                                 }
                                 if (colab.rol != "Administrador Principal") {
                                     TextButton(onClick = {

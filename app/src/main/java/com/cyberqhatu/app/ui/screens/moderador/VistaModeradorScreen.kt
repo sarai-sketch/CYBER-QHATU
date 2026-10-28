@@ -47,18 +47,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import com.cyberqhatu.app.confianza.EstadoReporte
 import com.cyberqhatu.app.confianza.ModeracionStore
 import com.cyberqhatu.app.ui.screens.tienda.DomainMockData
 import com.cyberqhatu.app.ui.theme.QhatuCoral
-import com.cyberqhatu.app.ui.theme.QhatuLime
 import com.cyberqhatu.app.ui.theme.QhatuPurple
-import com.cyberqhatu.app.ui.theme.QhatuPurpleLight
 
 /**
  * Vista Completa del Moderador:
@@ -78,7 +74,7 @@ fun VistaModeradorScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "Panel de Moderación y Confianza", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = QhatuPurple) },
+                title = { Text(text = "Panel de Moderación y Confianza", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary) },
                 actions = {
                     TextButton(onClick = onCerrarSesion) {
                         Text("Cerrar Sesión", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
@@ -97,7 +93,7 @@ fun VistaModeradorScreen(
             TabRow(
                 selectedTabIndex = tabSeleccionada,
                 containerColor = MaterialTheme.colorScheme.surface,
-                contentColor = QhatuPurple
+                contentColor = MaterialTheme.colorScheme.primary
             ) {
                 Tab(
                     selected = tabSeleccionada == 0,
@@ -120,7 +116,7 @@ fun VistaModeradorScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.ReportProblem, contentDescription = null, tint = QhatuCoral)
                         Spacer(Modifier.width(8.dp))
-                        Text("Bandeja de Reportes con Capturas de Evidencia", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = QhatuPurple)
+                        Text("Bandeja de Reportes con Capturas de Evidencia", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colorScheme.primary)
                     }
 
                     Spacer(Modifier.height(14.dp))
@@ -135,7 +131,7 @@ fun VistaModeradorScreen(
                                 val strikesActuales = ModeracionStore.strikesDe(reporte.idTienda)
                                 Card(
                                     shape = RoundedCornerShape(16.dp),
-                                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
@@ -146,8 +142,8 @@ fun VistaModeradorScreen(
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Column {
-                                                Text(reporte.nombreTienda, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
-                                                Text("Strikes de la tienda: $strikesActuales / ${ModeracionStore.LIMITE_STRIKES}", fontSize = 12.sp, color = Color.Gray)
+                                                Text(reporte.nombreTienda, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.primary)
+                                                Text("Strikes de la tienda: $strikesActuales / ${ModeracionStore.LIMITE_STRIKES}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                             }
 
                                             Surface(
@@ -182,7 +178,7 @@ fun VistaModeradorScreen(
                                         Text(reporte.descripcion, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
                                         Spacer(Modifier.height(10.dp))
-                                        Text("Evidencias adjuntas por el comprador:", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = QhatuPurple)
+                                        Text("Evidencias adjuntas por el comprador:", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
                                         Spacer(Modifier.height(6.dp))
 
                                         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -191,10 +187,10 @@ fun VistaModeradorScreen(
                                                     modifier = Modifier
                                                         .size(70.dp)
                                                         .clip(RoundedCornerShape(10.dp))
-                                                        .background(QhatuPurpleLight),
+                                                        .background(MaterialTheme.colorScheme.primaryContainer),
                                                     contentAlignment = Alignment.Center
                                                 ) {
-                                                    Icon(Icons.Default.CameraAlt, contentDescription = null, tint = QhatuPurple)
+                                                    Icon(Icons.Default.CameraAlt, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
                                                 }
                                             }
                                         }
@@ -209,7 +205,7 @@ fun VistaModeradorScreen(
                                                     onClick = { ModeracionStore.resolver(reporte.id, aceptar = false) },
                                                     modifier = Modifier.weight(1f)
                                                 ) {
-                                                    Text("Desestimar", color = Color.Gray)
+                                                    Text("Desestimar")
                                                 }
 
                                                 Button(
@@ -228,22 +224,22 @@ fun VistaModeradorScreen(
                     }
                 } else {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Store, contentDescription = null, tint = QhatuPurple)
+                        Icon(Icons.Default.Store, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(Modifier.width(8.dp))
-                        Text("Inspección de Tiendas y Productos Registrados", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = QhatuPurple)
+                        Text("Inspección de Tiendas y Productos Registrados", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colorScheme.primary)
                     }
 
                     Spacer(Modifier.height(14.dp))
 
                     LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         item {
-                            Text("Tiendas en la Feria (${tiendas.size})", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = QhatuPurple)
+                            Text("Tiendas en la Feria (${tiendas.size})", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.primary)
                         }
 
                         items(tiendas) { tienda ->
                             Card(
                                 shape = RoundedCornerShape(14.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                                 modifier = Modifier.fillMaxWidth()
                             ) {
@@ -255,15 +251,15 @@ fun VistaModeradorScreen(
                                         modifier = Modifier
                                             .size(44.dp)
                                             .clip(CircleShape)
-                                            .background(QhatuPurpleLight),
+                                            .background(MaterialTheme.colorScheme.primaryContainer),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Text(tienda.nombre.take(2).uppercase(), fontWeight = FontWeight.Bold, color = QhatuPurple)
+                                        Text(tienda.nombre.take(2).uppercase(), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
                                     }
                                     Spacer(Modifier.width(12.dp))
                                     Column(Modifier.weight(1f)) {
-                                        Text(tienda.nombre, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                        Text("Estado: ${tienda.estado.name} · Strikes: ${tienda.strikes}", fontSize = 12.sp, color = Color.Gray)
+                                        Text(tienda.nombre, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+                                        Text("Estado: ${tienda.estado.name} · Strikes: ${tienda.strikes}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                     }
                                 }
                             }
@@ -271,13 +267,13 @@ fun VistaModeradorScreen(
 
                         item {
                             Spacer(Modifier.height(8.dp))
-                            Text("Catálogo de Productos para Inspección (${productos.size})", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = QhatuPurple)
+                            Text("Catálogo de Productos para Inspección (${productos.size})", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.primary)
                         }
 
                         items(productos) { prod ->
                             Card(
                                 shape = RoundedCornerShape(14.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
                                 modifier = Modifier.fillMaxWidth()
                             ) {
@@ -285,11 +281,11 @@ fun VistaModeradorScreen(
                                     modifier = Modifier.padding(12.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Icon(Icons.Default.ShoppingBag, contentDescription = null, tint = QhatuPurple, modifier = Modifier.size(24.dp))
+                                    Icon(Icons.Default.ShoppingBag, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
                                     Spacer(Modifier.width(12.dp))
                                     Column(Modifier.weight(1f)) {
-                                        Text(prod.nombre, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                                        Text("Bs ${prod.precio.toInt()} · Stock: ${prod.stock}", fontSize = 12.sp, color = Color.Gray)
+                                        Text(prod.nombre, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface)
+                                        Text("Bs ${prod.precio.toInt()} · Stock: ${prod.stock}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                     }
                                 }
                             }

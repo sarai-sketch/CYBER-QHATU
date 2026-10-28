@@ -39,21 +39,21 @@ fun PantallaMiPerfil(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(text = "Mi Perfil", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = QhatuPurple) },
+                    title = { Text(text = "Mi Perfil", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary) },
                     navigationIcon = {
                         IconButton(onClick = onBackClick) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Volver",
-                                tint = QhatuPurple,
+                                tint = MaterialTheme.colorScheme.primary,
                             )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.surface,
-                        titleContentColor = QhatuPurple,
-                        navigationIconContentColor = QhatuPurple,
-                        actionIconContentColor = QhatuPurple,
+                        titleContentColor = MaterialTheme.colorScheme.primary,
+                        navigationIconContentColor = MaterialTheme.colorScheme.primary,
+                        actionIconContentColor = MaterialTheme.colorScheme.primary,
                     ),
                 )
             },
@@ -72,7 +72,6 @@ fun PantallaMiPerfil(
                 ) {
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Tarjeta de Cabecera de Perfil
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(20.dp),
@@ -89,14 +88,14 @@ fun PantallaMiPerfil(
                                 modifier = Modifier
                                     .size(88.dp)
                                     .clip(CircleShape)
-                                    .background(QhatuPurple),
+                                    .background(MaterialTheme.colorScheme.primary),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Text(
                                     text = nombreUsuario.take(2).uppercase(),
                                     fontSize = 30.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color.White,
+                                    color = MaterialTheme.colorScheme.onPrimary,
                                 )
                             }
 
@@ -113,13 +112,13 @@ fun PantallaMiPerfil(
 
                             Surface(
                                 shape = RoundedCornerShape(20.dp),
-                                color = QhatuPurple.copy(alpha = 0.1f)
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                             ) {
                                 Text(
                                     text = "Rol: $tipoRol",
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = QhatuPurple,
+                                    color = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
                                 )
                             }
@@ -128,29 +127,28 @@ fun PantallaMiPerfil(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Tarjeta de información de contacto
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                     ) {
                         Column(
                             modifier = Modifier.padding(20.dp),
                             verticalArrangement = Arrangement.spacedBy(14.dp)
                         ) {
-                            Text("Información de Contacto", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = QhatuPurple)
+                            Text("Información de Contacto", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
 
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Email, contentDescription = null, tint = QhatuPurple, modifier = Modifier.size(20.dp))
+                                Icon(Icons.Default.Email, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
                                 Spacer(modifier = Modifier.width(12.dp))
-                                Text(text = correoUsuario, fontSize = 14.sp)
+                                Text(text = correoUsuario, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
                             }
 
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Phone, contentDescription = null, tint = QhatuPurple, modifier = Modifier.size(20.dp))
+                                Icon(Icons.Default.Phone, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
                                 Spacer(modifier = Modifier.width(12.dp))
-                                Text(text = telefonoUsuario, fontSize = 14.sp)
+                                Text(text = telefonoUsuario, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
                             }
 
                             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -166,7 +164,6 @@ fun PantallaMiPerfil(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Botón para Empezar a Vender (Lleva a la pantalla de verificación de identidad)
                     Button(
                         onClick = onVerificarIdentidadClick,
                         modifier = Modifier
@@ -187,7 +184,6 @@ fun PantallaMiPerfil(
 
                     Spacer(modifier = Modifier.weight(1f))
 
-                    // Botones de gestión del perfil
                     OutlinedButton(
                         onClick = onEditarPerfilClick,
                         modifier = Modifier

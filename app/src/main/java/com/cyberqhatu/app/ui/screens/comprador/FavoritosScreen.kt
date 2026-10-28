@@ -35,10 +35,10 @@ fun FavoritosScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mis Favoritos", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = QhatuPurple) },
+                title = { Text("Mis Favoritos", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver", tint = MaterialTheme.colorScheme.primary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -63,7 +63,7 @@ fun FavoritosScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Icon(Icons.Default.Favorite, contentDescription = null, modifier = Modifier.size(64.dp), tint = Color.Gray)
-                        Text("Inicia sesión para ver tus favoritos guardados", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                        Text("Inicia sesión para ver tus favoritos guardados", fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
                         Button(onClick = onLoginClick) {
                             Text("Iniciar Sesión")
                         }
@@ -77,7 +77,7 @@ fun FavoritosScreen(
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Icon(Icons.Default.Favorite, contentDescription = null, modifier = Modifier.size(48.dp), tint = Color.LightGray)
-                            Text("No tienes favoritos guardados", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
+                            Text("No tienes favoritos guardados", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.primary)
                             Text("Toca el icono de corazón en productos o tiendas para agregarlos aquí.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
@@ -90,12 +90,12 @@ fun FavoritosScreen(
                     ) {
                         if (tiendas.isNotEmpty()) {
                             item {
-                                Text("Tiendas Favoritas", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
+                                Text("Tiendas Favoritas", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.primary)
                             }
                             items(tiendas) { tienda ->
                                 Card(
                                     shape = RoundedCornerShape(14.dp),
-                                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
@@ -107,11 +107,11 @@ fun FavoritosScreen(
                                                 .background(MaterialTheme.colorScheme.surfaceVariant),
                                             contentAlignment = Alignment.Center
                                         ) {
-                                            Icon(Icons.Default.Storefront, contentDescription = null, tint = QhatuPurple)
+                                            Icon(Icons.Default.Storefront, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                                         }
                                         Spacer(Modifier.width(12.dp))
                                         Column(modifier = Modifier.weight(1f)) {
-                                            Text(tienda.nombre, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                                            Text(tienda.nombre, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
                                             Spacer(Modifier.height(2.dp))
                                             Text(tienda.descripcion, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
                                         }
@@ -122,12 +122,12 @@ fun FavoritosScreen(
 
                         if (prods.isNotEmpty()) {
                             item {
-                                Text("Productos Favoritos", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
+                                Text("Productos Favoritos", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.primary)
                             }
                             items(prods) { producto ->
                                 Card(
                                     shape = RoundedCornerShape(14.dp),
-                                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
@@ -139,13 +139,13 @@ fun FavoritosScreen(
                                                 .background(MaterialTheme.colorScheme.surfaceVariant),
                                             contentAlignment = Alignment.Center
                                         ) {
-                                            Icon(Icons.Default.ShoppingBag, contentDescription = null, tint = QhatuPurple)
+                                            Icon(Icons.Default.ShoppingBag, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                                         }
                                         Spacer(Modifier.width(12.dp))
                                         Column(modifier = Modifier.weight(1f)) {
-                                            Text(producto.nombre, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                                            Text(producto.nombre, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
                                             Spacer(Modifier.height(2.dp))
-                                            Text("Bs. ${producto.precio}", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = QhatuPurple)
+                                            Text("Bs. ${producto.precio}", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.primary)
                                         }
                                     }
                                 }

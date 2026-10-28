@@ -26,7 +26,7 @@ import com.cyberqhatu.app.tienda.Tienda
 import com.cyberqhatu.app.ui.theme.*
 
 /**
- * Pantalla de Inicio del Marketplace con diseño 100% unificado y armonizado
+ * Pantalla de Inicio del Marketplace adaptada 100% a Modo Claro y Modo Oscuro
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -110,9 +110,9 @@ fun MarketplaceHomeScreen(
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.surface,
-                        titleContentColor = QhatuPurple,
-                        navigationIconContentColor = QhatuPurple,
-                        actionIconContentColor = QhatuPurple
+                        titleContentColor = MaterialTheme.colorScheme.primary,
+                        navigationIconContentColor = MaterialTheme.colorScheme.primary,
+                        actionIconContentColor = MaterialTheme.colorScheme.primary
                     )
                 )
             }
@@ -141,11 +141,13 @@ fun MarketplaceHomeScreen(
                         },
                         shape = RoundedCornerShape(14.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
-                            disabledContainerColor = Color.White,
+                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                            disabledContainerColor = MaterialTheme.colorScheme.surface,
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
                         ),
                         singleLine = true
                     )
@@ -170,7 +172,9 @@ fun MarketplaceHomeScreen(
                                     label = { Text(categoria.nombre) },
                                     colors = FilterChipDefaults.filterChipColors(
                                         selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                        selectedLabelColor = Color.White
+                                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                        containerColor = MaterialTheme.colorScheme.surface,
+                                        labelColor = MaterialTheme.colorScheme.onSurface
                                     )
                                 )
                             }
@@ -195,7 +199,7 @@ fun MarketplaceHomeScreen(
                                 imageVector = Icons.Default.Verified,
                                 contentDescription = "Verificado",
                                 modifier = Modifier.size(36.dp),
-                                tint = MaterialTheme.colorScheme.primary
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                             Spacer(modifier = Modifier.width(16.dp))
                             Column {
@@ -232,7 +236,7 @@ fun MarketplaceHomeScreen(
                                         .width(160.dp)
                                         .clickable { onNavigateToStoreProfile(tienda.idTienda) },
                                     shape = RoundedCornerShape(14.dp),
-                                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                                 ) {
                                     Column(modifier = Modifier.padding(12.dp)) {
@@ -262,6 +266,7 @@ fun MarketplaceHomeScreen(
                                                 text = tienda.nombre,
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 13.sp,
+                                                color = MaterialTheme.colorScheme.onSurface,
                                                 maxLines = 1,
                                                 modifier = Modifier.weight(1f)
                                             )
@@ -294,7 +299,7 @@ fun MarketplaceHomeScreen(
                                                 Icon(
                                                     imageVector = if (esFavTienda && isLoggedIn) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                                                     contentDescription = "Favorito",
-                                                    tint = if (esFavTienda && isLoggedIn) Color.Red else Color.Gray,
+                                                    tint = if (esFavTienda && isLoggedIn) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant,
                                                     modifier = Modifier.size(18.dp)
                                                 )
                                             }
@@ -338,7 +343,7 @@ fun MarketplaceHomeScreen(
                             .fillMaxWidth()
                             .clickable { onNavigateToProductDetail(producto.idProducto) },
                         shape = RoundedCornerShape(14.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
                         Row(
@@ -364,7 +369,8 @@ fun MarketplaceHomeScreen(
                                 Text(
                                     text = producto.nombre,
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 14.sp
+                                    fontSize = 14.sp,
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
@@ -378,7 +384,7 @@ fun MarketplaceHomeScreen(
                                     text = "Bs. ${producto.precio}",
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 14.sp,
-                                    color = MaterialTheme.colorScheme.primary
+                                    color = QhatuCoral
                                 )
                             }
 
@@ -410,7 +416,7 @@ fun MarketplaceHomeScreen(
                                 Icon(
                                     imageVector = if (esFavProd && isLoggedIn) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                                     contentDescription = "Favorito Producto",
-                                    tint = if (esFavProd && isLoggedIn) Color.Red else Color.Gray
+                                    tint = if (esFavProd && isLoggedIn) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }

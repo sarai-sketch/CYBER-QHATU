@@ -61,30 +61,30 @@ fun ReportarTiendaScreen(
         unfocusedContainerColor = MaterialTheme.colorScheme.surface,
         focusedTextColor = MaterialTheme.colorScheme.onSurface,
         unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-        focusedBorderColor = QhatuPurple,
+        focusedBorderColor = MaterialTheme.colorScheme.primary,
         unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
-        focusedLabelColor = QhatuPurple,
+        focusedLabelColor = MaterialTheme.colorScheme.primary,
         unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
     )
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "Reportar Tienda", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = QhatuPurple) },
+                title = { Text(text = "Reportar Tienda", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Volver",
-                            tint = QhatuPurple
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = QhatuPurple,
-                    navigationIconContentColor = QhatuPurple,
-                    actionIconContentColor = QhatuPurple
+                    titleContentColor = MaterialTheme.colorScheme.primary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.primary,
+                    actionIconContentColor = MaterialTheme.colorScheme.primary
                 )
             )
         }
@@ -101,17 +101,17 @@ fun ReportarTiendaScreen(
 
             Card(
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(Modifier.padding(16.dp)) {
-                    Text(nombreTienda, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
+                    Text(nombreTienda, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.primary)
                 }
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Motivo del reporte *", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = QhatuPurple)
+                Text("Motivo del reporte *", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.primary)
 
                 motivos.forEach { motivo ->
                     val seleccionado = motivo == motivoSeleccionado
@@ -119,10 +119,10 @@ fun ReportarTiendaScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
-                            .background(if (seleccionado) QhatuPurpleLight else Color.White)
+                            .background(if (seleccionado) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface)
                             .border(
                                 width = if (seleccionado) 1.5.dp else 1.dp,
-                                color = if (seleccionado) QhatuPurple else QhatuBorder,
+                                color = if (seleccionado) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
                                 shape = RoundedCornerShape(12.dp)
                             )
                             .clickable { motivoSeleccionado = motivo }
@@ -132,21 +132,21 @@ fun ReportarTiendaScreen(
                         RadioButton(
                             selected = seleccionado,
                             onClick = { motivoSeleccionado = motivo },
-                            colors = RadioButtonDefaults.colors(selectedColor = QhatuPurple)
+                            colors = RadioButtonDefaults.colors(selectedColor = MaterialTheme.colorScheme.primary)
                         )
                         Spacer(Modifier.width(6.dp))
                         Text(
                             text = motivo,
                             fontSize = 13.sp,
                             fontWeight = if (seleccionado) FontWeight.Bold else FontWeight.Normal,
-                            color = if (seleccionado) QhatuPurple else MaterialTheme.colorScheme.onSurface
+                            color = if (seleccionado) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Describe lo sucedido *", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = QhatuPurple)
+                Text("Describe lo sucedido *", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.primary)
 
                 OutlinedTextField(
                     value = descripcion,
@@ -161,7 +161,7 @@ fun ReportarTiendaScreen(
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Evidencia (Fotos / Capturas)", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = QhatuPurple)
+                Text("Evidencia (Fotos / Capturas)", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.primary)
 
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -171,8 +171,8 @@ fun ReportarTiendaScreen(
                         modifier = Modifier
                             .size(72.dp)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(QhatuPurpleLight)
-                            .border(1.5.dp, QhatuPurple, RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .border(1.5.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(12.dp))
                             .clickable {
                                 evidenceGalleryLauncher.launch("image/*")
                             },
@@ -182,10 +182,10 @@ fun ReportarTiendaScreen(
                             Icon(
                                 imageVector = Icons.Default.CameraAlt,
                                 contentDescription = "Adjuntar Foto",
-                                tint = QhatuPurple,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(24.dp)
                             )
-                            Text("Adjuntar", fontSize = 10.sp, color = QhatuPurple, fontWeight = FontWeight.Bold)
+                            Text("Adjuntar", fontSize = 10.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                         }
                     }
 
@@ -194,8 +194,8 @@ fun ReportarTiendaScreen(
                             modifier = Modifier
                                 .size(72.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color.White)
-                                .border(1.dp, QhatuBorder, RoundedCornerShape(12.dp))
+                                .background(MaterialTheme.colorScheme.surface)
+                                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
                         ) {
                             AsyncImage(
                                 model = uriStr,
@@ -217,7 +217,7 @@ fun ReportarTiendaScreen(
                     .fillMaxWidth()
                     .height(50.dp),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = QhatuPurple)
+                colors = ButtonDefaults.buttonColors(containerColor = QhatuCoral)
             ) {
                 Text("Enviar Reporte", fontSize = 15.sp, fontWeight = FontWeight.Bold)
             }
