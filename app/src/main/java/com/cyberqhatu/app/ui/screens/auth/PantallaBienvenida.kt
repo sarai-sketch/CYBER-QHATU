@@ -20,13 +20,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cyberqhatu.app.feature.perfil.data.repository.SqliteCloudUsuarioRepository
 import com.cyberqhatu.app.ui.theme.CyberQhatuTheme
+import kotlinx.coroutines.launch
 
 @Composable
 fun PantallaBienvenida(
     onContinuarClicked: (String) -> Unit = {},
 ) {
     var telefono by remember { mutableStateOf("") }
+    var cargando by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+    val usuarioRepository = remember { SqliteCloudUsuarioRepository() }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -137,15 +142,22 @@ fun PantallaBienvenida(
                     Spacer(modifier = Modifier.height(20.dp))
 
                     Button(
-                        onClick = { onContinuarClicked(telefono) },
+                        onClick = {
+                            cargando = true
+                            coroutineScope.launch {
+                                usuarioRepository.registrarOConsultarPorTelefono(telefono)
+                                cargando = false
+                                onContinuarClicked(telefono)
+                            }
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(52.dp),
                         shape = RoundedCornerShape(12.dp),
-                        enabled = telefono.isNotBlank()
+                        enabled = telefono.isNotBlank() && !cargando
                     ) {
                         Text(
-                            text = "Continuar con WhatsApp",
+                            text = if (cargando) "Registrando..." else "Continuar con WhatsApp",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold
                         )
