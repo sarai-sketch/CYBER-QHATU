@@ -14,10 +14,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cyberqhatu.app.feature.tienda.data.repository.SqliteCloudTiendaRepository
 import com.cyberqhatu.app.tienda.Tienda
 import com.cyberqhatu.app.tienda.TipoTienda
 import com.cyberqhatu.app.ui.screens.tienda.DomainMockData
 import com.cyberqhatu.app.ui.theme.QhatuPurple
+import kotlinx.coroutines.launch
 
 private val HORA_REGEX = Regex("^([01]\\d|2[0-3]):[0-5]\\d$")
 
@@ -31,6 +33,9 @@ fun CrearTiendaScreen(
     onTiendaCreada: (Tienda) -> Unit = {},
     onBackClick: () -> Unit = {}
 ) {
+    val coroutineScope = rememberCoroutineScope()
+    val tiendaRepository = remember { SqliteCloudTiendaRepository() }
+
     var nombre by remember { mutableStateOf("") }
     var descripcion by remember { mutableStateOf("") }
     var tipo by remember { mutableStateOf(TipoTienda.FISICA) }
@@ -51,10 +56,10 @@ fun CrearTiendaScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Registrar Tienda", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = QhatuPurple) },
+                title = { Text("Registrar Tienda", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver", tint = MaterialTheme.colorScheme.primary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -74,7 +79,7 @@ fun CrearTiendaScreen(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text("Paso 2: Registra tu tienda", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = QhatuPurple)
+                Text("Paso 2: Registra tu tienda", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = MaterialTheme.colorScheme.primary)
                 Text(
                     "Completa los datos de tu puesto o tienda para comenzar a vender en Cyber-Qhatu.",
                     fontSize = 14.sp,
@@ -103,7 +108,7 @@ fun CrearTiendaScreen(
                     shape = RoundedCornerShape(12.dp)
                 )
 
-                Text("Tipo de tienda *", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = QhatuPurple)
+                Text("Tipo de tienda *", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = MaterialTheme.colorScheme.primary)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     listOf(
                         TipoTienda.FISICA to "Física",
@@ -174,20 +179,22 @@ fun CrearTiendaScreen(
 
                 Button(
                     onClick = {
-                        onTiendaCreada(
-                            Tienda(
-                                idTienda = "t${DomainMockData.tiendas.size + 1}",
-                                idPropietario = "u-actual",
-                                nombre = nombre.trim(),
-                                descripcion = descripcion.trim(),
-                                logo = null,
-                                tipo = tipo,
-                                direccionGoogleMaps = if (necesitaDireccion) direccion.trim() else null,
-                                horarioApertura = apertura,
-                                horarioCierre = cierre,
-                                linkWhatsapp = "https://wa.me/591$whatsapp"
-                            )
+                        val nuevaTienda = Tienda(
+                            idTienda = "t${DomainMockData.tiendas.size + 1}",
+                            idPropietario = "u1",
+                            nombre = nombre.trim(),
+                            descripcion = descripcion.trim(),
+                            logo = null,
+                            tipo = tipo,
+                            direccionGoogleMaps = if (necesitaDireccion) direccion.trim() else null,
+                            horarioApertura = apertura,
+                            horarioCierre = cierre,
+                            linkWhatsapp = "https://wa.me/591$whatsapp"
                         )
+                        coroutineScope.launch {
+                            tiendaRepository.guardarTiendaRemota(nuevaTienda)
+                        }
+                        onTiendaCreada(nuevaTienda)
                     },
                     enabled = formularioValido,
                     modifier = Modifier
