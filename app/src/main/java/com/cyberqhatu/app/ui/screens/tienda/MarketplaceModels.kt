@@ -12,7 +12,6 @@ import com.cyberqhatu.app.tienda.Producto
 import com.cyberqhatu.app.tienda.Tienda
 import com.cyberqhatu.app.tienda.TipoTienda
 import com.cyberqhatu.app.usuarios.Vendedor
-import java.util.Date
 
 /**
  * Datos simulados utilizando las clases reales de dominio del proyecto
@@ -75,7 +74,7 @@ object DomainMockData {
         )
     )
 
-    val productos = listOf(
+    val productos = mutableStateListOf(
         Producto(
             idProducto = "p1",
             idTienda = "t1",
