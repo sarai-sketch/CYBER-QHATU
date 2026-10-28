@@ -24,7 +24,7 @@ import com.cyberqhatu.app.tienda.FavoritoTienda
 import com.cyberqhatu.app.ui.theme.*
 
 /**
- * Pantalla de Perfil de Tienda con diseño 100% unificado al Detalle de Producto
+ * Pantalla de Perfil de Tienda con soporte para Reseñas dinámicas y Favoritos.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,7 +34,8 @@ fun StoreProfileScreen(
     onBackClick: () -> Unit = {},
     onNavigateToProductDetail: (productId: String) -> Unit = {},
     onNavigateToReportar: (storeName: String) -> Unit = {},
-    onRequireLogin: () -> Unit = {}
+    onRequireLogin: () -> Unit = {},
+    onEscribirResenaClick: (storeName: String) -> Unit = {}
 ) {
     CyberQhatuTheme {
         val tienda = DomainMockData.tiendas.firstOrNull { it.idTienda == storeId }
@@ -83,9 +84,9 @@ fun StoreProfileScreen(
                             }
                         ) {
                             Icon(
-                                imageVector = if (esFavorito) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                imageVector = if (esFavorito && isLoggedIn) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                                 contentDescription = "Favorito Tienda",
-                                tint = if (esFavorito) Color.Red else QhatuPurple
+                                tint = if (esFavorito && isLoggedIn) Color.Red else QhatuPurple
                             )
                         }
                         IconButton(onClick = { onNavigateToReportar(tienda.nombre) }) {
@@ -112,7 +113,7 @@ fun StoreProfileScreen(
                     .background(MaterialTheme.colorScheme.background)
                     .verticalScroll(rememberScrollState())
             ) {
-                // Banner Superior Encabezado (Idéntico al Detalle de Producto)
+                // Banner Superior Encabezado
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -266,6 +267,61 @@ fun StoreProfileScreen(
                                         Spacer(modifier = Modifier.height(2.dp))
                                         Text("Bs. ${producto.precio}", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = QhatuCoral)
                                     }
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Reseñas del Puesto", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
+                        TextButton(onClick = {
+                            if (!isLoggedIn) {
+                                onRequireLogin()
+                            } else {
+                                onEscribirResenaClick(tienda.nombre)
+                            }
+                        }) {
+                            Text("Escribir Reseña", fontWeight = FontWeight.Bold, color = QhatuPurple)
+                        }
+                    }
+
+                    if (DomainMockData.resenasList.isEmpty()) {
+                        Text("Aún no hay reseñas escritas para esta tienda.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    } else {
+                        DomainMockData.resenasList.forEach { resena ->
+                            val nombreAutor = if (resena.idUsuario.contains("@")) resena.idUsuario.substringBefore("@") else resena.idUsuario
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(nombreAutor, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = QhatuPurple)
+                                        Row {
+                                            for (i in 1..5) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Star,
+                                                    contentDescription = null,
+                                                    tint = if (i <= resena.rating) Color(0xFFFFC107) else Color.LightGray,
+                                                    modifier = Modifier.size(14.dp)
+                                                )
+                                            }
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(resena.comentario, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             }
                         }

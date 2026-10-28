@@ -8,9 +8,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import com.cyberqhatu.app.confianza.FuenteResena
 import com.cyberqhatu.app.confianza.ModeracionStore
+import com.cyberqhatu.app.confianza.Resena
 import com.cyberqhatu.app.data.local.database.QhatuDatabase
 import com.cyberqhatu.app.ui.PantallaMiPerfil
+import com.cyberqhatu.app.ui.screens.comprador.EscribirResenaScreen
 import com.cyberqhatu.app.ui.screens.comprador.FavoritosScreen
 import com.cyberqhatu.app.ui.screens.comprador.LoginCompradorScreen
 import com.cyberqhatu.app.ui.screens.confianza.ReportarTiendaScreen
@@ -42,6 +45,7 @@ sealed class RootScreen {
     data class StoreProfile(val storeId: String) : RootScreen()
     data class ProductDetail(val productId: String) : RootScreen()
     data class Reportar(val storeId: String, val storeName: String) : RootScreen()
+    data class EscribirResena(val targetName: String) : RootScreen()
 }
 
 class MainActivity : ComponentActivity() {
@@ -181,7 +185,7 @@ fun MainNavigationApp() {
                                         miTiendaId = "t2"
                                     }
                                     else -> {
-                                        // Correo de usuario o comprador normal
+                                        // Correo de comprador normal
                                     }
                                 }
 
@@ -217,7 +221,7 @@ fun MainNavigationApp() {
                                 if (isTiendaCreada) {
                                     currentScreen = RootScreen.TiendaHub
                                 } else {
-                                    modoVerificacionStep = 1 // Flujo completo: Pasos -> Verificación biométrica -> Crear Tienda
+                                    modoVerificacionStep = 1
                                 }
                             },
                             onBackClick = { currentScreen = RootScreen.Home }
@@ -283,6 +287,9 @@ fun MainNavigationApp() {
                             },
                             onRequireLogin = {
                                 currentScreen = RootScreen.Login
+                            },
+                            onEscribirResenaClick = { storeName ->
+                                currentScreen = RootScreen.EscribirResena(storeName)
                             }
                         )
                     }
@@ -298,6 +305,27 @@ fun MainNavigationApp() {
                             }
                         )
                     }
+                    is RootScreen.EscribirResena -> {
+                        EscribirResenaScreen(
+                            nombreItem = screen.targetName,
+                            onPublicarResena = { rating, comentario ->
+                                DomainMockData.resenasList.add(
+                                    0,
+                                    Resena(
+                                        idResena = System.currentTimeMillis().toString(),
+                                        idTienda = lastStoreId,
+                                        idUsuario = currentUserEmail,
+                                        rating = rating,
+                                        comentario = comentario,
+                                        source = FuenteResena.DIRECT_SEARCH,
+                                        isVerified = true
+                                    )
+                                )
+                                currentScreen = RootScreen.StoreProfile(lastStoreId)
+                            },
+                            onBackClick = { currentScreen = RootScreen.StoreProfile(lastStoreId) }
+                        )
+                    }
                     is RootScreen.ProductDetail -> {
                         val producto = DomainMockData.productos.firstOrNull { it.idProducto == screen.productId }
                             ?: DomainMockData.productos.first()
@@ -305,6 +333,9 @@ fun MainNavigationApp() {
                             producto = producto,
                             isLoggedIn = isLoggedIn,
                             onRequireLogin = { currentScreen = RootScreen.Login },
+                            onEscribirResenaClick = { productName ->
+                                currentScreen = RootScreen.EscribirResena(productName)
+                            },
                             onBackClick = {
                                 currentScreen = RootScreen.Home
                             }
@@ -323,7 +354,8 @@ private fun StoreProfileStoreProfile(
     onBackClick: () -> Unit,
     onNavigateToProductDetail: (String) -> Unit,
     onNavigateToReportar: (String) -> Unit,
-    onRequireLogin: () -> Unit = {}
+    onRequireLogin: () -> Unit = {},
+    onEscribirResenaClick: (String) -> Unit = {}
 ) {
     StoreProfileScreen(
         storeId = storeId,
@@ -331,6 +363,7 @@ private fun StoreProfileStoreProfile(
         onBackClick = onBackClick,
         onNavigateToProductDetail = onNavigateToProductDetail,
         onNavigateToReportar = onNavigateToReportar,
-        onRequireLogin = onRequireLogin
+        onRequireLogin = onRequireLogin,
+        onEscribirResenaClick = onEscribirResenaClick
     )
 }

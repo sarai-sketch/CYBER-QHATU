@@ -41,7 +41,8 @@ fun DetalleProductoScreen(
     producto: Producto = productoEjemplo,
     isLoggedIn: Boolean = false,
     onBackClick: () -> Unit = {},
-    onRequireLogin: () -> Unit = {}
+    onRequireLogin: () -> Unit = {},
+    onEscribirResenaClick: (nombreItem: String) -> Unit = {}
 ) {
     Scaffold(
         topBar = {
@@ -83,9 +84,9 @@ fun DetalleProductoScreen(
                         }
                     ) {
                         Icon(
-                            imageVector = if (esFavorito) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            imageVector = if (esFavorito && isLoggedIn) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                             contentDescription = "Favorito Producto",
-                            tint = if (esFavorito) Color.Red else QhatuPurple
+                            tint = if (esFavorito && isLoggedIn) Color.Red else QhatuPurple
                         )
                     }
                 },
@@ -231,7 +232,7 @@ fun DetalleProductoScreen(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = "4.8 (126 reseñas)",
+                                    text = "4.8 (${DomainMockData.resenasList.size} reseñas)",
                                     fontSize = 12.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
@@ -242,52 +243,55 @@ fun DetalleProductoScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Botones de acción
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    OutlinedButton(
-                        onClick = { /* . */ },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(48.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = QhatuPurple),
-                    ) {
-                        Text("Enviar consulta", fontWeight = FontWeight.SemiBold)
-                    }
-
-                    Button(
-                        onClick = { /* . */ },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(48.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = QhatuCoral),
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Chat,
-                            contentDescription = "WhatsApp",
-                            tint = Color.White,
-                            modifier = Modifier.size(18.dp),
-                        )
-                        Spacer(Modifier.width(6.dp))
-                        Text("Abrir WhatsApp", fontWeight = FontWeight.Bold, color = Color.White)
-                    }
+                // Botón de acción único
+                Button(
+                    onClick = { /* . */ },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = QhatuPurple),
+                ) {
+                    Text("Enviar consulta", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White)
+                }
                 }
 
                 Spacer(Modifier.height(24.dp))
 
-                Text("Reseñas (18) · 4.8", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
-                Spacer(Modifier.height(12.dp))
-                ResenaItem(autor = "Ana R.", comentario = "Tal cual la foto, muy buena atención y entrega rápida.")
-                Spacer(Modifier.height(10.dp))
-                ResenaItem(autor = "Carlos M.", comentario = "Producto 100% verificado con código seguro.")
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Reseñas (${DomainMockData.resenasList.size})", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
+                    TextButton(onClick = {
+                        if (!isLoggedIn) {
+                            onRequireLogin()
+                        } else {
+                            onEscribirResenaClick(producto.nombre)
+                        }
+                    }) {
+                        Text("Escribir Reseña", fontWeight = FontWeight.Bold, color = QhatuPurple)
+                    }
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                DomainMockData.resenasList.forEach { resena ->
+                    val nombreAutor = if (resena.idUsuario.contains("@")) resena.idUsuario.substringBefore("@") else resena.idUsuario
+                    ResenaItem(
+                        autor = nombreAutor,
+                        comentario = resena.comentario,
+                        rating = resena.rating
+                    )
+                    Spacer(Modifier.height(8.dp))
+                }
             }
         }
     }
-}
 
 @Composable
-private fun ResenaItem(autor: String, comentario: String) {
+private fun ResenaItem(autor: String, comentario: String, rating: Int = 5) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -295,8 +299,24 @@ private fun ResenaItem(autor: String, comentario: String) {
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
-            Text(text = autor, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = QhatuPurple)
-            Spacer(modifier = Modifier.height(2.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = autor, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = QhatuPurple)
+                Row {
+                    for (i in 1..5) {
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = null,
+                            tint = if (i <= rating) Color(0xFFFFC107) else Color.LightGray,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
             Text(text = comentario, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }

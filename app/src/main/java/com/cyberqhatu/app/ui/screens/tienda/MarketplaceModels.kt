@@ -1,6 +1,8 @@
 package com.cyberqhatu.app.ui.screens.tienda
 
 import androidx.compose.runtime.mutableStateListOf
+import com.cyberqhatu.app.confianza.FuenteResena
+import com.cyberqhatu.app.confianza.Resena
 import com.cyberqhatu.app.tienda.Categoria
 import com.cyberqhatu.app.tienda.EstadoProducto
 import com.cyberqhatu.app.tienda.EstadoTienda
@@ -131,4 +133,25 @@ object DomainMockData {
 
     val favoritosProductos = mutableListOf<FavoritoProducto>()
     val favoritosTiendas = mutableListOf<FavoritoTienda>()
+
+    val resenasList = mutableStateListOf(
+        Resena(
+            idResena = "r1",
+            idTienda = "t1",
+            idUsuario = "u101",
+            rating = 5,
+            comentario = "Tal cual la foto, muy buena atención y entrega rápida.",
+            source = FuenteResena.DIRECT_SEARCH,
+            isVerified = true
+        ),
+        Resena(
+            idResena = "r2",
+            idTienda = "t1",
+            idUsuario = "u102",
+            rating = 4,
+            comentario = "Producto 100% verificado con código seguro.",
+            source = FuenteResena.DIRECT_SEARCH,
+            isVerified = true
+        )
+    )
 }
