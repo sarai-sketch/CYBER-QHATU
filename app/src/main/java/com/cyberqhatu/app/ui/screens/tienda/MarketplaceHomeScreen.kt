@@ -18,6 +18,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cyberqhatu.app.feature.tienda.data.repository.SqliteCloudProductoRepository
+import com.cyberqhatu.app.feature.tienda.data.repository.SqliteCloudTiendaRepository
 import com.cyberqhatu.app.tienda.Categoria
 import com.cyberqhatu.app.tienda.FavoritoProducto
 import com.cyberqhatu.app.tienda.FavoritoTienda
@@ -45,6 +47,29 @@ fun MarketplaceHomeScreen(
     CyberQhatuTheme {
         var searchQuery by remember { mutableStateOf("") }
         var selectedCategoryName by remember { mutableStateOf("Todos") }
+
+        val productoRepository = remember { SqliteCloudProductoRepository() }
+        val tiendaRepository = remember { SqliteCloudTiendaRepository() }
+
+        LaunchedEffect(Unit) {
+            productoRepository.obtenerProductosRemotos().collect { productosRemotos ->
+                productosRemotos.forEach { p ->
+                    if (DomainMockData.productos.none { it.idProducto == p.idProducto }) {
+                        DomainMockData.productos.add(0, p)
+                    }
+                }
+            }
+        }
+
+        LaunchedEffect(Unit) {
+            tiendaRepository.obtenerTiendasRemotas().collect { tiendasRemotas ->
+                tiendasRemotas.forEach { t ->
+                    if (DomainMockData.tiendas.none { it.idTienda == t.idTienda }) {
+                        DomainMockData.tiendas.add(0, t)
+                    }
+                }
+            }
+        }
 
         val filteredProducts = DomainMockData.productos.filter { product ->
             val matchesSearch = product.nombre.contains(searchQuery, ignoreCase = true) ||
