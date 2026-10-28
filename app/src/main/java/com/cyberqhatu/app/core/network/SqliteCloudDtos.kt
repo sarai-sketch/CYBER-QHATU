@@ -3,7 +3,7 @@ package com.cyberqhatu.app.core.network
 import com.google.gson.annotations.SerializedName
 
 data class SqliteCloudQueryRequest(
-    @SerializedName("database") val database: String = "auth.sqlitecloud",
+    @SerializedName("database") val database: String = "cyberQhatu.sqlite",
     @SerializedName("sql") val sql: String
 )
 

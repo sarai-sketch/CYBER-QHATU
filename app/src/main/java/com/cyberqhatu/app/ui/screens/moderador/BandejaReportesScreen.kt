@@ -40,7 +40,7 @@ fun BandejaReportesScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Bandeja de Reportes (Moderador)", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = QhatuPurple) },
+                title = { Text("Bandeja de Reportes (Moderador)", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary) },
                 actions = {
                     TextButton(onClick = onCerrarSesion) {
                         Text("Cerrar Sesión", color = MaterialTheme.colorScheme.error)
@@ -60,7 +60,7 @@ fun BandejaReportesScreen(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.ReportProblem, contentDescription = null, tint = QhatuCoral)
                 Spacer(Modifier.width(8.dp))
-                Text("Reportes Ciudadanos de Tiendas", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
+                Text("Reportes Ciudadanos de Tiendas", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.primary)
             }
 
             Spacer(Modifier.height(16.dp))
@@ -74,7 +74,7 @@ fun BandejaReportesScreen(
                     items(reportes) { reporte ->
                         Card(
                             shape = RoundedCornerShape(14.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -86,7 +86,7 @@ fun BandejaReportesScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(reporte.tienda, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
+                                    Text(reporte.tienda, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.primary)
                                     Surface(
                                         shape = RoundedCornerShape(6.dp),
                                         color = when (reporte.estado) {
@@ -110,7 +110,7 @@ fun BandejaReportesScreen(
                                 }
 
                                 Spacer(Modifier.height(8.dp))
-                                Text("Motivo: ${reporte.motivo}", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                                Text("Motivo: ${reporte.motivo}", fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface)
                                 Spacer(Modifier.height(4.dp))
                                 Text(reporte.descripcion, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2)
                             }

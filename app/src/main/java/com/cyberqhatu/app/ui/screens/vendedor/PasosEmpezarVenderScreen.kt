@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -35,10 +34,10 @@ fun PasosEmpezarVenderScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Registro de Vendedor", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = QhatuPurple) },
+                title = { Text("Registro de Vendedor", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver", tint = MaterialTheme.colorScheme.primary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -58,7 +57,7 @@ fun PasosEmpezarVenderScreen(
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Text("¡Convierte tu puesto en digital!", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = QhatuPurple)
+                    Text("¡Convierte tu puesto en digital!", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = MaterialTheme.colorScheme.primary)
                     Text("Para garantizar la confianza en Cyber-Qhatu, completa los siguientes 2 pasos obligatorios para abrir tu tienda:", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
                     Spacer(Modifier.height(8.dp))
@@ -66,7 +65,7 @@ fun PasosEmpezarVenderScreen(
                     // Paso 1 Card
                     Card(
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -78,14 +77,14 @@ fun PasosEmpezarVenderScreen(
                                 modifier = Modifier
                                     .size(48.dp)
                                     .clip(CircleShape)
-                                    .background(QhatuPurple.copy(alpha = 0.1f)),
+                                    .background(MaterialTheme.colorScheme.primaryContainer),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Default.Face, contentDescription = null, tint = QhatuPurple)
+                                Icon(Icons.Default.Face, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
                             }
                             Spacer(Modifier.width(16.dp))
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("Paso 1: Verificación Biométrica", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = QhatuPurple)
+                                Text("Paso 1: Verificación Biométrica", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
                                 Spacer(Modifier.height(2.dp))
                                 Text(
                                     if (biometriaActiva) "Escaneo de Carnet de Identidad (C.I.) y reconocimiento facial en vivo."
@@ -100,7 +99,7 @@ fun PasosEmpezarVenderScreen(
                     // Paso 2 Card
                     Card(
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -119,7 +118,7 @@ fun PasosEmpezarVenderScreen(
                             }
                             Spacer(Modifier.width(16.dp))
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("Paso 2: Registro de Tienda", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = QhatuPurple)
+                                Text("Paso 2: Registro de Tienda", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
                                 Spacer(Modifier.height(2.dp))
                                 Text("Nombre del puesto, sector, descripción y contacto de WhatsApp.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }

@@ -95,9 +95,9 @@ fun InventarioVentasScreen(
         unfocusedContainerColor = MaterialTheme.colorScheme.surface,
         focusedTextColor = MaterialTheme.colorScheme.onSurface,
         unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-        focusedLabelColor = QhatuPurple,
+        focusedLabelColor = MaterialTheme.colorScheme.primary,
         unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-        focusedBorderColor = QhatuPurple,
+        focusedBorderColor = MaterialTheme.colorScheme.primary,
         unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
         focusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
         unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
@@ -119,10 +119,10 @@ fun InventarioVentasScreen(
 
         AlertDialog(
             onDismissRequest = { productoAEditar = null },
-            title = { Text("Editar Producto", fontWeight = FontWeight.Bold, color = QhatuPurple) },
+            title = { Text("Editar Producto", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(prod.titulo, fontWeight = FontWeight.SemiBold)
+                    Text(prod.titulo, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
 
                     OutlinedTextField(
                         value = nuevoStockText,
@@ -146,7 +146,7 @@ fun InventarioVentasScreen(
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    Text("Estado:", style = MaterialTheme.typography.labelMedium)
+                    Text("Estado:", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         listOf(EstadoInventario.ACTIVO, EstadoInventario.PAUSADO, EstadoInventario.AGOTADO).forEach { est ->
                             FilterChip(
@@ -154,8 +154,10 @@ fun InventarioVentasScreen(
                                 onClick = { nuevoEstado = est },
                                 label = { Text(est.tituloMostrar) },
                                 colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = QhatuPurple,
-                                    selectedLabelColor = Color.White
+                                    selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                    containerColor = MaterialTheme.colorScheme.surface,
+                                    labelColor = MaterialTheme.colorScheme.onSurface
                                 )
                             )
                         }
@@ -185,7 +187,7 @@ fun InventarioVentasScreen(
                         }
                         productoAEditar = null
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = QhatuPurple)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Text("Guardar Cambios")
                 }
@@ -205,11 +207,11 @@ fun InventarioVentasScreen(
 
         AlertDialog(
             onDismissRequest = { productoAVender = null },
-            title = { Text("Registrar Venta Rápida", fontWeight = FontWeight.Bold, color = QhatuPurple) },
+            title = { Text("Registrar Venta Rápida", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("Producto: ${prod.titulo}", fontWeight = FontWeight.SemiBold)
-                    Text("Stock disponible: ${prod.stock} unidades")
+                    Text("Producto: ${prod.titulo}", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+                    Text("Stock disponible: ${prod.stock} unidades", color = MaterialTheme.colorScheme.onSurfaceVariant)
 
                     OutlinedTextField(
                         value = cantidadText,
@@ -222,7 +224,7 @@ fun InventarioVentasScreen(
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    Text("Método de Pago:", style = MaterialTheme.typography.labelMedium)
+                    Text("Método de Pago:", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         listOf("QR / Transferencia", "Efectivo", "Tarjeta").forEach { metodo ->
                             FilterChip(
@@ -230,8 +232,10 @@ fun InventarioVentasScreen(
                                 onClick = { metodoPago = metodo },
                                 label = { Text(metodo) },
                                 colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = QhatuPurple,
-                                    selectedLabelColor = Color.White
+                                    selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                    containerColor = MaterialTheme.colorScheme.surface,
+                                    labelColor = MaterialTheme.colorScheme.onSurface
                                 )
                             )
                         }
@@ -282,21 +286,21 @@ fun InventarioVentasScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "Inventario y Ventas", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = QhatuPurple) },
+                title = { Text(text = "Inventario y Ventas", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Volver",
-                            tint = QhatuPurple
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = QhatuPurple,
-                    navigationIconContentColor = QhatuPurple,
-                    actionIconContentColor = QhatuPurple
+                    titleContentColor = MaterialTheme.colorScheme.primary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.primary,
+                    actionIconContentColor = MaterialTheme.colorScheme.primary
                 )
             )
         },
@@ -424,7 +428,7 @@ fun InventarioVentasScreen(
                     text = "Inventario de Productos",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = QhatuPurple
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 OutlinedTextField(
@@ -447,10 +451,10 @@ fun InventarioVentasScreen(
                             onClick = { state = state.copy(filtroSeleccionado = filtro) },
                             label = { Text(filtro.tituloMostrar, fontWeight = FontWeight.Medium) },
                             colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = QhatuPurple,
-                                selectedLabelColor = Color.White,
-                                containerColor = QhatuPurpleLight,
-                                labelColor = QhatuPurple
+                                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                labelColor = MaterialTheme.colorScheme.onSurface
                             ),
                             shape = RoundedCornerShape(12.dp)
                         )
@@ -460,7 +464,7 @@ fun InventarioVentasScreen(
                 if (productosFiltrados.isEmpty()) {
                     Card(
                         colors = CardDefaults.cardColors(
-                            containerColor = QhatuPurpleLight
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
                         ),
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier
@@ -476,7 +480,7 @@ fun InventarioVentasScreen(
                             Text(
                                 text = "No hay productos en este filtro.",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = QhatuPurple,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontWeight = FontWeight.Medium
                             )
                         }
@@ -507,7 +511,7 @@ fun TarjetaProductoInventario(
 ) {
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(16.dp),
@@ -525,7 +529,7 @@ fun TarjetaProductoInventario(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(12.dp))
-                        .background(QhatuPurpleLight)
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
                         .padding(12.dp),
                     contentAlignment = Alignment.Center
                 ) {
@@ -544,20 +548,20 @@ fun TarjetaProductoInventario(
                             text = producto.titulo,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = QhatuPurple,
+                            color = MaterialTheme.colorScheme.onSurface,
                             maxLines = 1
                         )
 
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(QhatuPurpleLight)
+                                .background(MaterialTheme.colorScheme.primaryContainer)
                                 .padding(horizontal = 10.dp, vertical = 4.dp)
                         ) {
                             Text(
                                 text = "Stock ${producto.stock}",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = QhatuPurple,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -597,7 +601,7 @@ fun TarjetaProductoInventario(
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("️ Editar", style = MaterialTheme.typography.labelMedium, color = QhatuPurple)
+                    Text("️ Editar", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
                 }
 
                 Button(

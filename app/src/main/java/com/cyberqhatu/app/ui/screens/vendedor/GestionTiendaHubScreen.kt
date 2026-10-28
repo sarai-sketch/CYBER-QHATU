@@ -1,22 +1,22 @@
 package com.cyberqhatu.app.ui.screens.vendedor
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddBox
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Store
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import com.cyberqhatu.app.confianza.EstadoApelacion
-import com.cyberqhatu.app.confianza.EstadoReporte
-import com.cyberqhatu.app.confianza.ModeracionStore
-import com.cyberqhatu.app.confianza.ReporteTienda
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,6 +24,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cyberqhatu.app.confianza.EstadoApelacion
+import com.cyberqhatu.app.confianza.EstadoReporte
+import com.cyberqhatu.app.confianza.ModeracionStore
+import com.cyberqhatu.app.confianza.ReporteTienda
 import com.cyberqhatu.app.ui.theme.QhatuPurple
 
 /**
@@ -47,10 +51,10 @@ fun GestionTiendaHubScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Gestión de Mi Tienda", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = QhatuPurple) },
+                title = { Text("Gestión de Mi Tienda", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver", tint = MaterialTheme.colorScheme.primary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -76,7 +80,6 @@ fun GestionTiendaHubScreen(
                 var reporteApelando by remember { mutableStateOf<ReporteTienda?>(null) }
                 var textoApelacion by remember { mutableStateOf("") }
 
-                // Al abrir el panel, la tienda ya "vio" los avisos (se quita la insignia del inicio)
                 LaunchedEffect(Unit) { ModeracionStore.marcarVistos(idTienda) }
 
                 Card(
@@ -88,16 +91,15 @@ fun GestionTiendaHubScreen(
                         modifier = Modifier.padding(20.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.Store, contentDescription = null, modifier = Modifier.size(40.dp), tint = QhatuPurple)
+                        Icon(Icons.Default.Store, contentDescription = null, modifier = Modifier.size(40.dp), tint = MaterialTheme.colorScheme.onPrimaryContainer)
                         Spacer(Modifier.width(16.dp))
                         Column {
-                            Text(nombreTienda, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
-                            Text("Administra tus productos, inventario y equipo de trabajo.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                            Text(nombreTienda, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                            Text("Administra tus productos, inventario y equipo de trabajo.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f))
                         }
                     }
                 }
 
-                // Estado de strikes de la tienda
                 Card(
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
@@ -109,7 +111,8 @@ fun GestionTiendaHubScreen(
                         Text(
                             "Strikes: $strikes de ${ModeracionStore.LIMITE_STRIKES}",
                             fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp
+                            fontSize = 15.sp,
+                            color = Color.Black
                         )
                         Text(
                             when {
@@ -117,23 +120,23 @@ fun GestionTiendaHubScreen(
                                 strikes > 0 -> "Tienes strikes activos. Si crees que es un error, puedes apelar."
                                 else -> "Tu tienda no tiene sanciones."
                             },
-                            fontSize = 12.sp
+                            fontSize = 12.sp,
+                            color = Color.Black.copy(alpha = 0.8f)
                         )
                     }
                 }
 
-                // Reportes recibidos (aviso a la tienda) con opción de apelar
                 if (misReportes.isNotEmpty()) {
-                    Text("Reportes recibidos", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
+                    Text("Reportes recibidos", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.primary)
                     misReportes.forEach { r ->
                         Card(
                             shape = RoundedCornerShape(14.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                Text("${r.id} · ${r.motivo}", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                Text("${r.id} · ${r.motivo}", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
                                 Text(
                                     r.descripcion,
                                     fontSize = 12.sp,
@@ -149,7 +152,8 @@ fun GestionTiendaHubScreen(
                                         else -> "Reporte aceptado: se aplicó un strike a tu tienda."
                                     },
                                     fontSize = 12.sp,
-                                    fontWeight = FontWeight.SemiBold
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                                 if (r.estado == EstadoReporte.ACEPTADO && r.estadoApelacion == EstadoApelacion.NINGUNA) {
                                     OutlinedButton(onClick = { reporteApelando = r; textoApelacion = "" }) {
@@ -189,14 +193,80 @@ fun GestionTiendaHubScreen(
                     )
                 }
 
+                var logoUri by remember { mutableStateOf<String?>(null) }
+                var portadaUri by remember { mutableStateOf<String?>(null) }
+                var descripcionTienda by remember { mutableStateOf("Tienda especializada en prendas tradicionales y artesanía fina en la Feria 16 de Julio.") }
+                var horarioApertura by remember { mutableStateOf("08:00") }
+                var horarioCierre by remember { mutableStateOf("18:00") }
+                var mostrarDialogoInfo by remember { mutableStateOf(false) }
+
+                val logoPicker = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
+                    if (uri != null) logoUri = uri.toString()
+                }
+
+                if (mostrarDialogoInfo) {
+                    AlertDialog(
+                        onDismissRequest = { mostrarDialogoInfo = false },
+                        title = { Text("Editar Información de Tienda", fontWeight = FontWeight.Bold) },
+                        text = {
+                            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                OutlinedTextField(
+                                    value = descripcionTienda,
+                                    onValueChange = { descripcionTienda = it },
+                                    label = { Text("Descripción de la tienda") },
+                                    minLines = 2,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    OutlinedTextField(
+                                        value = horarioApertura,
+                                        onValueChange = { horarioApertura = it },
+                                        label = { Text("Apertura") },
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    OutlinedTextField(
+                                        value = horarioCierre,
+                                        onValueChange = { horarioCierre = it },
+                                        label = { Text("Cierre") },
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                            }
+                        },
+                        confirmButton = {
+                            Button(onClick = { mostrarDialogoInfo = false }) {
+                                Text("Guardar Cambios")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { mostrarDialogoInfo = false }) {
+                                Text("Cancelar")
+                            }
+                        }
+                    )
+                }
+
                 Spacer(Modifier.height(8.dp))
 
-                // Opciones del Hub
                 BotonOpcionHub(
                     titulo = "Ver Perfil de la Tienda",
                     descripcion = "Visualiza cómo ven los compradores tu puesto",
                     icon = Icons.Default.Store,
                     onClick = onVerPerfilTienda
+                )
+
+                BotonOpcionHub(
+                    titulo = "Modificar Descripción y Horarios",
+                    descripcion = "Cambia el texto informativo y los horarios de atención",
+                    icon = Icons.Default.Edit,
+                    onClick = { mostrarDialogoInfo = true }
+                )
+
+                BotonOpcionHub(
+                    titulo = "Cambiar Foto de Logo o Portada",
+                    descripcion = "Sube desde la galería del teléfono la imagen oficial de tu puesto",
+                    icon = Icons.Default.Image,
+                    onClick = { logoPicker.launch("image/*") }
                 )
 
                 BotonOpcionHub(
@@ -234,7 +304,7 @@ fun BotonOpcionHub(
     Card(
         onClick = onClick,
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -246,15 +316,15 @@ fun BotonOpcionHub(
         ) {
             Surface(
                 shape = RoundedCornerShape(10.dp),
-                color = QhatuPurple.copy(alpha = 0.1f)
+                color = MaterialTheme.colorScheme.primaryContainer
             ) {
                 Box(modifier = Modifier.padding(12.dp), contentAlignment = Alignment.Center) {
-                    Icon(icon, contentDescription = null, tint = QhatuPurple)
+                    Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
                 }
             }
             Spacer(Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(titulo, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = QhatuPurple)
+                Text(titulo, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
                 Spacer(Modifier.height(2.dp))
                 Text(descripcion, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }

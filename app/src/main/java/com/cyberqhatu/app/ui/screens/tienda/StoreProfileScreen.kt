@@ -24,7 +24,7 @@ import com.cyberqhatu.app.tienda.FavoritoTienda
 import com.cyberqhatu.app.ui.theme.*
 
 /**
- * Pantalla de Perfil de Tienda con soporte para Reseñas dinámicas y Favoritos.
+ * Pantalla de Perfil de Tienda con diseño 100% unificado, adaptable a Modo Claro/Oscuro y soporte para Reseñas y Favoritos.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,13 +47,13 @@ fun StoreProfileScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(text = "Perfil de Puesto", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = QhatuPurple) },
+                    title = { Text(text = "Perfil de Puesto", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary) },
                     navigationIcon = {
                         IconButton(onClick = onBackClick) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Volver",
-                                tint = QhatuPurple
+                                tint = MaterialTheme.colorScheme.primary
                             )
                         }
                     },
@@ -86,7 +86,7 @@ fun StoreProfileScreen(
                             Icon(
                                 imageVector = if (esFavorito && isLoggedIn) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                                 contentDescription = "Favorito Tienda",
-                                tint = if (esFavorito && isLoggedIn) Color.Red else QhatuPurple
+                                tint = if (esFavorito && isLoggedIn) Color.Red else MaterialTheme.colorScheme.primary
                             )
                         }
                         IconButton(onClick = { onNavigateToReportar(tienda.nombre) }) {
@@ -99,9 +99,9 @@ fun StoreProfileScreen(
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.surface,
-                        titleContentColor = QhatuPurple,
-                        navigationIconContentColor = QhatuPurple,
-                        actionIconContentColor = QhatuPurple
+                        titleContentColor = MaterialTheme.colorScheme.primary,
+                        navigationIconContentColor = MaterialTheme.colorScheme.primary,
+                        actionIconContentColor = MaterialTheme.colorScheme.primary
                     )
                 )
             }
@@ -118,7 +118,7 @@ fun StoreProfileScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp))
-                        .background(QhatuPurple)
+                        .background(MaterialTheme.colorScheme.primary)
                         .padding(horizontal = 20.dp, vertical = 20.dp)
                 ) {
                     Column {
@@ -156,13 +156,13 @@ fun StoreProfileScreen(
                                 modifier = Modifier
                                     .size(70.dp)
                                     .clip(CircleShape)
-                                    .background(QhatuPurple.copy(alpha = 0.1f)),
+                                    .background(MaterialTheme.colorScheme.primaryContainer),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Storefront,
                                     contentDescription = null,
-                                    tint = QhatuPurple,
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
                                     modifier = Modifier.size(36.dp)
                                 )
                             }
@@ -171,7 +171,7 @@ fun StoreProfileScreen(
                                 text = tienda.nombre,
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = QhatuPurple
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
@@ -191,12 +191,22 @@ fun StoreProfileScreen(
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFFFC107), modifier = Modifier.size(16.dp))
                                         Spacer(Modifier.width(4.dp))
-                                        Text(text = "$reputacion", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                        Text(
+                                            text = "$reputacion",
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 16.sp,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
                                     }
                                     Text("Reputación", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text(text = "$ventas+", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
+                                    Text(
+                                        text = "$ventas+",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 16.sp,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
                                     Text("Ventas exitosas", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             }
@@ -228,7 +238,7 @@ fun StoreProfileScreen(
                         text = "Productos de este Puesto",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = QhatuPurple
+                        color = MaterialTheme.colorScheme.onSurface
                     )
 
                     if (productosDeTienda.isEmpty()) {
@@ -251,21 +261,31 @@ fun StoreProfileScreen(
                                         modifier = Modifier
                                             .size(60.dp)
                                             .clip(RoundedCornerShape(10.dp))
-                                            .background(QhatuPurple.copy(alpha = 0.1f)),
+                                            .background(MaterialTheme.colorScheme.surfaceVariant),
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.ShoppingBag,
                                             contentDescription = null,
-                                            tint = QhatuPurple,
+                                            tint = MaterialTheme.colorScheme.primary,
                                             modifier = Modifier.size(24.dp)
                                         )
                                     }
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Column(modifier = Modifier.weight(1f)) {
-                                        Text(producto.nombre, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = QhatuPurple)
+                                        Text(
+                                            text = producto.nombre,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 14.sp,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
                                         Spacer(modifier = Modifier.height(2.dp))
-                                        Text("Bs. ${producto.precio}", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = QhatuCoral)
+                                        Text(
+                                            text = "Bs. ${producto.precio}",
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 13.sp,
+                                            color = QhatuCoral
+                                        )
                                     }
                                 }
                             }
@@ -279,7 +299,7 @@ fun StoreProfileScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Reseñas del Puesto", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
+                        Text("Reseñas del Puesto", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
                         TextButton(onClick = {
                             if (!isLoggedIn) {
                                 onRequireLogin()
@@ -287,7 +307,7 @@ fun StoreProfileScreen(
                                 onEscribirResenaClick(tienda.nombre)
                             }
                         }) {
-                            Text("Escribir Reseña", fontWeight = FontWeight.Bold, color = QhatuPurple)
+                            Text("Escribir Reseña", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                         }
                     }
 
@@ -299,7 +319,7 @@ fun StoreProfileScreen(
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(12.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                             ) {
                                 Column(modifier = Modifier.padding(12.dp)) {
@@ -308,7 +328,7 @@ fun StoreProfileScreen(
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Text(nombreAutor, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = QhatuPurple)
+                                        Text(nombreAutor, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface)
                                         Row {
                                             for (i in 1..5) {
                                                 Icon(

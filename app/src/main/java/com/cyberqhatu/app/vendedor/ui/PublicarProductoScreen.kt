@@ -1,5 +1,7 @@
 package com.cyberqhatu.app.vendedor.ui
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -47,11 +49,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.cyberqhatu.app.data.local.database.QhatuDatabase
 import com.cyberqhatu.app.feature.tienda.data.repository.ProductoRepository
 import com.cyberqhatu.app.feature.tienda.data.repository.SqliteCloudProductoRepository
@@ -264,111 +268,126 @@ fun PublicarProductoScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.padding(vertical = 8.dp)
-                ) {
-                    item {
-                        Card(
-                            colors = CardDefaults.cardColors(
-                                containerColor = QhatuPurpleLight
-                            ),
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier
-                                .size(100.dp)
-                                .border(
-                                    width = 1.5.dp,
-                                    color = QhatuPurple,
-                                    shape = RoundedCornerShape(16.dp)
-                                )
-                                .clickable {
-                                    if (formState.imagenesUris.size < 5) {
-                                        val nuevaImagen = "Foto #${formState.imagenesUris.size + 1}"
-                                        formState = formState.copy(
-                                            imagenesUris = formState.imagenesUris + nuevaImagen
-                                        )
-                                    }
-                                }
-                        ) {
-                            Column(
-                                modifier = Modifier.fillMaxSize(),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.CameraAlt,
-                                    contentDescription = "Sube una foto",
-                                    tint = QhatuPurple,
-                                    modifier = Modifier.size(32.dp)
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "Sube una foto",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = QhatuPurple,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetMultipleContents()
+    ) { uris ->
+        if (uris.isNotEmpty()) {
+            val novUris = uris.map { it.toString() }
+            formState = formState.copy(
+                imagenesUris = (formState.imagenesUris + novUris).take(5)
+            )
+        }
+    }
+
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.padding(vertical = 8.dp)
+    ) {
+        item {
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = QhatuPurpleLight
+                ),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier
+                    .size(100.dp)
+                    .border(
+                        width = 1.5.dp,
+                        color = QhatuPurple,
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                    .clickable {
+                        galleryLauncher.launch("image/*")
                     }
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CameraAlt,
+                        contentDescription = "Sube una foto",
+                        tint = QhatuPurple,
+                        modifier = Modifier.size(32.dp)
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Sube una foto",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = QhatuPurple,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
 
-                    itemsIndexed(formState.imagenesUris) { index, foto ->
-                        Box(
-                            modifier = Modifier.size(100.dp)
+        itemsIndexed(formState.imagenesUris) { index, foto ->
+            Box(
+                modifier = Modifier.size(100.dp)
+            ) {
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    if (foto.startsWith("content://") || foto.startsWith("file://") || foto.startsWith("http")) {
+                        AsyncImage(
+                            model = foto,
+                            contentDescription = "Foto $index",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
                         ) {
-                            Card(
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surface
-                                ),
-                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                                shape = RoundedCornerShape(16.dp),
-                                modifier = Modifier.fillMaxSize()
-                            ) {
-                                Column(
-                                    modifier = Modifier.fillMaxSize(),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.CameraAlt,
-                                        contentDescription = "Foto subida",
-                                        tint = QhatuPurple,
-                                        modifier = Modifier.size(28.dp)
-                                    )
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Text(
-                                        text = foto,
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = QhatuPurple,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-                                }
-                            }
-
-                            Box(
-                                modifier = Modifier
-                                    .align(Alignment.TopEnd)
-                                    .padding(4.dp)
-                                    .size(24.dp)
-                                    .clip(CircleShape)
-                                    .background(QhatuCoral)
-                                    .clickable {
-                                        val listaActualizada = formState.imagenesUris.toMutableList()
-                                        listaActualizada.removeAt(index)
-                                        formState = formState.copy(imagenesUris = listaActualizada)
-                                    },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "✕",
-                                    color = Color.White,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
+                            Icon(
+                                imageVector = Icons.Default.CameraAlt,
+                                contentDescription = "Foto subida",
+                                tint = QhatuPurple,
+                                modifier = Modifier.size(28.dp)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = foto,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = QhatuPurple,
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
                     }
                 }
+
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(4.dp)
+                        .size(24.dp)
+                        .clip(CircleShape)
+                        .background(QhatuCoral)
+                        .clickable {
+                            val listaActualizada = formState.imagenesUris.toMutableList()
+                            listaActualizada.removeAt(index)
+                            formState = formState.copy(imagenesUris = listaActualizada)
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "✕",
+                        color = Color.White,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+    }
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

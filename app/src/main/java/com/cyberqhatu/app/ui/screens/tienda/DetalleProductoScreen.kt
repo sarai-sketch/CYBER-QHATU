@@ -1,5 +1,7 @@
 package com.cyberqhatu.app.ui.screens.tienda
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -16,6 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,16 +48,18 @@ fun DetalleProductoScreen(
     onRequireLogin: () -> Unit = {},
     onEscribirResenaClick: (nombreItem: String) -> Unit = {}
 ) {
+    val context = LocalContext.current
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "Detalle del Producto", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = QhatuPurple) },
+                title = { Text(text = "Detalle del Producto", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Volver",
-                            tint = QhatuPurple
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 },
@@ -86,15 +92,15 @@ fun DetalleProductoScreen(
                         Icon(
                             imageVector = if (esFavorito && isLoggedIn) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                             contentDescription = "Favorito Producto",
-                            tint = if (esFavorito && isLoggedIn) Color.Red else QhatuPurple
+                            tint = if (esFavorito && isLoggedIn) Color.Red else MaterialTheme.colorScheme.primary
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = QhatuPurple,
-                    navigationIconContentColor = QhatuPurple,
-                    actionIconContentColor = QhatuPurple,
+                    titleContentColor = MaterialTheme.colorScheme.primary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.primary,
+                    actionIconContentColor = MaterialTheme.colorScheme.primary,
                 ),
             )
         },
@@ -111,7 +117,7 @@ fun DetalleProductoScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp))
-                    .background(QhatuPurple)
+                    .background(MaterialTheme.colorScheme.primary)
                     .padding(horizontal = 20.dp, vertical = 20.dp),
             ) {
                 Column {
@@ -155,29 +161,7 @@ fun DetalleProductoScreen(
                                 fontWeight = FontWeight.Bold,
                                 color = QhatuCoral,
                             )
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = QhatuLimeDark.copy(alpha = 0.15f),
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Check,
-                                        contentDescription = null,
-                                        tint = QhatuLimeDark,
-                                        modifier = Modifier.size(14.dp),
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = "Código Seguro",
-                                        color = QhatuLimeDark,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 12.sp,
-                                    )
-                                }
-                            }
+                            EstadoBadge(text = "Código Seguro", bg = QhatuLimeDark.copy(alpha = 0.15f), fg = QhatuLimeDark, icon = Icons.Default.Check)
                         }
 
                         Spacer(modifier = Modifier.height(12.dp))
@@ -189,59 +173,40 @@ fun DetalleProductoScreen(
                     }
                 }
 
-                // Tarjeta de Información del Puesto / Vendedor
+                // Tarjeta de la tienda
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Row(
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier.padding(14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(50.dp)
+                                .size(46.dp)
                                 .clip(CircleShape)
-                                .background(QhatuPurple.copy(alpha = 0.1f)),
-                            contentAlignment = Alignment.Center,
+                                .background(MaterialTheme.colorScheme.primaryContainer),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.CameraAlt,
-                                contentDescription = null,
-                                tint = QhatuPurple,
-                                modifier = Modifier.size(24.dp),
-                            )
+                            Text("MA", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
                         }
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = "Puesto Don Carlos",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 15.sp,
-                                color = QhatuPurple,
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.Star,
-                                    contentDescription = null,
-                                    tint = Color(0xFFFFC107),
-                                    modifier = Modifier.size(14.dp),
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    text = "4.8 (${DomainMockData.resenasList.size} reseñas)",
-                                    fontSize = 12.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
+
+                        Spacer(Modifier.width(12.dp))
+
+                        Column(Modifier.weight(1f)) {
+                            Text("Moda Andina", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+                            Spacer(Modifier.height(2.dp))
+                            Text("4.8 (${DomainMockData.resenasList.size} reseñas)", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
+
+                        Text("Ver tienda ›", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                     }
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(Modifier.height(20.dp))
 
                 // Botón de acción único
                 Button(
@@ -250,10 +215,9 @@ fun DetalleProductoScreen(
                         .fillMaxWidth()
                         .height(50.dp),
                     shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = QhatuPurple),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                 ) {
                     Text("Enviar consulta", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White)
-                }
                 }
 
                 Spacer(Modifier.height(24.dp))
@@ -263,7 +227,7 @@ fun DetalleProductoScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Reseñas (${DomainMockData.resenasList.size})", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = QhatuPurple)
+                    Text("Reseñas (${DomainMockData.resenasList.size})", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
                     TextButton(onClick = {
                         if (!isLoggedIn) {
                             onRequireLogin()
@@ -271,7 +235,7 @@ fun DetalleProductoScreen(
                             onEscribirResenaClick(producto.nombre)
                         }
                     }) {
-                        Text("Escribir Reseña", fontWeight = FontWeight.Bold, color = QhatuPurple)
+                        Text("Escribir Reseña", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                     }
                 }
 
@@ -289,14 +253,39 @@ fun DetalleProductoScreen(
             }
         }
     }
+}
+
+@Composable
+private fun EstadoBadge(text: String, bg: Color, fg: Color, icon: ImageVector? = null) {
+    Surface(
+        shape = RoundedCornerShape(8.dp),
+        color = bg,
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (icon != null) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = fg,
+                    modifier = Modifier.size(12.dp),
+                )
+                Spacer(Modifier.width(4.dp))
+            }
+            Text(text, color = fg, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+        }
+    }
+}
 
 @Composable
 private fun ResenaItem(autor: String, comentario: String, rating: Int = 5) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(
@@ -304,14 +293,14 @@ private fun ResenaItem(autor: String, comentario: String, rating: Int = 5) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = autor, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = QhatuPurple)
+                Text(text = autor, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface)
                 Row {
                     for (i in 1..5) {
                         Icon(
                             imageVector = Icons.Default.Star,
-                            contentDescription = null,
-                            tint = if (i <= rating) Color(0xFFFFC107) else Color.LightGray,
-                            modifier = Modifier.size(14.dp)
+                            contentDescription = "Estrella",
+                            tint = if (i <= rating) Color(0xFFFFB300) else Color.LightGray,
+                            modifier = Modifier.size(14.dp),
                         )
                     }
                 }

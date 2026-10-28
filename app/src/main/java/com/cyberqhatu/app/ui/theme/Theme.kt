@@ -10,15 +10,24 @@ import androidx.compose.ui.graphics.Color
 private val DarkColorScheme = darkColorScheme(
     primary = QhatuPurpleLight,
     onPrimary = QhatuPurple,
-    primaryContainer = QhatuPurple,
+    primaryContainer = QhatuPurpleContainer,
     onPrimaryContainer = Color.White,
     secondary = QhatuCoral,
     onSecondary = Color.White,
+    secondaryContainer = Color(0xFF382B60),
+    onSecondaryContainer = Color(0xFFEBE6FF),
     tertiary = QhatuLime,
-    background = Color(0xFF131124),
-    surface = Color(0xFF1E1B36),
-    onBackground = Color.White,
-    onSurface = Color.White
+    onTertiary = QhatuLimeDark,
+    background = Color(0xFF121020),
+    surface = Color(0xFF1A172E),
+    surfaceVariant = Color(0xFF282347),
+    onBackground = Color(0xFFF4F3FA),
+    onSurface = Color(0xFFF4F3FA),
+    onSurfaceVariant = Color(0xFFB0ACD0),
+    outline = Color(0xFF3E3860),
+    outlineVariant = Color(0xFF2D274A),
+    error = Color(0xFFFF6B5B),
+    onError = Color.White
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -34,10 +43,14 @@ private val LightColorScheme = lightColorScheme(
     onTertiary = QhatuLimeDark,
     background = QhatuBackground,
     surface = QhatuSurface,
-    onBackground = QhatuPurple,
-    onSurface = QhatuPurple,
-    onSurfaceVariant = QhatuPurple,
-    outline = QhatuBorder
+    surfaceVariant = Color(0xFFEBE6FF),
+    onBackground = QhatuTextPrimary,
+    onSurface = QhatuTextPrimary,
+    onSurfaceVariant = QhatuTextSecondary,
+    outline = QhatuBorder,
+    outlineVariant = Color(0xFFE2DFF5),
+    error = QhatuCoral,
+    onError = Color.White
 )
 
 @Composable

@@ -26,10 +26,10 @@ fun DetalleReporteScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Detalle de Reporte (${reporte.id})", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = QhatuPurple) },
+                title = { Text("Detalle de Reporte (${reporte.id})", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver", tint = MaterialTheme.colorScheme.primary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -50,28 +50,28 @@ fun DetalleReporteScreen(
             ) {
                 Card(
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         Text("Tienda Denunciada:", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text(reporte.tienda, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = QhatuPurple)
+                        Text(reporte.tienda, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary)
 
                         HorizontalDivider()
 
                         Text("Motivo del Reporte:", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text(reporte.motivo, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+                        Text(reporte.motivo, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
 
                         HorizontalDivider()
 
                         Text("Descripción detallada:", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text(reporte.descripcion, fontSize = 14.sp)
+                        Text(reporte.descripcion, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
 
                         HorizontalDivider()
 
                         Text("Estado Actual:", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text(reporte.estado, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(reporte.estado, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
                     }
                 }
 
@@ -92,7 +92,7 @@ fun DetalleReporteScreen(
                                 .height(50.dp),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text("Desestimar Reporte", color = Color.Gray)
+                            Text("Desestimar Reporte")
                         }
 
                         Button(
