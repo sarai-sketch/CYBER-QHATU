@@ -19,7 +19,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cyberqhatu.app.ui.theme.QhatuPurple
+import kotlinx.coroutines.launch
 
 /**
  * Pantalla de Inicio de Sesión con dos pestañas: "Ingresar" y "Registrarse".
@@ -29,20 +31,46 @@ import com.cyberqhatu.app.ui.theme.QhatuPurple
 @Composable
 fun LoginCompradorScreen(
     onLoginSuccess: (email: String) -> Unit = {},
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    authViewModel: AuthViewModel = viewModel(factory = AuthViewModel.provideFactory())
 ) {
     var tab by remember { mutableIntStateOf(0) } // 0 = Ingresar, 1 = Registrarse
+    var nombre by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmar by remember { mutableStateOf("") }
     var verPassword by remember { mutableStateOf(false) }
 
+    val authState by authViewModel.authState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(authState) {
+        when (val state = authState) {
+            is AuthState.Success -> {
+                if (state.isLogin) {
+                    onLoginSuccess(state.email)
+                    authViewModel.resetState()
+                } else {
+                    launch { snackbarHostState.showSnackbar(state.message) }
+                    tab = 0
+                    authViewModel.resetState()
+                }
+            }
+            is AuthState.Error -> {
+                launch { snackbarHostState.showSnackbar(state.message) }
+                authViewModel.resetState()
+            }
+            else -> {}
+        }
+    }
+
     val emailValido = android.util.Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()
     val coinciden = password == confirmar
     val puedeIngresar = emailValido && password.isNotBlank()
-    val puedeRegistrar = emailValido && password.length >= 6 && coinciden
+    val puedeRegistrar = emailValido && password.length >= 6 && coinciden && nombre.isNotBlank()
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Iniciar Sesión", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = QhatuPurple) },
@@ -94,6 +122,17 @@ fun LoginCompradorScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
+                if (tab == 1) {
+                    OutlinedTextField(
+                        value = nombre,
+                        onValueChange = { nombre = it },
+                        label = { Text("Nombre completo") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                }
+
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
@@ -143,18 +182,28 @@ fun LoginCompradorScreen(
                 }
 
                 Button(
-                    onClick = { onLoginSuccess(email.trim()) },
-                    enabled = if (tab == 0) puedeIngresar else puedeRegistrar,
+                    onClick = {
+                        if (tab == 0) {
+                            authViewModel.login(email.trim(), password)
+                        } else {
+                            authViewModel.register(nombre.trim(), email.trim(), password)
+                        }
+                    },
+                    enabled = (if (tab == 0) puedeIngresar else puedeRegistrar) && authState !is AuthState.Loading,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text(
-                        text = if (tab == 0) "Ingresar" else "Registrarse",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
-                    )
+                    if (authState is AuthState.Loading) {
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(24.dp))
+                    } else {
+                        Text(
+                            text = if (tab == 0) "Ingresar" else "Registrarse",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                    }
                 }
             }
         }

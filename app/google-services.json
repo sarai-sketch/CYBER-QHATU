@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "187847443569",
+    "project_id": "cyberqhatu",
+    "storage_bucket": "cyberqhatu.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:187847443569:android:aa6c37df220fb352cf07d0",
+        "android_client_info": {
+          "package_name": "com.cyberqhatu.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAsNDAHAPYkcTs-FIPPBPBMRgNmDaX1gvc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

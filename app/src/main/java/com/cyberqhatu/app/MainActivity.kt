@@ -5,9 +5,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cyberqhatu.app.confianza.FuenteResena
 import com.cyberqhatu.app.confianza.ModeracionStore
 import com.cyberqhatu.app.confianza.Resena
@@ -32,6 +35,10 @@ import com.cyberqhatu.app.vendedor.ui.PublicarProductoScreen
 import com.cyberqhatu.app.verificacion.data.repository.VerificacionRepositoryImpl
 import com.cyberqhatu.app.verificacion.ui.EscanerIdentidadScreen
 import com.cyberqhatu.app.verificacion.ui.InstruccionesVerificacionScreen
+import com.cyberqhatu.app.auth.data.repository.AuthRepositoryImpl
+import com.cyberqhatu.app.ui.screens.perfil.PerfilViewModel
+import com.cyberqhatu.app.ui.screens.perfil.UpdateState
+import com.google.firebase.auth.FirebaseAuth
 
 sealed class RootScreen {
     object Home : RootScreen()
@@ -77,21 +84,102 @@ fun MainNavigationApp() {
     val estadoLocal by estadoLocalFlow.collectAsState(initial = null)
     val estaVerificado = estadoLocal?.esExitoso == true
 
-    var isLoggedIn by remember { mutableStateOf(false) }
-    var currentUserEmail by remember { mutableStateOf("juan.perez@cyberqhatu.bo") }
-    var isTiendaCreada by remember { mutableStateOf(false) }
-    var miTiendaId by remember { mutableStateOf<String?>(null) }
-    var esModerador by remember { mutableStateOf(false) }
+    // Instanciamos el repositorio y obtenemos el estado inicial de la sesión
+    val authRepository = remember { AuthRepositoryImpl() }
+    
+    val isUserLoggedIn = authRepository.isUserLoggedInAndVerified()
+    val initialEmail = authRepository.getCurrentUserEmail() ?: "juan.perez@cyberqhatu.bo"
+    val initialName = authRepository.getCurrentUserName() ?: "Usuario"
+    val emailLowerForInit = initialEmail.lowercase()
+
+    var isLoggedIn by remember { mutableStateOf(isUserLoggedIn) }
+    var currentUserEmail by remember { mutableStateOf(initialEmail) }
+    var currentUserName by remember { mutableStateOf(initialName) }
+    var isTiendaCreada by remember { 
+        mutableStateOf(isUserLoggedIn && (emailLowerForInit == "carlos@gmail.com" || emailLowerForInit == "rosa@gmail.com")) 
+    }
+    var miTiendaId by remember { 
+        mutableStateOf(
+            if (isUserLoggedIn) {
+                when (emailLowerForInit) {
+                    "carlos@gmail.com" -> "t1"
+                    "rosa@gmail.com" -> "t2"
+                    else -> null
+                }
+            } else null
+        ) 
+    }
+    var esModerador by remember { mutableStateOf(isUserLoggedIn && emailLowerForInit == "moderador@cyberqhatu.bo") }
 
     var currentScreen by remember { mutableStateOf<RootScreen>(RootScreen.Home) }
     var lastStoreId by remember { mutableStateOf("t1") }
     var modoVerificacionStep by remember { mutableIntStateOf(0) } // 0: Normal, 1: Pasos, 2: Instrucciones, 3: Escáner, 4: Crear Tienda
 
+    var showEditNameDialog by remember { mutableStateOf(false) }
+    var tempName by remember { mutableStateOf("") }
+    val perfilViewModel: PerfilViewModel = viewModel(factory = PerfilViewModel.provideFactory(authRepository))
+    val updateState by perfilViewModel.updateState.collectAsState()
+
+    LaunchedEffect(updateState) {
+        if (updateState is UpdateState.Success) {
+            currentUserName = (updateState as UpdateState.Success).newName
+            showEditNameDialog = false
+            perfilViewModel.resetState()
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
+        if (showEditNameDialog) {
+            AlertDialog(
+                onDismissRequest = { 
+                    showEditNameDialog = false
+                    perfilViewModel.resetState()
+                },
+                title = { Text("Editar Perfil") },
+                text = {
+                    Column {
+                        OutlinedTextField(
+                            value = tempName,
+                            onValueChange = { tempName = it },
+                            label = { Text("Nombre completo") },
+                            singleLine = true
+                        )
+                        if (updateState is UpdateState.Loading) {
+                            CircularProgressIndicator(modifier = Modifier.padding(top = 8.dp))
+                        } else if (updateState is UpdateState.Error) {
+                            Text(
+                                text = (updateState as UpdateState.Error).message, 
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = { perfilViewModel.actualizarNombre(tempName) },
+                        enabled = tempName.isNotBlank() && updateState !is UpdateState.Loading
+                    ) {
+                        Text("Guardar")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { 
+                        showEditNameDialog = false
+                        perfilViewModel.resetState()
+                    }) {
+                        Text("Cancelar")
+                    }
+                }
+            )
+        }
+
         when {
             esModerador -> {
                 VistaModeradorScreen(
                     onCerrarSesion = {
+                        authRepository.logout()
                         esModerador = false
                         isLoggedIn = false
                         isTiendaCreada = false
@@ -170,6 +258,7 @@ fun MainNavigationApp() {
                             onLoginSuccess = { email ->
                                 isLoggedIn = true
                                 currentUserEmail = email.trim()
+                                currentUserName = FirebaseAuth.getInstance().currentUser?.displayName ?: "Usuario"
                                 val emailLower = currentUserEmail.lowercase()
 
                                 when {
@@ -200,7 +289,7 @@ fun MainNavigationApp() {
                         val nombreMostrado = when (currentUserEmail.lowercase()) {
                             "carlos@gmail.com" -> "Don Carlos Mamani"
                             "rosa@gmail.com" -> "Doña Rosa Quispe"
-                            else -> "Juan Pérez"
+                            else -> currentUserName.ifBlank { "Usuario" }
                         }
                         val rolMostrado = if (isTiendaCreada) "Vendedor / Propietario de Tienda" else "Comprador"
 
@@ -210,13 +299,17 @@ fun MainNavigationApp() {
                             telefonoUsuario = "+591 70000000",
                             estadoVerificacion = estaVerificado,
                             tipoRol = rolMostrado,
-                            onEditarPerfilClick = {},
+                            onEditarPerfilClick = {
+                                tempName = currentUserName
+                                showEditNameDialog = true
+                            },
                             onCerrarSesionClick = {
+                                authRepository.logout()
                                 isLoggedIn = false
                                 isTiendaCreada = false
                                 miTiendaId = null
                                 esModerador = false
-                                currentScreen = RootScreen.Home
+                                currentScreen = RootScreen.Login
                             },
                             onVerificarIdentidadClick = {
                                 if (isTiendaCreada) {
