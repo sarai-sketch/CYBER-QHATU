@@ -39,9 +39,34 @@ fun StoreProfileScreen(
 ) {
     CyberQhatuTheme {
         val tienda = DomainMockData.tiendas.firstOrNull { it.idTienda == storeId }
-            ?: DomainMockData.tiendas.first()
-        val reputacion = DomainMockData.reputaciones[tienda.idTienda]
-        val ventas = DomainMockData.transacciones[tienda.idTienda]
+            ?: DomainMockData.tiendas.firstOrNull()
+
+        if (tienda == null) {
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = { Text(text = "Perfil de Puesto", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary) },
+                        navigationIcon = {
+                            IconButton(onClick = onBackClick) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Volver",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    )
+                }
+            ) { innerPadding ->
+                Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
+                    Text("No hay tiendas registradas aún.", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+            return@CyberQhatuTheme
+        }
+
+        val reputacion = DomainMockData.reputaciones[tienda.idTienda] ?: 5.0
+        val ventas = DomainMockData.transacciones[tienda.idTienda] ?: 0
         val productosDeTienda = DomainMockData.productos.filter { it.idTienda == tienda.idTienda }
 
         Scaffold(
@@ -319,7 +344,7 @@ fun StoreProfileScreen(
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(12.dp),
-                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                colors = CardDefaults.cardColors(containerColor = Color.White),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                             ) {
                                 Column(modifier = Modifier.padding(12.dp)) {
@@ -328,7 +353,7 @@ fun StoreProfileScreen(
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Text(nombreAutor, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface)
+                                        Text(nombreAutor, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = QhatuPurple)
                                         Row {
                                             for (i in 1..5) {
                                                 Icon(
