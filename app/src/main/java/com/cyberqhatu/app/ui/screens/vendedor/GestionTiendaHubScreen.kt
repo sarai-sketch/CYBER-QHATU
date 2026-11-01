@@ -193,11 +193,14 @@ fun GestionTiendaHubScreen(
                     )
                 }
 
+                val viewModel: GestionTiendaViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+                val uiState by viewModel.uiState.collectAsState()
+
                 var logoUri by remember { mutableStateOf<String?>(null) }
                 var portadaUri by remember { mutableStateOf<String?>(null) }
-                var descripcionTienda by remember { mutableStateOf("Tienda especializada en prendas tradicionales y artesanía fina en la Feria 16 de Julio.") }
-                var horarioApertura by remember { mutableStateOf("08:00") }
-                var horarioCierre by remember { mutableStateOf("18:00") }
+                var descripcionTienda by remember { mutableStateOf(uiState.descripcion) }
+                var horarioApertura by remember { mutableStateOf(uiState.horarioApertura) }
+                var horarioCierre by remember { mutableStateOf(uiState.horarioCierre) }
                 var mostrarDialogoInfo by remember { mutableStateOf(false) }
 
                 val logoPicker = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
@@ -234,7 +237,12 @@ fun GestionTiendaHubScreen(
                             }
                         },
                         confirmButton = {
-                            Button(onClick = { mostrarDialogoInfo = false }) {
+                            Button(onClick = { 
+                                viewModel.onDescripcionChange(descripcionTienda)
+                                viewModel.onHorariosChange(horarioApertura, horarioCierre)
+                                // Aquí se conectará con el repositorio para hacer un UPDATE a SQLite Cloud
+                                mostrarDialogoInfo = false 
+                            }) {
                                 Text("Guardar Cambios")
                             }
                         },

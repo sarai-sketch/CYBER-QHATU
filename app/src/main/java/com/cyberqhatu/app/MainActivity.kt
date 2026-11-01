@@ -210,6 +210,7 @@ fun MainNavigationApp() {
             }
             modoVerificacionStep == 4 -> {
                 CrearTiendaScreen(
+                    idPropietario = authRepository.getCurrentUserEmail() ?: "u1",
                     onTiendaCreada = { nuevaTienda ->
                         DomainMockData.tiendas.add(0, nuevaTienda)
                         miTiendaId = nuevaTienda.idTienda
