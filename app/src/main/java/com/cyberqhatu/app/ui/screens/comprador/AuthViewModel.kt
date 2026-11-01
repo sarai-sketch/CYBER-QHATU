@@ -39,7 +39,7 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
                     }
                 },
                 onFailure = { exception ->
-                    _authState.value = AuthState.Error(exception.message ?: "Error al iniciar sesión")
+                    _authState.value = AuthState.Error(exception.message ?: "Contraseña o correo incorrectos")
                 }
             )
         }
@@ -51,10 +51,10 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
             val result = authRepository.register(nombre, email, contrasena)
             result.fold(
                 onSuccess = {
-                    _authState.value = AuthState.Success(email, "Registro exitoso. Se ha enviado un correo de verificación.", false)
+                    _authState.value = AuthState.Success(email, "Registro exitoso. Se ha enviado un enlace de verificación a tu correo.", false)
                 },
                 onFailure = { exception ->
-                    _authState.value = AuthState.Error(exception.message ?: "Error al registrar")
+                    _authState.value = AuthState.Error(exception.message ?: "Error al registrar la cuenta")
                 }
             )
         }

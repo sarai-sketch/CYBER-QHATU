@@ -37,12 +37,16 @@ class AuthRepositoryImpl : AuthRepository {
                                 continuation.resume(Result.success(false))
                             }
                         } else {
-                            auth.signOut()
-                            continuation.resume(Result.failure(Exception("Error al verificar el estado de la cuenta.")))
+                            if (user.isEmailVerified) {
+                                continuation.resume(Result.success(true))
+                            } else {
+                                auth.signOut()
+                                continuation.resume(Result.success(false))
+                            }
                         }
-                    }
+                    } ?: continuation.resume(Result.success(true))
                 } else {
-                    continuation.resume(Result.failure(task.exception ?: Exception("Error al iniciar sesión")))
+                    continuation.resume(Result.failure(task.exception ?: Exception("Contraseña o correo incorrectos")))
                 }
             }
     }
@@ -58,16 +62,19 @@ class AuthRepositoryImpl : AuthRepository {
                     
                     user?.updateProfile(profileUpdates)?.addOnCompleteListener {
                         user.sendEmailVerification().addOnCompleteListener { emailTask ->
-                            auth.signOut() // Cerrar sesión y esperar verificación
+                            auth.signOut()
                             if (emailTask.isSuccessful) {
                                 continuation.resume(Result.success(Unit))
                             } else {
                                 continuation.resume(Result.failure(emailTask.exception ?: Exception("Error al enviar correo de verificación")))
                             }
                         }
+                    } ?: run {
+                        auth.signOut()
+                        continuation.resume(Result.success(Unit))
                     }
                 } else {
-                    continuation.resume(Result.failure(task.exception ?: Exception("Error al registrar")))
+                    continuation.resume(Result.failure(task.exception ?: Exception("Error al registrar cuenta")))
                 }
             }
     }
@@ -83,7 +90,7 @@ class AuthRepositoryImpl : AuthRepository {
                 if (task.isSuccessful) {
                     continuation.resume(Result.success(Unit))
                 } else {
-                    continuation.resume(Result.failure(task.exception ?: Exception("Error al actualizar")))
+                    continuation.resume(Result.failure(task.exception ?: Exception("Error al actualizar perfil")))
                 }
             }
         } else {

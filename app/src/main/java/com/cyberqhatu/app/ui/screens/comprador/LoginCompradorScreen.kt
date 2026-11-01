@@ -1,5 +1,6 @@
 package com.cyberqhatu.app.ui.screens.comprador
 
+import android.util.Patterns
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,7 +21,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.cyberqhatu.app.ui.theme.QhatuPurple
 import kotlinx.coroutines.launch
 
 /**
@@ -64,7 +64,7 @@ fun LoginCompradorScreen(
         }
     }
 
-    val emailValido = android.util.Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()
+    val emailValido = Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()
     val coinciden = password == confirmar
     val puedeIngresar = emailValido && password.isNotBlank()
     val puedeRegistrar = emailValido && password.length >= 6 && coinciden && nombre.isNotBlank()
@@ -73,10 +73,10 @@ fun LoginCompradorScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Iniciar Sesión", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = QhatuPurple) },
+                title = { Text("Iniciar Sesión", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver", tint = MaterialTheme.colorScheme.primary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -113,7 +113,7 @@ fun LoginCompradorScreen(
                     text = if (tab == 0) "Bienvenido a Cyber-Qhatu" else "Crea tu cuenta",
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
-                    color = QhatuPurple
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Text(
                     text = if (tab == 0) "Accede para guardar favoritos y conectar con tiendas."
