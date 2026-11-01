@@ -7,6 +7,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.Headers
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 // Request DTOs
 data class ConsultarFavoritosRequest(
@@ -33,6 +34,17 @@ data class GuardarEliminarFavoritosRequest(
 
 data class ResenaCompradorRequest(
     @SerializedName("filter") val filter: String = "a"
+)
+
+data class SqliteCloudFunctionRequest(
+    @SerializedName("filter") val filter: String = "a",
+    @SerializedName("id_producto") val idProducto: String? = null,
+    @SerializedName("id_tienda") val idTienda: String? = null,
+    @SerializedName("id_usuario") val idUsuario: String? = null,
+    @SerializedName("nombre") val nombre: String? = null,
+    @SerializedName("descripcion") val descripcion: String? = null,
+    @SerializedName("precio_bs") val precioBs: Double? = null,
+    @SerializedName("stock") val stock: Int? = null
 )
 
 // Response DTO generico para Funciones Edge
@@ -87,6 +99,17 @@ interface SqliteCloudFunctionsApiService {
     @POST("functions/resena-comprador")
     suspend fun resenaComprador(
         @Body request: ResenaCompradorRequest
+    ): Response<SqliteCloudFunctionResponse>
+
+    // Peticiones dinamicas a Edge Functions
+    @Headers(
+        "Authorization: Bearer t4pCQWrW0zPXHfbRF68ttrJXMijVP4m9PFmnfTiWO8s",
+        "Content-Type: application/json"
+    )
+    @POST("functions/{functionName}")
+    suspend fun ejecutarEdgeFunction(
+        @Path("functionName") functionName: String,
+        @Body params: Map<String, Any?> = mapOf("filter" to "a")
     ): Response<SqliteCloudFunctionResponse>
 }
 

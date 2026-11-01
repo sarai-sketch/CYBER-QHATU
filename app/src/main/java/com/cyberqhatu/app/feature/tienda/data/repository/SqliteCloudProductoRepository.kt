@@ -2,6 +2,7 @@ package com.cyberqhatu.app.feature.tienda.data.repository
 
 import android.util.Log
 import com.cyberqhatu.app.core.network.SqliteCloudClient
+import com.cyberqhatu.app.core.network.SqliteCloudFunctionsClient
 import com.cyberqhatu.app.core.network.SqliteCloudQueryRequest
 import com.cyberqhatu.app.tienda.EstadoProducto
 import com.cyberqhatu.app.tienda.Producto
@@ -12,6 +13,7 @@ import java.util.UUID
 class SqliteCloudProductoRepository {
 
     private val apiService = SqliteCloudClient.apiService
+    private val functionsService = SqliteCloudFunctionsClient.apiService
 
     suspend fun asegurarDatosInicialesRemotos() {
         try {
@@ -31,11 +33,7 @@ class SqliteCloudProductoRepository {
         try {
             asegurarDatosInicialesRemotos()
 
-            val response = apiService.ejecutarSql(
-                SqliteCloudQueryRequest(
-                    sql = "SELECT id_producto, id_tienda, id_categoria, nombre, descripcion, precio_bs, stock, estado FROM productos ORDER BY fecha_creacion DESC;"
-                )
-            )
+            val response = functionsService.ejecutarEdgeFunction("obtener_datos_inicio")
             if (response.isSuccessful && response.body()?.data != null) {
                 val lista = response.body()!!.data!!.mapNotNull { row ->
                     val idProd = row["id_producto"]?.toString() ?: return@mapNotNull null
@@ -63,7 +61,7 @@ class SqliteCloudProductoRepository {
                 emit(emptyList())
             }
         } catch (e: Exception) {
-            Log.e("SqliteCloud", "Error obteniendo productos remotos: ${e.message}", e)
+            Log.e("SqliteCloud", "Error obteniendo productos remotos vía Edge Function: ${e.message}", e)
             emit(emptyList())
         }
     }
@@ -76,9 +74,28 @@ class SqliteCloudProductoRepository {
             val idTienda = if (producto.idTienda.isNotBlank() && producto.idTienda != "T-101") producto.idTienda else "t1"
             val idCategoria = if (producto.idCategoria.isNotBlank() && producto.idCategoria != "General") producto.idCategoria else "c1"
 
-            val sql = "INSERT OR REPLACE INTO productos (id_producto, id_tienda, id_categoria, nombre, descripcion, precio_bs, stock, estado) VALUES ('$id', '$idTienda', '$idCategoria', '${producto.nombre.replace("'", "''")}', '${producto.descripcion.replace("'", "''")}', ${producto.precio}, ${producto.stock}, '${producto.estado.name}');"
+            val params = mapOf(
+                "filter" to "a",
+                "id_producto" to id,
+                "id_tienda" to idTienda,
+                "id_categoria" to idCategoria,
+                "nombre" to producto.nombre,
+                "descripcion" to producto.descripcion,
+                "precio" to producto.precio,
+                "precio_bs" to producto.precio,
+                "precio_compra_bs" to 0.0,
+                "stock" to producto.stock,
+                "condicion" to "NUEVO",
+                "estado" to producto.estado.name,
+                "etiqueta_transparente" to 1
+            )
 
-            val response = apiService.ejecutarSql(SqliteCloudQueryRequest(sql = sql))
+            // Compatibilidad Dual: Intenta guardar con la Edge Function original "guardar_producto"
+            // y si falla, utiliza "guardar_product"
+            var response = functionsService.ejecutarEdgeFunction("guardar_producto", params)
+            if (!response.isSuccessful) {
+                response = functionsService.ejecutarEdgeFunction("guardar_product", params)
+            }
             response.isSuccessful
         } catch (e: Exception) {
             Log.e("SqliteCloud", "Error al guardar producto remoto: ${e.message}", e)
@@ -88,8 +105,25 @@ class SqliteCloudProductoRepository {
 
     suspend fun actualizarStockYPrecioRemoto(idProducto: String, nuevoStock: Int, nuevoPrecio: Double, nuevoEstado: EstadoProducto): Boolean {
         return try {
-            val sql = "UPDATE productos SET stock = $nuevoStock, precio_bs = $nuevoPrecio, estado = '${nuevoEstado.name}' WHERE id_producto = '$idProducto';"
-            val response = apiService.ejecutarSql(SqliteCloudQueryRequest(sql = sql))
+            val params = mapOf(
+                "filter" to "a",
+                "id_producto" to idProducto,
+                "id_tienda" to "t1",
+                "id_categoria" to "c1",
+                "nombre" to "Producto $idProducto",
+                "descripcion" to "Actualizado",
+                "precio" to nuevoPrecio,
+                "precio_bs" to nuevoPrecio,
+                "precio_compra_bs" to 0.0,
+                "stock" to nuevoStock,
+                "condicion" to "NUEVO",
+                "estado" to nuevoEstado.name,
+                "etiqueta_transparente" to 1
+            )
+            var response = functionsService.ejecutarEdgeFunction("guardar_producto", params)
+            if (!response.isSuccessful) {
+                response = functionsService.ejecutarEdgeFunction("guardar_product", params)
+            }
             response.isSuccessful
         } catch (e: Exception) {
             Log.e("SqliteCloud", "Error al actualizar stock/precio remoto: ${e.message}", e)
