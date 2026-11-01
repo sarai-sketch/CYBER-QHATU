@@ -15,7 +15,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cyberqhatu.app.feature.tienda.data.repository.SqliteCloudResenaRepository
 import com.cyberqhatu.app.ui.theme.QhatuPurple
+import kotlinx.coroutines.launch
 
 /**
  * Pantalla dedicada para que los compradores logueados dejen una reseña y calificación (1 a 5 estrellas).
@@ -27,16 +29,19 @@ fun EscribirResenaScreen(
     onPublicarResena: (rating: Int, comentario: String) -> Unit = { _, _ -> },
     onBackClick: () -> Unit = {}
 ) {
+    val coroutineScope = rememberCoroutineScope()
+    val resenaRepository = remember { SqliteCloudResenaRepository() }
+
     var rating by remember { mutableIntStateOf(5) }
     var comentario by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Escribir Reseña", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = QhatuPurple) },
+                title = { Text("Escribir Reseña", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver", tint = MaterialTheme.colorScheme.primary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -55,7 +60,7 @@ fun EscribirResenaScreen(
                     .padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                Text("Calificar: $nombreItem", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = QhatuPurple)
+                Text("Calificar: $nombreItem", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = MaterialTheme.colorScheme.primary)
                 Text("Selecciona una calificación de 1 a 5 estrellas y deja tu opinión para la comunidad.", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
                 // Selector de 5 estrellas interactivo
@@ -81,7 +86,7 @@ fun EscribirResenaScreen(
                     text = "$rating de 5 estrellas",
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
-                    color = QhatuPurple,
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
 
@@ -101,6 +106,9 @@ fun EscribirResenaScreen(
                 Button(
                     onClick = {
                         if (comentario.isNotBlank()) {
+                            coroutineScope.launch {
+                                resenaRepository.guardarResenaComprador()
+                            }
                             onPublicarResena(rating, comentario.trim())
                         }
                     },

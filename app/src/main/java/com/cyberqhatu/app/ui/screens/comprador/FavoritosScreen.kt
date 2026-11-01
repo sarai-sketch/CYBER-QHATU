@@ -1,6 +1,7 @@
 package com.cyberqhatu.app.ui.screens.comprador
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,8 +20,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cyberqhatu.app.feature.tienda.data.repository.SqliteCloudFavoritoRepository
 import com.cyberqhatu.app.ui.screens.tienda.DomainMockData
-import com.cyberqhatu.app.ui.theme.QhatuPurple
 
 /**
  * Pantalla dedicada a los Favoritos del Comprador (Productos y Tiendas marcadas con corazón).
@@ -29,9 +30,20 @@ import com.cyberqhatu.app.ui.theme.QhatuPurple
 @Composable
 fun FavoritosScreen(
     isLogged: Boolean = false,
+    onNavigateToStoreProfile: (storeId: String) -> Unit = {},
+    onNavigateToProductDetail: (productId: String) -> Unit = {},
     onLoginClick: () -> Unit = {},
     onBackClick: () -> Unit = {}
 ) {
+    val favoritoRepository = remember { SqliteCloudFavoritoRepository() }
+
+    LaunchedEffect(isLogged) {
+        if (isLogged) {
+            favoritoRepository.consultarFavoritosTiendas()
+            favoritoRepository.consultarProductosFavoritos()
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -97,7 +109,9 @@ fun FavoritosScreen(
                                     shape = RoundedCornerShape(14.dp),
                                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                                    modifier = Modifier.fillMaxWidth()
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { onNavigateToStoreProfile(tienda.idTienda) }
                                 ) {
                                     Row(modifier = Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
                                         Box(
@@ -129,7 +143,9 @@ fun FavoritosScreen(
                                     shape = RoundedCornerShape(14.dp),
                                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                                    modifier = Modifier.fillMaxWidth()
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { onNavigateToProductDetail(producto.idProducto) }
                                 ) {
                                     Row(modifier = Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
                                         Box(
