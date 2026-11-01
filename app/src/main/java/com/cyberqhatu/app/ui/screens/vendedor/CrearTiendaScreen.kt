@@ -21,6 +21,8 @@ import com.cyberqhatu.app.ui.screens.tienda.DomainMockData
 import com.cyberqhatu.app.ui.theme.QhatuPurple
 import kotlinx.coroutines.launch
 
+import java.util.UUID
+
 private val HORA_REGEX = Regex("^([01]\\d|2[0-3]):[0-5]\\d$")
 
 /**
@@ -30,6 +32,7 @@ private val HORA_REGEX = Regex("^([01]\\d|2[0-3]):[0-5]\\d$")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CrearTiendaScreen(
+    idPropietario: String = "u1",
     onTiendaCreada: (Tienda) -> Unit = {},
     onBackClick: () -> Unit = {}
 ) {
@@ -180,8 +183,8 @@ fun CrearTiendaScreen(
                 Button(
                     onClick = {
                         val nuevaTienda = Tienda(
-                            idTienda = "t${DomainMockData.tiendas.size + 1}",
-                            idPropietario = "u1",
+                            idTienda = "t-${UUID.randomUUID().toString().take(8)}",
+                            idPropietario = idPropietario,
                             nombre = nombre.trim(),
                             descripcion = descripcion.trim(),
                             logo = null,
