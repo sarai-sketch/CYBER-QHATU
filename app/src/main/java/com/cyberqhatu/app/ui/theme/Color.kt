@@ -3,33 +3,44 @@ package com.cyberqhatu.app.ui.theme
 import androidx.compose.ui.graphics.Color
 
 // Paleta de Colores de la Marca Cyber Qhatu
-val QhatuPurple = Color(0xFF5320E6)
-val QhatuPurpleContainer = Color(0xFF6C3CE9)
-val QhatuPurpleLight = Color(0xFFEBE6FF)
-val QhatuCoral = Color(0xFFFF644E)
-val QhatuCoralPressed = Color(0xFFE54F3B)
-val QhatuLime = Color(0xFFBDFF38)
-val QhatuLimeDark = Color(0xFF285000)
+val QhatuPrimary = Color(0xFF27C5F5)        // Color 1: #27C5F5
+val QhatuPrimaryContainer = Color(0xFF0F98C2) // Variante oscura
+val QhatuPrimaryLight = Color(0xFFD4F3FC)     // Variante clara
 
-val QhatuBackground = Color(0xFFF4F3FA)
+val QhatuSecondary = Color(0xFFF5275E)      // Color 2: #F5275E
+val QhatuSecondaryPressed = Color(0xFFC71746)
+
+val QhatuTertiary = Color(0xFFF5BE27)       // Color 3: #F5BE27
+val QhatuTertiaryDark = Color(0xFFC79515)
+
+val QhatuBackground = Color(0xFFF2F8FA)
 val QhatuSurface = Color(0xFFFFFFFF)
-val QhatuTextPrimary = Color(0xFF1B1838)
-val QhatuTextSecondary = Color(0xFF6E6B8A)
-val QhatuBorder = Color(0xFFE2DFF5)
+val QhatuTextPrimary = Color(0xFF0B2129)
+val QhatuTextSecondary = Color(0xFF55717C)
+val QhatuBorder = Color(0xFFD4E6ED)
+
+// Compatibilidad (Aliases para no romper los archivos existentes temporalmente)
+val QhatuPurple = QhatuPrimary
+val QhatuPurpleContainer = QhatuPrimaryContainer
+val QhatuPurpleLight = QhatuPrimaryLight
+val QhatuCoral = QhatuSecondary
+val QhatuCoralPressed = QhatuSecondaryPressed
+val QhatuLime = QhatuTertiary
+val QhatuLimeDark = QhatuTertiaryDark
 
 // Compatibilidad con esquema de temas predeterminado
 val Purple80 = Color(0xFFD0BCFF)
 val PurpleGrey80 = Color(0xFFCCC2DC)
 val Pink80 = Color(0xFFEFB8C8)
 
-
 val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
+
 // Paleta oficial
-val CqIndigo = Color(0xFF4F2BD9)      // Confianza — encabezados, botones primarios
-val CqIndigoDark = Color(0xFF2E168C)
-val CqLima = Color(0xFFB8F24B)        // Verificado — insignias, estados activos
-val CqCoral = Color(0xFFFF6B5B)       // Accion — reportes, alertas
-val CqLavanda = Color(0xFFF6F4FF)     // Fondo de pantallas y tarjetas
-val CqTextSub = Color(0xFF6F6A8C)
+val CqIndigo = QhatuPrimary      // Confianza — encabezados, botones primarios
+val CqIndigoDark = QhatuPrimaryContainer
+val CqLima = QhatuTertiary        // Verificado — insignias, estados activos
+val CqCoral = QhatuSecondary       // Accion — reportes, alertas
+val CqLavanda = QhatuPrimaryLight     // Fondo de pantallas y tarjetas
+val CqTextSub = QhatuTextSecondary
