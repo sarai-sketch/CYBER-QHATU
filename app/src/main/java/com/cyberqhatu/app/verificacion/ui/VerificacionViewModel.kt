@@ -64,7 +64,7 @@ class VerificacionViewModel(
         }
     }
 
-    fun setFotoSelfie(bitmap: Bitmap) {
+    fun setFotoSelfie(bitmap: Bitmap, idUsuario: String) {
         _uiState.update {
             it.copy(
                 fotoSelfie = bitmap,
@@ -72,16 +72,16 @@ class VerificacionViewModel(
                 estaCargando = true,
             )
         }
-        procesarVerificacion()
+        procesarVerificacion(idUsuario)
     }
 
-    private fun procesarVerificacion() {
+    private fun procesarVerificacion(idUsuario: String) {
         val anverso = _uiState.value.fotoCarnetAnverso ?: return
         val reverso = _uiState.value.fotoCarnetReverso ?: return
         val selfie = _uiState.value.fotoSelfie ?: return
 
         viewModelScope.launch(Dispatchers.IO) {
-            val resultado = repository.verificarIdentidad(anverso, reverso, selfie)
+            val resultado = repository.verificarIdentidad(idUsuario, anverso, reverso, selfie)
             _uiState.update {
                 it.copy(
                     pasoActual = PasoVerificacion.RESULTADO,

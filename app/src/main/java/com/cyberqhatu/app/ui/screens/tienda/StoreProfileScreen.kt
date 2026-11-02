@@ -44,8 +44,23 @@ fun StoreProfileScreen(
     val context = LocalContext.current
     
     CyberQhatuTheme {
-        val tienda = DomainMockData.tiendas.firstOrNull { it.idTienda == storeId }
-            ?: DomainMockData.tiendas.firstOrNull()
+        var tienda by remember { mutableStateOf<com.cyberqhatu.app.tienda.Tienda?>(null) }
+        var productosDeTienda by remember { mutableStateOf<List<com.cyberqhatu.app.tienda.Producto>>(emptyList()) }
+        
+        val tiendaRepo = remember { com.cyberqhatu.app.feature.tienda.data.repository.SqliteCloudTiendaRepository() }
+        val productoRepo = remember { com.cyberqhatu.app.feature.tienda.data.repository.SqliteCloudProductoRepository() }
+        
+        LaunchedEffect(storeId) {
+            tiendaRepo.obtenerTiendasRemotas().collect { tiendasRemotas ->
+                tienda = tiendasRemotas.firstOrNull { it.idTienda == storeId }
+            }
+        }
+        
+        LaunchedEffect(storeId) {
+            productoRepo.obtenerProductosRemotos().collect { productosRemotos ->
+                productosDeTienda = productosRemotos.filter { it.idTienda == storeId }
+            }
+        }
 
         if (tienda == null) {
             Scaffold(
@@ -71,9 +86,9 @@ fun StoreProfileScreen(
             return@CyberQhatuTheme
         }
 
-        val reputacion = DomainMockData.reputaciones[tienda.idTienda] ?: 5.0
-        val ventas = DomainMockData.transacciones[tienda.idTienda] ?: 0
-        val productosDeTienda = DomainMockData.productos.filter { it.idTienda == tienda.idTienda }
+        val t = tienda!!
+        val reputacion = DomainMockData.reputaciones[t.idTienda] ?: 5.0
+        val ventas = DomainMockData.transacciones[t.idTienda] ?: 0
 
         Scaffold(
             topBar = {
@@ -90,7 +105,7 @@ fun StoreProfileScreen(
                     },
                     actions = {
                         var esFavorito by remember {
-                            mutableStateOf(DomainMockData.favoritosTiendas.any { it.idTienda == tienda.idTienda })
+                            mutableStateOf(DomainMockData.favoritosTiendas.any { it.idTienda == t.idTienda })
                         }
                         IconButton(
                             onClick = {
@@ -99,17 +114,17 @@ fun StoreProfileScreen(
                                 } else {
                                     esFavorito = !esFavorito
                                     if (esFavorito) {
-                                        if (DomainMockData.favoritosTiendas.none { it.idTienda == tienda.idTienda }) {
+                                        if (DomainMockData.favoritosTiendas.none { it.idTienda == t.idTienda }) {
                                             DomainMockData.favoritosTiendas.add(
                                                 FavoritoTienda(
                                                     idFavorito = System.currentTimeMillis().toString(),
                                                     idUsuario = "USR-101",
-                                                    idTienda = tienda.idTienda
+                                                    idTienda = t.idTienda
                                                 )
                                             )
                                         }
                                     } else {
-                                        DomainMockData.favoritosTiendas.removeAll { it.idTienda == tienda.idTienda }
+                                        DomainMockData.favoritosTiendas.removeAll { it.idTienda == t.idTienda }
                                     }
                                 }
                             }
@@ -120,7 +135,7 @@ fun StoreProfileScreen(
                                 tint = if (esFavorito && isLoggedIn) Color.Red else MaterialTheme.colorScheme.primary
                             )
                         }
-                        IconButton(onClick = { onNavigateToReportar(tienda.nombre) }) {
+                        IconButton(onClick = { onNavigateToReportar(t.nombre) }) {
                             Icon(
                                 imageVector = Icons.Default.Warning,
                                 contentDescription = "Reportar Tienda",
@@ -160,7 +175,7 @@ fun StoreProfileScreen(
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = tienda.nombre,
+                            text = t.nombre,
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
@@ -199,14 +214,14 @@ fun StoreProfileScreen(
                             }
                             Spacer(modifier = Modifier.height(12.dp))
                             Text(
-                                text = tienda.nombre,
+                                text = t.nombre,
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = tienda.descripcion,
+                                text = t.descripcion,
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -247,7 +262,7 @@ fun StoreProfileScreen(
                     // Botón de Contacto WhatsApp
                     Button(
                         onClick = { 
-                            val numeroWa = tienda.linkWhatsapp ?: "https://wa.me/591"
+                            val numeroWa = t.linkWhatsapp ?: "https://wa.me/591"
                             val uri = if (numeroWa.startsWith("http")) numeroWa else "https://wa.me/591${numeroWa.filter { it.isDigit() }}"
                             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
                             context.startActivity(intent)
@@ -340,7 +355,7 @@ fun StoreProfileScreen(
                             if (!isLoggedIn) {
                                 onRequireLogin()
                             } else {
-                                onEscribirResenaClick(tienda.nombre)
+                                onEscribirResenaClick(t.nombre)
                             }
                         }) {
                             Text("Escribir Reseña", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)

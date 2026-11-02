@@ -78,18 +78,20 @@ class PublicarProductoViewModel : ViewModel() {
         _uiState.update { it.copy(isLoading = true) }
 
         viewModelScope.launch(Dispatchers.IO) {
-            val db = QhatuDatabase.getInstance(context)
             val idNuevo = "PROD-${System.currentTimeMillis()}"
-            val productoEntity = ProductoEntity(
+            val producto = com.cyberqhatu.app.tienda.Producto(
                 idProducto = idNuevo,
-                idTienda = "T-101",
+                idTienda = "", 
                 nombre = state.titulo,
                 descripcion = state.descripcion,
                 precio = precioDouble,
                 stock = stockInt,
-                estado = "ACTIVO",
+                idCategoria = "c1",
+                estado = com.cyberqhatu.app.tienda.EstadoProducto.ACTIVO
             )
-            db.productoDao().insertarProducto(productoEntity)
+            
+            val remoteRepo = com.cyberqhatu.app.feature.tienda.data.repository.SqliteCloudProductoRepository()
+            remoteRepo.guardarProductoRemoto(producto)
 
             _uiState.update {
                 it.copy(

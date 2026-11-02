@@ -109,7 +109,7 @@ fun GestionTiendaHubScreen(
                 ) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(
-                            "Strikes: $strikes de ${ModeracionStore.LIMITE_STRIKES}",
+                            "ID: $idTienda - Strikes: $strikes de ${ModeracionStore.LIMITE_STRIKES}",
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp,
                             color = Color.Black
@@ -194,6 +194,11 @@ fun GestionTiendaHubScreen(
                 }
 
                 val viewModel: GestionTiendaViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+                
+                LaunchedEffect(idTienda) {
+                    viewModel.cargarTienda(idTienda)
+                }
+                
                 val uiState by viewModel.uiState.collectAsState()
 
                 var logoUri by remember { mutableStateOf<String?>(null) }
@@ -237,13 +242,20 @@ fun GestionTiendaHubScreen(
                             }
                         },
                         confirmButton = {
-                            Button(onClick = { 
-                                viewModel.onDescripcionChange(descripcionTienda)
-                                viewModel.onHorariosChange(horarioApertura, horarioCierre)
-                                // Aquí se conectará con el repositorio para hacer un UPDATE a SQLite Cloud
-                                mostrarDialogoInfo = false 
-                            }) {
-                                Text("Guardar Cambios")
+                            Button(
+                                onClick = { 
+                                    viewModel.onDescripcionChange(descripcionTienda)
+                                    viewModel.onHorariosChange(horarioApertura, horarioCierre)
+                                    viewModel.guardarCambiosBaseDeDatos()
+                                    mostrarDialogoInfo = false 
+                                },
+                                enabled = !uiState.guardando
+                            ) {
+                                if (uiState.guardando) {
+                                    CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White)
+                                } else {
+                                    Text("Guardar Cambios")
+                                }
                             }
                         },
                         dismissButton = {

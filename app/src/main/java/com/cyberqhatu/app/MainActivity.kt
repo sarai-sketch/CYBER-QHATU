@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -78,14 +79,10 @@ fun MainNavigationApp() {
         )
     }
 
-    val estadoLocalFlow = remember(repository) {
-        repository.obtenerEstadoVerificacionLocal("USR-101")
-    }
-    val estadoLocal by estadoLocalFlow.collectAsState(initial = null)
-    val estaVerificado = estadoLocal?.esExitoso == true
-
     // Instanciamos el repositorio y obtenemos el estado inicial de la sesión
     val authRepository = remember { AuthRepositoryImpl() }
+    val tiendaRepository = remember { com.cyberqhatu.app.feature.tienda.data.repository.SqliteCloudTiendaRepository() }
+    val coroutineScope = rememberCoroutineScope()
     
     val isUserLoggedIn = authRepository.isUserLoggedInAndVerified()
     val initialEmail = authRepository.getCurrentUserEmail() ?: "juan.perez@cyberqhatu.bo"
@@ -95,21 +92,36 @@ fun MainNavigationApp() {
     var isLoggedIn by remember { mutableStateOf(isUserLoggedIn) }
     var currentUserEmail by remember { mutableStateOf(initialEmail) }
     var currentUserName by remember { mutableStateOf(initialName) }
-    var isTiendaCreada by remember { 
-        mutableStateOf(isUserLoggedIn && (emailLowerForInit == "carlos@gmail.com" || emailLowerForInit == "rosa@gmail.com")) 
+    
+    val estadoLocalFlow = remember(repository, currentUserEmail) {
+        repository.obtenerEstadoVerificacionLocal(currentUserEmail)
     }
-    var miTiendaId by remember { 
-        mutableStateOf(
-            if (isUserLoggedIn) {
-                when (emailLowerForInit) {
-                    "carlos@gmail.com" -> "t1"
-                    "rosa@gmail.com" -> "t2"
-                    else -> null
+    val estadoLocal by estadoLocalFlow.collectAsState(initial = null)
+    val estaVerificado = estadoLocal?.esExitoso == true
+    
+    var isTiendaCreada by remember { mutableStateOf(false) }
+    var miTiendaId by remember { mutableStateOf<String?>(null) }
+    var esModerador by remember { mutableStateOf(false) }
+
+    // Al iniciar sesión o entrar a la app, buscar si tiene tienda remota
+    LaunchedEffect(currentUserEmail, isLoggedIn) {
+        if (isLoggedIn) {
+            val emailLower = currentUserEmail.lowercase()
+            if (emailLower == "moderador@cyberqhatu.bo") {
+                esModerador = true
+            } else {
+                // Buscamos su tienda en SQLite Cloud
+                val tiendaRemota = tiendaRepository.obtenerTiendaPorPropietario(currentUserEmail)
+                if (tiendaRemota != null) {
+                    isTiendaCreada = true
+                    miTiendaId = tiendaRemota.idTienda
+                } else {
+                    isTiendaCreada = false
+                    miTiendaId = null
                 }
-            } else null
-        ) 
+            }
+        }
     }
-    var esModerador by remember { mutableStateOf(isUserLoggedIn && emailLowerForInit == "moderador@cyberqhatu.bo") }
 
     var currentScreen by remember { mutableStateOf<RootScreen>(RootScreen.Home) }
     var lastStoreId by remember { mutableStateOf("t1") }
@@ -202,6 +214,7 @@ fun MainNavigationApp() {
             }
             modoVerificacionStep == 3 -> {
                 EscanerIdentidadScreen(
+                    idUsuario = currentUserEmail,
                     onVerificacionExitosa = { _ ->
                         modoVerificacionStep = 4 // Ir a crear tienda (Paso 2)
                     },
@@ -212,7 +225,6 @@ fun MainNavigationApp() {
                 CrearTiendaScreen(
                     idPropietario = authRepository.getCurrentUserEmail() ?: "u1",
                     onTiendaCreada = { nuevaTienda ->
-                        DomainMockData.tiendas.add(0, nuevaTienda)
                         miTiendaId = nuevaTienda.idTienda
                         isTiendaCreada = true
                         modoVerificacionStep = 0
@@ -261,24 +273,11 @@ fun MainNavigationApp() {
                                 currentUserEmail = email.trim()
                                 currentUserName = FirebaseAuth.getInstance().currentUser?.displayName ?: "Usuario"
                                 val emailLower = currentUserEmail.lowercase()
-
-                                when {
-                                    emailLower == "moderador@cyberqhatu.bo" -> {
-                                        esModerador = true
-                                    }
-                                    emailLower == "carlos@gmail.com" -> {
-                                        isTiendaCreada = true
-                                        miTiendaId = "t1"
-                                    }
-                                    emailLower == "rosa@gmail.com" -> {
-                                        isTiendaCreada = true
-                                        miTiendaId = "t2"
-                                    }
-                                    else -> {
-                                        // Correo de comprador normal
-                                    }
+                                
+                                if (emailLower == "moderador@cyberqhatu.bo") {
+                                    esModerador = true
                                 }
-
+                                
                                 currentScreen = RootScreen.Home
                             },
                             onBackClick = {
@@ -287,11 +286,7 @@ fun MainNavigationApp() {
                         )
                     }
                     is RootScreen.Perfil -> {
-                        val nombreMostrado = when (currentUserEmail.lowercase()) {
-                            "carlos@gmail.com" -> "Don Carlos Mamani"
-                            "rosa@gmail.com" -> "Doña Rosa Quispe"
-                            else -> currentUserName.ifBlank { "Usuario" }
-                        }
+                        val nombreMostrado = currentUserName.ifBlank { "Usuario" }
                         val rolMostrado = if (isTiendaCreada) "Vendedor / Propietario de Tienda" else "Comprador"
 
                         PantallaMiPerfil(
@@ -315,6 +310,8 @@ fun MainNavigationApp() {
                             onVerificarIdentidadClick = {
                                 if (isTiendaCreada) {
                                     currentScreen = RootScreen.TiendaHub
+                                } else if (estaVerificado) {
+                                    modoVerificacionStep = 4
                                 } else {
                                     modoVerificacionStep = 1
                                 }
@@ -331,10 +328,18 @@ fun MainNavigationApp() {
                     }
                     is RootScreen.TiendaHub -> {
                         val idTiendaHub = miTiendaId ?: lastStoreId
+                        
+                        var nombreDeLaTienda by remember { mutableStateOf("Mi tienda") }
+                        LaunchedEffect(idTiendaHub) {
+                            val tiendas = tiendaRepository.obtenerTiendaPorPropietario(currentUserEmail)
+                            if (tiendas != null && tiendas.idTienda == idTiendaHub) {
+                                nombreDeLaTienda = tiendas.nombre
+                            }
+                        }
+                        
                         GestionTiendaHubScreen(
                             idTienda = idTiendaHub,
-                            nombreTienda = DomainMockData.tiendas
-                                .firstOrNull { it.idTienda == idTiendaHub }?.nombre ?: "Mi tienda",
+                            nombreTienda = nombreDeLaTienda,
                             onVerPerfilTienda = { currentScreen = RootScreen.StoreProfile(idTiendaHub) },
                             onAgregarProducto = { currentScreen = RootScreen.PublicarProducto },
                             onVerInventario = { currentScreen = RootScreen.Inventario },
@@ -343,7 +348,9 @@ fun MainNavigationApp() {
                         )
                     }
                     is RootScreen.PublicarProducto -> {
+                        val idTiendaHub = miTiendaId ?: lastStoreId
                         PublicarProductoScreen(
+                            idTienda = idTiendaHub,
                             modifier = Modifier.fillMaxSize(),
                             onBackClick = { currentScreen = RootScreen.TiendaHub }
                         )
@@ -422,19 +429,32 @@ fun MainNavigationApp() {
                         )
                     }
                     is RootScreen.ProductDetail -> {
-                        val producto = DomainMockData.productos.firstOrNull { it.idProducto == screen.productId }
-                            ?: DomainMockData.productos.first()
-                        DetalleProductoScreen(
-                            producto = producto,
-                            isLoggedIn = isLoggedIn,
-                            onRequireLogin = { currentScreen = RootScreen.Login },
-                            onEscribirResenaClick = { productName ->
-                                currentScreen = RootScreen.EscribirResena(productName)
-                            },
-                            onBackClick = {
-                                currentScreen = RootScreen.Home
+                        var productoDetail by remember { mutableStateOf<com.cyberqhatu.app.tienda.Producto?>(null) }
+                        val prodRepo = remember { com.cyberqhatu.app.feature.tienda.data.repository.SqliteCloudProductoRepository() }
+                        
+                        LaunchedEffect(screen.productId) {
+                            prodRepo.obtenerProductosRemotos().collect { prodList ->
+                                productoDetail = prodList.firstOrNull { it.idProducto == screen.productId }
                             }
-                        )
+                        }
+                        
+                        if (productoDetail != null) {
+                            DetalleProductoScreen(
+                                producto = productoDetail!!,
+                                isLoggedIn = isLoggedIn,
+                                onRequireLogin = { currentScreen = RootScreen.Login },
+                                onEscribirResenaClick = { productName ->
+                                    currentScreen = RootScreen.EscribirResena(productName)
+                                },
+                                onBackClick = {
+                                    currentScreen = RootScreen.Home
+                                }
+                            )
+                        } else {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator()
+                            }
+                        }
                     }
                 }
             }

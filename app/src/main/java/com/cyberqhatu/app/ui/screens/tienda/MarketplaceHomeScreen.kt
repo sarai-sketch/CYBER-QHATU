@@ -51,29 +51,25 @@ fun MarketplaceHomeScreen(
         val productoRepository = remember { SqliteCloudProductoRepository() }
         val tiendaRepository = remember { SqliteCloudTiendaRepository() }
 
+        var remoteProductos by remember { mutableStateOf<List<Producto>>(emptyList()) }
+        var remoteTiendas by remember { mutableStateOf<List<Tienda>>(emptyList()) }
+
         LaunchedEffect(Unit) {
             productoRepository.obtenerProductosRemotos().collect { productosRemotos ->
-                productosRemotos.forEach { p ->
-                    if (DomainMockData.productos.none { it.idProducto == p.idProducto }) {
-                        DomainMockData.productos.add(0, p)
-                    }
-                }
+                remoteProductos = productosRemotos
             }
         }
 
         LaunchedEffect(Unit) {
             tiendaRepository.obtenerTiendasRemotas().collect { tiendasRemotas ->
-                tiendasRemotas.forEach { t ->
-                    if (DomainMockData.tiendas.none { it.idTienda == t.idTienda }) {
-                        DomainMockData.tiendas.add(0, t)
-                    }
-                }
+                remoteTiendas = tiendasRemotas
             }
         }
 
-        val filteredProducts = DomainMockData.productos.filter { product ->
+        val filteredProducts = remoteProductos.filter { product ->
             val matchesSearch = product.nombre.contains(searchQuery, ignoreCase = true) ||
                     product.descripcion.contains(searchQuery, ignoreCase = true)
+            // Categorias should also come from cloud, but for now we fallback to no filter if not found
             val category = DomainMockData.categorias.firstOrNull { it.idCategoria == product.idCategoria }
             val matchesCategory = selectedCategoryName == "Todos" || category?.nombre == selectedCategoryName
             matchesSearch && matchesCategory
@@ -255,7 +251,7 @@ fun MarketplaceHomeScreen(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            items(DomainMockData.tiendas) { tienda ->
+                            items(remoteTiendas) { tienda ->
                                 Card(
                                     modifier = Modifier
                                         .width(160.dp)

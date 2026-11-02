@@ -70,14 +70,12 @@ import java.util.UUID
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun PublicarProductoScreen(
+    idTienda: String = "",
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    val repository = remember(context) {
-        ProductoRepository(QhatuDatabase.getInstance(context).productoDao())
-    }
     val sqliteCloudRepository = remember { SqliteCloudProductoRepository() }
 
     var formState by remember { mutableStateOf(PublicarProductoFormState()) }
@@ -193,16 +191,16 @@ fun PublicarProductoScreen(
                         } else {
                             coroutineScope.launch {
                                 val nuevoProducto = Producto(
-                                    idProducto = UUID.randomUUID().toString(),
-                                    idTienda = "T-101",
-                                    idCategoria = formState.categoria.ifBlank { "General" },
+                                    idProducto = "p-${UUID.randomUUID().toString().take(6)}",
+                                    idTienda = idTienda,
+                                    idCategoria = "c1", // Por ahora, la categoría por defecto
                                     nombre = formState.titulo,
                                     descripcion = formState.descripcion,
                                     precio = formState.precio.toDoubleOrNull() ?: 0.0,
                                     stock = formState.stock.toIntOrNull() ?: 1,
                                     estado = EstadoProducto.ACTIVO
                                 )
-                                repository.guardarProducto(nuevoProducto)
+                                // Solo lo guardamos en la nube
                                 sqliteCloudRepository.guardarProductoRemoto(nuevoProducto)
                                 formState = formState.copy(
                                     mensajeError = null,

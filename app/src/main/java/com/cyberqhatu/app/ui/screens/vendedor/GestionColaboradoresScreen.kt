@@ -38,12 +38,7 @@ fun GestionColaboradoresScreen(
     val repository = remember { TiendaColaboradorRepositoryImpl() }
 
     var colaboradores by remember {
-        mutableStateOf(
-            listOf(
-                Colaborador("1", "Carlos Mendoza", "Administrador Principal"),
-                Colaborador("2", "Ana Condori", "Administrador Colaborador")
-            )
-        )
+        mutableStateOf<List<Colaborador>>(emptyList())
     }
     var mostrarDialogoInvitar by remember { mutableStateOf(false) }
     var mostrarDialogoAceptar by remember { mutableStateOf(false) }

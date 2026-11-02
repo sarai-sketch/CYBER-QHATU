@@ -17,7 +17,7 @@ class SqliteCloudUsuarioRepository {
 
     fun obtenerUsuarioPorId(idUsuario: String): Flow<Usuario?> = flow {
         try {
-            val sql = "SELECT id_usuario, nombre, correo, telefono_whatsapp, ci, foto_perfil, rol, estado_verificacion_ci FROM usuarios WHERE id_usuario = '$idUsuario' LIMIT 1;"
+            val sql = "SELECT id_usuario, nombre, correo, telefono_whatsapp, ci, foto_perfil, tipo_rol, estado_verificacion_ci FROM usuarios WHERE id_usuario = '$idUsuario' LIMIT 1;"
             val response = apiService.ejecutarSql(SqliteCloudQueryRequest(sql = sql))
 
             if (response.isSuccessful && !response.body()?.data.isNullOrEmpty()) {
@@ -28,7 +28,7 @@ class SqliteCloudUsuarioRepository {
                 val telefono = row["telefono_whatsapp"]?.toString() ?: "+591 70000000"
                 val ci = row["ci"]?.toString()
                 val foto = row["foto_perfil"]?.toString()
-                val rol = row["rol"]?.toString() ?: "VENDEDOR"
+                val rol = row["tipo_rol"]?.toString() ?: "VENDEDOR"
                 val estadoVerifStr = row["estado_verificacion_ci"]?.toString() ?: "PENDIENTE"
 
                 val estadoVerif = if (estadoVerifStr == "VERIFICADO") EstadoVerificacionCI.VERIFICADO else EstadoVerificacionCI.PENDIENTE
@@ -76,7 +76,7 @@ class SqliteCloudUsuarioRepository {
     suspend fun registrarOConsultarPorTelefono(telefono: String): Usuario {
         return try {
             val telefonoFormateado = if (telefono.startsWith("+591")) telefono else "+591 $telefono"
-            val querySql = "SELECT id_usuario, nombre, correo, telefono_whatsapp, ci, foto_perfil, rol, estado_verificacion_ci FROM usuarios WHERE telefono_whatsapp = '$telefonoFormateado' LIMIT 1;"
+            val querySql = "SELECT id_usuario, nombre, correo, telefono_whatsapp, ci, foto_perfil, tipo_rol, estado_verificacion_ci FROM usuarios WHERE telefono_whatsapp = '$telefonoFormateado' LIMIT 1;"
             val response = apiService.ejecutarSql(SqliteCloudQueryRequest(sql = querySql))
 
             if (response.isSuccessful && !response.body()?.data.isNullOrEmpty()) {
@@ -95,7 +95,7 @@ class SqliteCloudUsuarioRepository {
             } else {
                 val nuevoId = "USR-" + UUID.randomUUID().toString().take(6)
                 val nuevoCorreo = "$nuevoId@cyberqhatu.bo"
-                val insertSql = "INSERT INTO usuarios (id_usuario, nombre, correo, telefono_whatsapp, rol, estado_verificacion_ci) VALUES ('$nuevoId', 'Usuario $telefono', '$nuevoCorreo', '$telefonoFormateado', 'VENDEDOR', 'PENDIENTE');"
+                val insertSql = "INSERT INTO usuarios (id_usuario, nombre, correo, telefono_whatsapp, tipo_rol, estado_verificacion_ci) VALUES ('$nuevoId', 'Usuario $telefono', '$nuevoCorreo', '$telefonoFormateado', 'VENDEDOR', 'PENDIENTE');"
                 apiService.ejecutarSql(SqliteCloudQueryRequest(sql = insertSql))
 
                 Vendedor(
@@ -120,7 +120,7 @@ class SqliteCloudUsuarioRepository {
 
     suspend fun guardarOCrearUsuario(usuario: Usuario): Boolean {
         return try {
-            val sql = "INSERT OR REPLACE INTO usuarios (id_usuario, nombre, correo, telefono_whatsapp, ci, foto_perfil, rol, estado_verificacion_ci) VALUES ('${usuario.idUsuario}', '${usuario.nombre.replace("'", "''")}', '${usuario.correo.replace("'", "''")}', '${usuario.telefonoWhatsapp}', '${usuario.ci ?: ""}', '${usuario.fotoPerfil ?: ""}', 'VENDEDOR', '${usuario.estadoVerificacionCI.name}');"
+            val sql = "INSERT OR REPLACE INTO usuarios (id_usuario, nombre, correo, telefono_whatsapp, ci, foto_perfil, tipo_rol, estado_verificacion_ci) VALUES ('${usuario.idUsuario}', '${usuario.nombre.replace("'", "''")}', '${usuario.correo.replace("'", "''")}', '${usuario.telefonoWhatsapp}', '${usuario.ci ?: ""}', '${usuario.fotoPerfil ?: ""}', 'VENDEDOR', '${usuario.estadoVerificacionCI.name}');"
             val response = apiService.ejecutarSql(SqliteCloudQueryRequest(sql = sql))
             response.isSuccessful
         } catch (e: Exception) {

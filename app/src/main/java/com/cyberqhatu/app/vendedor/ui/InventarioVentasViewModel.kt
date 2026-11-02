@@ -20,13 +20,13 @@ class InventarioVentasViewModel : ViewModel() {
 
     fun cargarProductosRoom(context: Context) {
         viewModelScope.launch(Dispatchers.IO) {
-            val db = QhatuDatabase.getInstance(context)
-            db.productoDao().obtenerTodosLosProductos().collectLatest { entidades ->
-                val listaProds = entidades.map { e ->
+            val remoteRepo = com.cyberqhatu.app.feature.tienda.data.repository.SqliteCloudProductoRepository()
+            remoteRepo.obtenerProductosRemotos().collectLatest { productos ->
+                val listaProds = productos.map { e ->
                     ProductoInventario(
                         id = e.idProducto,
                         titulo = e.nombre,
-                        categoria = "General",
+                        categoria = e.idCategoria,
                         precio = e.precio,
                         stock = e.stock,
                         estado = if (e.stock > 0) EstadoInventario.ACTIVO else EstadoInventario.AGOTADO,
@@ -34,7 +34,7 @@ class InventarioVentasViewModel : ViewModel() {
                 }
                 _uiState.update {
                     it.copy(
-                        listaProductos = if (listaProds.isNotEmpty()) listaProds else it.listaProductos,
+                        listaProductos = listaProds,
                         productosActivos = listaProds.count { p -> p.stock > 0 },
                     )
                 }
@@ -52,17 +52,9 @@ class InventarioVentasViewModel : ViewModel() {
 
     fun guardarEdicionProducto(context: Context, idProducto: String, nuevoStock: Int, nuevoPrecio: Double) {
         viewModelScope.launch(Dispatchers.IO) {
-            val db = QhatuDatabase.getInstance(context)
-            val prod = ProductoEntity(
-                idProducto = idProducto,
-                idTienda = "T-101",
-                nombre = "Producto $idProducto",
-                descripcion = "Actualizado",
-                precio = nuevoPrecio,
-                stock = nuevoStock,
-                estado = if (nuevoStock > 0) "ACTIVO" else "AGOTADO",
-            )
-            db.productoDao().insertarProducto(prod)
+            val remoteRepo = com.cyberqhatu.app.feature.tienda.data.repository.SqliteCloudProductoRepository()
+            val estado = if (nuevoStock > 0) com.cyberqhatu.app.tienda.EstadoProducto.ACTIVO else com.cyberqhatu.app.tienda.EstadoProducto.OCULTO
+            remoteRepo.actualizarStockYPrecioRemoto(idProducto, nuevoStock, nuevoPrecio, estado)
         }
     }
 }

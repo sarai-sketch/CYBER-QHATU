@@ -175,7 +175,7 @@ fun PantallaMiPerfil(
                         Icon(Icons.Default.Storefront, contentDescription = null, tint = QhatuPurple)
                         Spacer(Modifier.width(8.dp))
                         Text(
-                            text = "Empezar a Vender",
+                            text = if (tipoRol == "Vendedor / Propietario de Tienda") "Ir a mi Tienda" else if (estadoVerificacion) "Crear mi Tienda" else "Empezar a Vender",
                             color = QhatuPurple,
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp

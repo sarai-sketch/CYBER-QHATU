@@ -21,6 +21,7 @@ import com.cyberqhatu.app.ui.screens.tienda.DomainMockData
 import com.cyberqhatu.app.ui.theme.QhatuPurple
 import kotlinx.coroutines.launch
 
+import androidx.compose.ui.graphics.Color
 import java.util.UUID
 
 private val HORA_REGEX = Regex("^([01]\\d|2[0-3]):[0-5]\\d$")
@@ -41,20 +42,18 @@ fun CrearTiendaScreen(
 
     var nombre by remember { mutableStateOf("") }
     var descripcion by remember { mutableStateOf("") }
-    var tipo by remember { mutableStateOf(TipoTienda.FISICA) }
     var direccion by remember { mutableStateOf("") }
     var apertura by remember { mutableStateOf("08:00") }
     var cierre by remember { mutableStateOf("18:00") }
     var whatsapp by remember { mutableStateOf("") }
 
-    val necesitaDireccion = tipo != TipoTienda.VIRTUAL
     val nombreOk = nombre.trim().length >= 3
-    val descripcionOk = descripcion.trim().length >= 10
-    val direccionOk = !necesitaDireccion || direccion.isNotBlank()
     val horasValidas = HORA_REGEX.matches(apertura) && HORA_REGEX.matches(cierre)
     val horarioOk = horasValidas && apertura < cierre
     val whatsappOk = whatsapp.length == 8 && (whatsapp.first() == '6' || whatsapp.first() == '7')
-    val formularioValido = nombreOk && descripcionOk && direccionOk && horarioOk && whatsappOk
+    
+    // Todos los campos excepto nombre y whatsapp son opcionales
+    val formularioValido = nombreOk && whatsappOk && (apertura.isEmpty() || cierre.isEmpty() || horarioOk)
 
     Scaffold(
         topBar = {
@@ -103,39 +102,20 @@ fun CrearTiendaScreen(
                 OutlinedTextField(
                     value = descripcion,
                     onValueChange = { descripcion = it },
-                    label = { Text("Descripción de productos *") },
-                    isError = descripcion.isNotEmpty() && !descripcionOk,
-                    supportingText = { if (descripcion.isNotEmpty() && !descripcionOk) Text("Mínimo 10 caracteres") },
+                    label = { Text("Descripción de productos (Opcional)") },
                     minLines = 3,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
                 )
 
-                Text("Tipo de tienda *", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = MaterialTheme.colorScheme.primary)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf(
-                        TipoTienda.FISICA to "Física",
-                        TipoTienda.VIRTUAL to "Virtual",
-                        TipoTienda.HIBRIDA to "Híbrida"
-                    ).forEach { (valor, etiqueta) ->
-                        FilterChip(
-                            selected = tipo == valor,
-                            onClick = { tipo = valor },
-                            label = { Text(etiqueta) }
-                        )
-                    }
-                }
-
-                if (necesitaDireccion) {
-                    OutlinedTextField(
-                        value = direccion,
-                        onValueChange = { direccion = it },
-                        label = { Text("Ubicación / Sector (Ej. Sector Altiplano Puesto #12) *") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                }
+                OutlinedTextField(
+                    value = direccion,
+                    onValueChange = { direccion = it },
+                    label = { Text("Ubicación / Sector (Ej. Sector Altiplano Puesto #12)") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                )
 
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     OutlinedTextField(
@@ -180,32 +160,60 @@ fun CrearTiendaScreen(
 
                 Spacer(Modifier.height(8.dp))
 
+                var guardando by remember { mutableStateOf(false) }
+                var errorNube by remember { mutableStateOf<String?>(null) }
+                
+                if (errorNube != null) {
+                    Text(
+                        text = errorNube!!,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 14.sp,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
                 Button(
                     onClick = {
+                        guardando = true
+                        errorNube = null
                         val nuevaTienda = Tienda(
                             idTienda = "t-${UUID.randomUUID().toString().take(8)}",
                             idPropietario = idPropietario,
                             nombre = nombre.trim(),
                             descripcion = descripcion.trim(),
                             logo = null,
-                            tipo = tipo,
-                            direccionGoogleMaps = if (necesitaDireccion) direccion.trim() else null,
+                            tipo = TipoTienda.FISICA,
+                            direccionGoogleMaps = direccion.trim(),
                             horarioApertura = apertura,
                             horarioCierre = cierre,
                             linkWhatsapp = "https://wa.me/591$whatsapp"
                         )
                         coroutineScope.launch {
-                            tiendaRepository.guardarTiendaRemota(nuevaTienda)
+                            try {
+                                val exito = tiendaRepository.guardarTiendaRemota(nuevaTienda)
+                                if (exito) {
+                                    onTiendaCreada(nuevaTienda)
+                                } else {
+                                    errorNube = "No se pudo guardar la tienda en la nube. Verifica la conexión o el servidor."
+                                }
+                            } catch (e: Exception) {
+                                errorNube = "Fallo de conexión: ${e.message}"
+                            } finally {
+                                guardando = false
+                            }
                         }
-                        onTiendaCreada(nuevaTienda)
                     },
-                    enabled = formularioValido,
+                    enabled = formularioValido && !guardando,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("Guardar y Abrir Tienda", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    if (guardando) {
+                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                    } else {
+                        Text("Guardar y Abrir Tienda", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    }
                 }
             }
         }

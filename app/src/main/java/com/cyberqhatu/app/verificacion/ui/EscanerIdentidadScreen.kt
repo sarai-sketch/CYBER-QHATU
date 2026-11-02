@@ -65,6 +65,7 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun EscanerIdentidadScreen(
+    idUsuario: String,
     onVerificacionExitosa: (String) -> Unit,
     onVolverClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -168,7 +169,7 @@ fun EscanerIdentidadScreen(
                 val selfie = uiState.fotoSelfie
                 if (anverso != null && reverso != null && selfie != null) {
                     val res = withContext(Dispatchers.IO) {
-                        activeRepository.verificarIdentidad(anverso, reverso, selfie)
+                        activeRepository.verificarIdentidad(idUsuario, anverso, reverso, selfie)
                     }
                     uiState = uiState.copy(
                         pasoActual = PasoVerificacion.RESULTADO,

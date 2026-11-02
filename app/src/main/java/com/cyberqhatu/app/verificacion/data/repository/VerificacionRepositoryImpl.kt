@@ -43,6 +43,7 @@ class VerificacionRepositoryImpl(
     }
 
     override suspend fun verificarIdentidad(
+        idUsuario: String,
         fotoCarnetAnverso: Bitmap,
         fotoCarnetReverso: Bitmap,
         fotoSelfie: Bitmap,
@@ -63,16 +64,16 @@ class VerificacionRepositoryImpl(
 
         // 4. Si la verificación fue exitosa, escribir localmente
         if (esValido) {
-            val cacheEntity = VerificacionCacheMapper.toCacheEntity(resultadoLocal, "USR-101", sincronizado = true)
+            val cacheEntity = VerificacionCacheMapper.toCacheEntity(resultadoLocal, idUsuario, sincronizado = true)
             verificacionCacheDao?.insertarCache(cacheEntity)
             verificacionDao?.insertarVerificacion(
-                VerificacionLocalMapper.toEntity(resultadoLocal, "USR-101"),
+                VerificacionLocalMapper.toEntity(resultadoLocal, idUsuario),
             )
 
             // 5. Sincronización con SQLite Cloud API Remota
             try {
                 val idVerif = UUID.randomUUID().toString()
-                val sql = "INSERT OR REPLACE INTO verificaciones_biometricas (id_verificacion, id_usuario, numero_ci, porcentaje_similitud, es_exitoso) VALUES ('${idVerif}', 'USR-101', '$numeroCi', $similitudReal, 1);"
+                val sql = "INSERT OR REPLACE INTO verificaciones_biometricas (id_verificacion, id_usuario, numero_ci, porcentaje_similitud, es_exitoso) VALUES ('${idVerif}', '$idUsuario', '$numeroCi', $similitudReal, 1);"
                 SqliteCloudClient.apiService.ejecutarSql(SqliteCloudQueryRequest(sql = sql))
             } catch (_: Exception) {
                 // Silencioso en caso de desconexión remota
