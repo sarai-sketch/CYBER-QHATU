@@ -23,6 +23,10 @@ import androidx.compose.ui.unit.sp
 import com.cyberqhatu.app.tienda.FavoritoTienda
 import com.cyberqhatu.app.ui.theme.*
 
+import androidx.compose.ui.platform.LocalContext
+import android.content.Intent
+import android.net.Uri
+
 /**
  * Pantalla de Perfil de Tienda con diseño 100% unificado, adaptable a Modo Claro/Oscuro y soporte para Reseñas y Favoritos.
  */
@@ -37,6 +41,8 @@ fun StoreProfileScreen(
     onRequireLogin: () -> Unit = {},
     onEscribirResenaClick: (storeName: String) -> Unit = {}
 ) {
+    val context = LocalContext.current
+    
     CyberQhatuTheme {
         val tienda = DomainMockData.tiendas.firstOrNull { it.idTienda == storeId }
             ?: DomainMockData.tiendas.first()
@@ -215,7 +221,12 @@ fun StoreProfileScreen(
 
                     // Botón de Contacto WhatsApp
                     Button(
-                        onClick = { /* Abrir enlace WhatsApp */ },
+                        onClick = { 
+                            val numeroWa = tienda.linkWhatsapp ?: "https://wa.me/591"
+                            val uri = if (numeroWa.startsWith("http")) numeroWa else "https://wa.me/591${numeroWa.filter { it.isDigit() }}"
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
+                            context.startActivity(intent)
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp),
