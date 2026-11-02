@@ -14,7 +14,7 @@ class SqliteCloudTiendaRepository {
 
     fun obtenerTiendasRemotas(): Flow<List<Tienda>> = flow {
         try {
-            val sql = "SELECT id_tienda, id_propietario, nombre, descripcion, tipo, direccion, link_whatsapp, estado FROM tiendas WHERE estado = 'ACTIVA';"
+            val sql = "SELECT id_tienda, id_propietario, nombre, descripcion, tipo, direccion_google_maps, horario_apertura, horario_cierre, link_whatsapp, estado, strikes FROM tiendas WHERE estado = 'ACTIVA';"
             val response = apiService.ejecutarSql(SqliteCloudQueryRequest(sql = sql))
 
             if (response.isSuccessful && response.body()?.data != null) {
@@ -24,8 +24,11 @@ class SqliteCloudTiendaRepository {
                     val nombre = row["nombre"]?.toString() ?: "Tienda"
                     val desc = row["descripcion"]?.toString() ?: ""
                     val tipoStr = row["tipo"]?.toString() ?: "FISICA"
-                    val dir = row["direccion"]?.toString()
+                    val dir = row["direccion_google_maps"]?.toString()
+                    val apertura = row["horario_apertura"]?.toString()
+                    val cierre = row["horario_cierre"]?.toString()
                     val wa = row["link_whatsapp"]?.toString()
+                    val strikes = (row["strikes"] as? Double)?.toInt() ?: 0
 
                     val tipoEnum = try {
                         TipoTienda.valueOf(tipoStr)
@@ -41,7 +44,10 @@ class SqliteCloudTiendaRepository {
                         logo = null,
                         tipo = tipoEnum,
                         direccionGoogleMaps = dir,
-                        linkWhatsapp = wa
+                        horarioApertura = apertura,
+                        horarioCierre = cierre,
+                        linkWhatsapp = wa,
+                        strikes = strikes
                     )
                 }
                 emit(lista)
@@ -56,7 +62,21 @@ class SqliteCloudTiendaRepository {
 
     suspend fun guardarTiendaRemota(tienda: Tienda): Boolean {
         return try {
-            val sql = "INSERT OR REPLACE INTO tiendas (id_tienda, id_propietario, nombre, descripcion, tipo, direccion, link_whatsapp, estado) VALUES ('${tienda.idTienda}', '${tienda.idPropietario}', '${tienda.nombre.replace("'", "''")}', '${tienda.descripcion.replace("'", "''")}', '${tienda.tipo.name}', '${(tienda.direccionGoogleMaps ?: "").replace("'", "''")}', '${tienda.linkWhatsapp ?: ""}', 'ACTIVA');"
+            val dirStr = if (tienda.direccionGoogleMaps != null) "'${tienda.direccionGoogleMaps!!.replace("'", "''")}'" else "NULL"
+            val apertura = if (tienda.horarioApertura != null) "'${tienda.horarioApertura}'" else "NULL"
+            val cierre = if (tienda.horarioCierre != null) "'${tienda.horarioCierre}'" else "NULL"
+
+            val sql = """
+                INSERT OR REPLACE INTO tiendas (
+                    id_tienda, id_propietario, nombre, descripcion, tipo, 
+                    direccion_google_maps, horario_apertura, horario_cierre, link_whatsapp, estado, strikes
+                ) VALUES (
+                    '${tienda.idTienda}', '${tienda.idPropietario}', '${tienda.nombre.replace("'", "''")}', 
+                    '${tienda.descripcion.replace("'", "''")}', '${tienda.tipo.name}', 
+                    $dirStr, $apertura, $cierre, '${tienda.linkWhatsapp ?: ""}', 'ACTIVA', ${tienda.strikes}
+                );
+            """.trimIndent()
+            
             val response = apiService.ejecutarSql(SqliteCloudQueryRequest(sql = sql))
             response.isSuccessful
         } catch (e: Exception) {

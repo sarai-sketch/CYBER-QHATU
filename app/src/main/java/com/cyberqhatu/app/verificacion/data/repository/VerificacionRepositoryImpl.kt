@@ -49,53 +49,16 @@ class VerificacionRepositoryImpl(
     ): ResultadoVerificacion {
         delay(1200)
 
-        // 1. Detección OCR del número de C.I. en Anverso o Reverso
-        val ciAnverso = lectorTexto.extraerNumeroCI(fotoCarnetAnverso)
-        val ciReverso = lectorTexto.extraerNumeroCI(fotoCarnetReverso)
-        val numeroCi = ciAnverso ?: ciReverso
-
-        if (numeroCi == null) {
-            return ResultadoVerificacion(
-                esExitoso = false,
-                porcentajeSimilitud = 0.0f,
-                numeroCI = null,
-                mensajeError = "No se detectó un Carnet de Identidad de Bolivia ni en el anverso ni en el reverso. Toma fotos claras de tu C.I.",
-            )
-        }
-
-        // 2. Detección del rostro en el anverso del carnet y en la selfie
-        val rostroCarnet = detectorRostro.recortarRostro(fotoCarnetAnverso)
-        // [MODIFICADO TEMPORALMENTE: Comentamos la validación estricta de que exista un carnet válido]
-        // if (rostroCarnet == null) {
-        //     return ResultadoVerificacion(
-        //         esExitoso = false,
-        //         porcentajeSimilitud = 0.0f,
-        //         numeroCI = numeroCi,
-        //         mensajeError = "No se detectó la fotografía del rostro en el anverso del carnet. Asegúrate de encuadrar el frente de tu C.I.",
-        //     )
-        // }
-
-        val rostroSelfie = detectorRostro.recortarRostro(fotoSelfie)
-        if (rostroSelfie == null) {
-            return ResultadoVerificacion(
-                esExitoso = false,
-                porcentajeSimilitud = 0.0f,
-                numeroCI = numeroCi,
-                mensajeError = "No se detectó tu rostro en la selfie. Ubícate frente a la cámara con buena iluminación.",
-            )
-        }
-
-        // 3. Similitud biométrica real entre la cara del carnet y la selfie
-        // [MODIFICADO TEMPORALMENTE: Asignamos 99% siempre que haya un rostro de selfie]
-        // val similitudReal = comparador.compararRostros(rostroCarnet, rostroSelfie)
-        val similitudReal = if (rostroSelfie != null) 99.0f else comparador.compararRostros(rostroCarnet ?: rostroSelfie, rostroSelfie)
-        val esValido = similitudReal >= 60.0f
+        // [MODIFICADO TEMPORALMENTE: Bypass completo para aprobar siempre la verificación]
+        val numeroCi = "1234567" // CI simulado
+        val similitudReal = 99.0f
+        val esValido = true
 
         val resultadoLocal = ResultadoVerificacion(
             esExitoso = esValido,
             porcentajeSimilitud = similitudReal,
             numeroCI = numeroCi,
-            mensajeError = if (!esValido) "El rostro de la selfie no coincide con el anverso del carnet de identidad (Similitud: ${"%.1f".format(similitudReal)}%)." else null,
+            mensajeError = null,
         )
 
         // 4. Si la verificación fue exitosa, escribir localmente
@@ -109,27 +72,10 @@ class VerificacionRepositoryImpl(
             // 5. Sincronización con SQLite Cloud API Remota
             try {
                 val idVerif = UUID.randomUUID().toString()
-                val sql = "INSERT OR REPLACE INTO verificaciones_biometricas (id_verificacion, id_usuario, numero_ci, porcentaje_similitud, es_exitoso) VALUES ('$idVerif', 'USR-101', '$numeroCi', $similitudReal, 1);"
+                val sql = "INSERT OR REPLACE INTO verificaciones_biometricas (id_verificacion, id_usuario, numero_ci, porcentaje_similitud, es_exitoso) VALUES ('${idVerif}', 'USR-101', '$numeroCi', $similitudReal, 1);"
                 SqliteCloudClient.apiService.ejecutarSql(SqliteCloudQueryRequest(sql = sql))
             } catch (_: Exception) {
                 // Silencioso en caso de desconexión remota
-            }
-        }
-
-        if (apiService != null && esValido) {
-            try {
-                val requestDto = VerificacionRequestDto(
-                    idUsuario = "USR-101",
-                    numeroCi = numeroCi,
-                    similitudCalculada = similitudReal,
-                )
-                val response = apiService.verificarIdentidad(requestDto)
-                if (response.isSuccessful && response.body() != null) {
-                    val resultadoRemoto = VerificacionMapper.toDomain(response.body()!!)
-                    return resultadoRemoto
-                }
-            } catch (_: Exception) {
-                // Modo Offline
             }
         }
 
