@@ -193,11 +193,19 @@ fun CrearTiendaScreen(
 
                         coroutineScope.launch {
                             try {
-                                tiendaRepository.guardarTiendaRemota(nuevaTienda)
-                            } catch (_: Exception) {
-                            } finally {
+                                val resultado = tiendaRepository.guardarTiendaRemota(nuevaTienda)
+                                resultado.fold(
+                                    onSuccess = {
+                                        onTiendaCreada(nuevaTienda)
+                                    },
+                                    onFailure = { error ->
+                                        errorNube = "Error SQLite Cloud: ${error.message}"
+                                        guardando = false
+                                    }
+                                )
+                            } catch (e: Exception) {
+                                errorNube = "Excepción: ${e.message}"
                                 guardando = false
-                                onTiendaCreada(nuevaTienda)
                             }
                         }
                     },

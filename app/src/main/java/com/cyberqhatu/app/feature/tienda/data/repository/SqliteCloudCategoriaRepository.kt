@@ -3,6 +3,7 @@ package com.cyberqhatu.app.feature.tienda.data.repository
 import android.util.Log
 import com.cyberqhatu.app.core.network.SqliteCloudClient
 import com.cyberqhatu.app.core.network.SqliteCloudQueryRequest
+import com.cyberqhatu.app.core.network.parseAsListOfMaps
 import com.cyberqhatu.app.tienda.Categoria
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -33,8 +34,9 @@ class SqliteCloudCategoriaRepository {
             val sql = "SELECT id_categoria, nombre FROM categorias;"
             val response = apiService.ejecutarSql(SqliteCloudQueryRequest(sql = sql))
 
-            if (response.isSuccessful && response.body()?.data != null) {
-                val lista = response.body()!!.data!!.mapNotNull { row ->
+            val dataList = response.body()?.data.parseAsListOfMaps()
+            if (response.isSuccessful && dataList.isNotEmpty()) {
+                val lista = dataList.mapNotNull { row ->
                     val idCategoria = row["id_categoria"]?.toString() ?: return@mapNotNull null
                     val nombre = row["nombre"]?.toString() ?: "Categoría"
 

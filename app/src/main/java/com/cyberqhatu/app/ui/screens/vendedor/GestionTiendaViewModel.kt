@@ -72,7 +72,7 @@ class GestionTiendaViewModel : ViewModel() {
                 horarioCierre = _uiState.value.horarioCierre
             }
             
-            val exito = repository.guardarTiendaRemota(tiendaActualizada)
+            val exito = repository.guardarTiendaRemota(tiendaActualizada).isSuccess
             _uiState.update { it.copy(guardando = false, guardadoExitoso = exito) }
         }
     }

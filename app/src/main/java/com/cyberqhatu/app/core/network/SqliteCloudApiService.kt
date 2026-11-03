@@ -11,7 +11,7 @@ interface SqliteCloudApiService {
         "Authorization: Bearer t4pCQWrW0zPXHfbRF68ttrJXMijVP4m9PFmnfTiWO8s",
         "Content-Type: application/json"
     )
-    @POST("webrequest?database=cyberQhatu.sqlite")
+    @POST("sql?database=cyberQhatu.sqlite")
     suspend fun ejecutarSql(
         @Body request: SqliteCloudQueryRequest
     ): Response<SqliteCloudQueryResponse>
