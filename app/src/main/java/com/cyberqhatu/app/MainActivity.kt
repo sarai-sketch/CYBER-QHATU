@@ -271,7 +271,10 @@ fun MainNavigationApp() {
                         modoVerificacionStep = 0
                         currentScreen = RootScreen.TiendaHub
                     },
-                    onBackClick = { modoVerificacionStep = 3 }
+                    onBackClick = {
+                        modoVerificacionStep = 0
+                        currentScreen = RootScreen.Perfil
+                    }
                 )
             }
             modoVerificacionStep == 4 -> {
