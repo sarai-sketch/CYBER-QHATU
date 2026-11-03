@@ -112,6 +112,7 @@ fun MainNavigationApp() {
     
     var isTiendaCreada by remember { mutableStateOf(false) }
     var miTiendaId by remember { mutableStateOf<String?>(null) }
+    var nombreDeLaTienda by remember { mutableStateOf("Mi tienda") }
     var esPropietarioTienda by remember { mutableStateOf(true) }
     var refrescarTienda by remember { mutableIntStateOf(0) }
     var esModerador by remember { mutableStateOf(false) }
@@ -152,10 +153,12 @@ fun MainNavigationApp() {
                         if (tiendaRemota != null) {
                             isTiendaCreada = true
                             miTiendaId = tiendaRemota.idTienda
+                            nombreDeLaTienda = tiendaRemota.nombre
                             esPropietarioTienda = tiendaRemota.idPropietario.equals(currentUserEmail, ignoreCase = true)
                         } else {
                             isTiendaCreada = false
                             miTiendaId = null
+                            nombreDeLaTienda = "Mi tienda"
                         }
                     } catch (_: Exception) {}
                 }
@@ -350,6 +353,7 @@ fun MainNavigationApp() {
                             nombreUsuario = nombreMostrado,
                             correoUsuario = currentUserEmail,
                             telefonoUsuario = currentUserPhone,
+                            nombreTienda = if (isTiendaCreada) nombreDeLaTienda else null,
                             estadoVerificacion = estaVerificado,
                             tipoRol = rolMostrado,
                             onEditarPerfilClick = {
@@ -385,14 +389,6 @@ fun MainNavigationApp() {
                     }
                     is RootScreen.TiendaHub -> {
                         val idTiendaHub = miTiendaId ?: lastStoreId
-                        
-                        var nombreDeLaTienda by remember { mutableStateOf("Mi tienda") }
-                        LaunchedEffect(idTiendaHub) {
-                            val tiendas = tiendaRepository.obtenerTiendaDeUsuario(currentUserEmail)
-                            if (tiendas != null && tiendas.idTienda == idTiendaHub) {
-                                nombreDeLaTienda = tiendas.nombre
-                            }
-                        }
                         
                         GestionTiendaHubScreen(
                             idTienda = idTiendaHub,

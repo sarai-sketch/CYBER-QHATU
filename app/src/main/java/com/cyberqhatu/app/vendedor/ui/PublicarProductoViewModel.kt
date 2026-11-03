@@ -3,8 +3,9 @@ package com.cyberqhatu.app.vendedor.ui
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cyberqhatu.app.data.local.database.QhatuDatabase
-import com.cyberqhatu.app.data.local.entity.ProductoEntity
+import com.cyberqhatu.app.feature.tienda.data.repository.SqliteCloudProductoRepository
+import com.cyberqhatu.app.tienda.EstadoProducto
+import com.cyberqhatu.app.tienda.Producto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -57,7 +58,7 @@ class PublicarProductoViewModel : ViewModel() {
         }
     }
 
-    fun publicarProducto(context: Context, onExito: () -> Unit) {
+    fun publicarProducto(context: Context, idTienda: String = "t1", onExito: () -> Unit) {
         val state = _uiState.value
         val precioDouble = state.precio.toDoubleOrNull()
         val stockInt = state.stock.toIntOrNull()
@@ -79,19 +80,20 @@ class PublicarProductoViewModel : ViewModel() {
 
         viewModelScope.launch(Dispatchers.IO) {
             val idNuevo = "PROD-${System.currentTimeMillis()}"
-            val producto = com.cyberqhatu.app.tienda.Producto(
+            val idTiendaFinal = idTienda.ifBlank { "t1" }
+            val producto = Producto(
                 idProducto = idNuevo,
-                idTienda = "", 
+                idTienda = idTiendaFinal,
                 nombre = state.titulo,
                 descripcion = state.descripcion,
                 precio = precioDouble,
                 stock = stockInt,
                 idCategoria = "c1",
-                estado = com.cyberqhatu.app.tienda.EstadoProducto.ACTIVO
+                estado = EstadoProducto.ACTIVO
             )
             
-            val remoteRepo = com.cyberqhatu.app.feature.tienda.data.repository.SqliteCloudProductoRepository()
-            remoteRepo.guardarProductoRemoto(producto)
+            val remoteRepo = SqliteCloudProductoRepository()
+            remoteRepo.guardarProducto(producto)
 
             _uiState.update {
                 it.copy(

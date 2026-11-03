@@ -29,6 +29,7 @@ fun PantallaMiPerfil(
     correoUsuario: String,
     telefonoUsuario: String,
     tipoRol: String,
+    nombreTienda: String? = null,
     estadoVerificacion: Boolean = false,
     onEditarPerfilClick: () -> Unit,
     onCerrarSesionClick: () -> Unit,
@@ -172,7 +173,37 @@ fun PantallaMiPerfil(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    if (!nombreTienda.isNullOrBlank()) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(46.dp)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.primaryContainer),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(Icons.Default.Storefront, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(24.dp))
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column {
+                                    Text("Tienda Administrada", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text(nombreTienda, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
 
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -222,7 +253,7 @@ fun PantallaMiPerfil(
                         Icon(Icons.Default.Storefront, contentDescription = null, tint = QhatuPurple)
                         Spacer(Modifier.width(8.dp))
                         Text(
-                            text = if (tipoRol == "Vendedor / Propietario de Tienda") "Ir a mi Tienda" else if (estadoVerificacion) "Crear mi Tienda" else "Empezar a Vender",
+                            text = if (tipoRol.contains("Vendedor") || !nombreTienda.isNullOrBlank()) "Ir a mi Tienda" else if (estadoVerificacion) "Crear mi Tienda" else "Empezar a Vender",
                             color = QhatuPurple,
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
@@ -253,8 +284,6 @@ fun PantallaMiPerfil(
                     ) {
                         Text(text = "Cerrar Sesión", fontWeight = FontWeight.Bold)
                     }
-
-                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
         }

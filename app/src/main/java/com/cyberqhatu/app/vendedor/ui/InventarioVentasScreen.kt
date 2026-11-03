@@ -178,7 +178,7 @@ fun InventarioVentasScreen(
 
                         coroutineScope.launch {
                             try {
-                                sqliteCloudRepository.actualizarProducto(prod.id, stockInt, precioDouble, estadoProd)
+                                sqliteCloudRepository.actualizarStockYPrecioRemoto(prod.id, stockInt, precioDouble, estadoProd)
                                 recargar++
                             } catch (e: CancellationException) {
                                 throw e
@@ -252,13 +252,13 @@ fun InventarioVentasScreen(
                         if (cantInt > 0 && cantInt <= prod.stock) {
                             coroutineScope.launch {
                                 try {
-                                    sqliteCloudRepository.registrarVenta(
-                                        idTienda = idTienda,
+                                    val nuevoStock = (prod.stock - cantInt).coerceAtLeast(0)
+                                    val nuevoEstado = if (nuevoStock == 0) EstadoProducto.OCULTO else EstadoProducto.ACTIVO
+                                    sqliteCloudRepository.actualizarStockYPrecioRemoto(
                                         idProducto = prod.id,
-                                        nombreProducto = prod.titulo,
-                                        cantidad = cantInt,
-                                        precioUnitario = prod.precio,
-                                        canalVenta = if (metodoPago.startsWith("QR")) "QR" else "EFECTIVO"
+                                        nuevoStock = nuevoStock,
+                                        nuevoPrecio = prod.precio,
+                                        nuevoEstado = nuevoEstado
                                     )
                                     recargar++
                                 } catch (e: CancellationException) {
