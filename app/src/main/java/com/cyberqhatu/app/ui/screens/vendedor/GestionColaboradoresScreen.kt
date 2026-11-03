@@ -136,6 +136,21 @@ fun GestionColaboradoresScreen(
                 Text("Los administradores colaboradores tienen acceso a inventario y productos mediante un código de invitación.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(16.dp))
 
+                Button(
+                    onClick = { mostrarDialogoInvitar = true },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = QhatuPurple)
+                ) {
+                    Icon(Icons.Default.PersonAdd, contentDescription = null, tint = Color.White)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Generar Código de Invitación", fontWeight = FontWeight.Bold, color = Color.White)
+                }
+
+                Spacer(Modifier.height(16.dp))
+
                 when {
                     cargando -> Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator()

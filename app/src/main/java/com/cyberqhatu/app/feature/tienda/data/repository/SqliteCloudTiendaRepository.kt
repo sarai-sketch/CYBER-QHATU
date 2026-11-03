@@ -114,59 +114,59 @@ class SqliteCloudTiendaRepository {
 
     /**
      * Tienda del usuario: verifica si es propietario o si pertenece a `tienda_miembros`.
-     * Si la tienda no existe en la tabla `tiendas` pero está en `tienda_miembros`, genera una tienda por defecto para que no falle.
      */
     suspend fun obtenerTiendaDeUsuario(idUsuario: String): Tienda? {
         return try {
             val u = SqliteCloudSql.esc(idUsuario)
-            val sql = "SELECT t.id_tienda, t.id_propietario, t.nombre, t.descripcion, t.tipo, t.link_whatsapp, t.estado, t.strikes FROM tiendas t JOIN tienda_miembros m ON t.id_tienda = m.id_tienda WHERE m.id_usuario = '$u' OR t.id_propietario = '$u' LIMIT 1;"
-            val response = apiService.ejecutarSql(SqliteCloudQueryRequest(sql = sql))
-            val dataList = response.body()?.data.parseAsListOfMaps()
+            
+            // 1. Buscar si es propietario
+            val tiendaProp = obtenerTiendaPorPropietario(idUsuario)
+            if (tiendaProp != null) return tiendaProp
 
-            if (response.isSuccessful && dataList.isNotEmpty()) {
-                val row = dataList.first()
-                val idTienda = row["id_tienda"]?.toString() ?: "t1"
-                val idProp = row["id_propietario"]?.toString() ?: idUsuario
-                val nombre = row["nombre"]?.toString() ?: "Tienda Colaboradora"
-                val desc = row["descripcion"]?.toString() ?: ""
-                val tipoStr = row["tipo"]?.toString() ?: "FISICA"
-                val wa = row["link_whatsapp"]?.toString() ?: "https://wa.me/59170000000"
-                val strikes = (row["strikes"] as? Number)?.toInt() ?: 0
-                val tipoEnum = try { TipoTienda.valueOf(tipoStr) } catch (_: Exception) { TipoTienda.FISICA }
+            // 2. Buscar si es miembro en tienda_miembros
+            val miembroRows = SqliteCloudSql.ejecutar(
+                "SELECT id_tienda FROM tienda_miembros WHERE id_usuario = '$u' LIMIT 1;"
+            )
+            if (miembroRows.isNotEmpty()) {
+                val idTiendaColab = miembroRows.first()["id_tienda"]?.toString() ?: "t1"
+                val sqlTienda = "SELECT id_tienda, id_propietario, nombre, descripcion, tipo, link_whatsapp, estado, strikes FROM tiendas WHERE id_tienda = '$idTiendaColab' LIMIT 1;"
+                val respTienda = apiService.ejecutarSql(SqliteCloudQueryRequest(sql = sqlTienda))
+                val dataTienda = respTienda.body()?.data.parseAsListOfMaps()
 
-                Tienda(
-                    idTienda = idTienda,
-                    idPropietario = idProp,
-                    nombre = nombre,
-                    descripcion = desc,
-                    logo = null,
-                    tipo = tipoEnum,
-                    linkWhatsapp = wa,
-                    strikes = strikes,
-                    estado = EstadoTienda.ACTIVA
-                )
-            } else {
-                // Fallback: verificar si al menos tiene registro en tienda_miembros aunque la tabla tiendas no haga join
-                val miembroRow = SqliteCloudSql.ejecutar(
-                    "SELECT id_tienda, rol FROM tienda_miembros WHERE id_usuario = '$u' LIMIT 1;"
-                ).firstOrNull()
+                if (respTienda.isSuccessful && dataTienda.isNotEmpty()) {
+                    val row = dataTienda.first()
+                    val nombre = row["nombre"]?.toString() ?: "Tienda Colaborativa"
+                    val desc = row["descripcion"]?.toString() ?: ""
+                    val tipoStr = row["tipo"]?.toString() ?: "FISICA"
+                    val wa = row["link_whatsapp"]?.toString() ?: "https://wa.me/59170000000"
+                    val strikes = (row["strikes"] as? Number)?.toInt() ?: 0
+                    val tipoEnum = try { TipoTienda.valueOf(tipoStr) } catch (_: Exception) { TipoTienda.FISICA }
 
-                if (miembroRow != null) {
-                    val idT = miembroRow["id_tienda"]?.toString() ?: "t1"
-                    Tienda(
-                        idTienda = idT,
+                    return Tienda(
+                        idTienda = idTiendaColab,
+                        idPropietario = row["id_propietario"]?.toString() ?: "u1",
+                        nombre = nombre,
+                        descripcion = desc,
+                        logo = null,
+                        tipo = tipoEnum,
+                        linkWhatsapp = wa,
+                        strikes = strikes,
+                        estado = EstadoTienda.ACTIVA
+                    )
+                } else {
+                    return Tienda(
+                        idTienda = idTiendaColab,
                         idPropietario = "u1",
-                        nombre = "Tienda Colaborativa ($idT)",
+                        nombre = "Tienda Colaborativa ($idTiendaColab)",
                         descripcion = "Puesto administrado en equipo",
                         logo = null,
                         tipo = TipoTienda.FISICA,
                         linkWhatsapp = "https://wa.me/59170000000",
                         estado = EstadoTienda.ACTIVA
                     )
-                } else {
-                    null
                 }
             }
+            null
         } catch (e: Exception) {
             Log.e("SqliteCloud", "Error buscando tienda del usuario: ${e.message}", e)
             null
