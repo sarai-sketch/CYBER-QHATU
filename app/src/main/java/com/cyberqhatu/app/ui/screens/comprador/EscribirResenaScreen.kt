@@ -16,7 +16,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cyberqhatu.app.feature.tienda.data.repository.SqliteCloudResenaRepository
-import com.cyberqhatu.app.ui.theme.QhatuPurple
 import kotlinx.coroutines.launch
 
 /**
@@ -26,6 +25,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun EscribirResenaScreen(
     nombreItem: String = "Puesto Don Carlos",
+    storeId: String = "",
+    userEmail: String = "usuario@cyberqhatu.bo",
     onPublicarResena: (rating: Int, comentario: String) -> Unit = { _, _ -> },
     onBackClick: () -> Unit = {}
 ) {
@@ -34,6 +35,7 @@ fun EscribirResenaScreen(
 
     var rating by remember { mutableIntStateOf(5) }
     var comentario by remember { mutableStateOf("") }
+    var guardando by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -105,20 +107,27 @@ fun EscribirResenaScreen(
 
                 Button(
                     onClick = {
-                        if (comentario.isNotBlank()) {
+                        if (comentario.isNotBlank() && !guardando) {
+                            guardando = true
                             coroutineScope.launch {
-                                resenaRepository.guardarResenaComprador()
+                                resenaRepository.guardarResenaRemota(
+                                    idTienda = storeId.ifBlank { "t1" },
+                                    idUsuario = userEmail.ifBlank { "usuario@cyberqhatu.bo" },
+                                    rating = rating,
+                                    comentario = comentario.trim()
+                                )
+                                guardando = false
+                                onPublicarResena(rating, comentario.trim())
                             }
-                            onPublicarResena(rating, comentario.trim())
                         }
                     },
-                    enabled = comentario.isNotBlank(),
+                    enabled = comentario.isNotBlank() && !guardando,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("Publicar Reseña", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text(if (guardando) "Publicando..." else "Publicar Reseña", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
             }
         }

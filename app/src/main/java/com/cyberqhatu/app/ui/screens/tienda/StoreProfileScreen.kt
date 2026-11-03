@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cyberqhatu.app.feature.tienda.data.repository.SqliteCloudProductoRepository
+import com.cyberqhatu.app.feature.tienda.data.repository.SqliteCloudResenaRepository
 import com.cyberqhatu.app.feature.tienda.data.repository.SqliteCloudTiendaRepository
 import com.cyberqhatu.app.tienda.FavoritoTienda
 import com.cyberqhatu.app.tienda.Producto
@@ -84,6 +85,18 @@ fun StoreProfileScreen(
                     linkWhatsapp = "https://wa.me/59170000000"
                 )
             }
+        }
+        
+        val resenaRepo = remember { SqliteCloudResenaRepository() }
+        LaunchedEffect(storeId) {
+            try {
+                resenaRepo.obtenerResenasDeTienda(storeId).collect { resenasRemotas ->
+                    if (resenasRemotas.isNotEmpty()) {
+                        DomainMockData.resenasList.clear()
+                        DomainMockData.resenasList.addAll(resenasRemotas)
+                    }
+                }
+            } catch (_: Exception) {}
         }
         
         LaunchedEffect(storeId) {

@@ -471,6 +471,8 @@ fun MainNavigationApp() {
                     is RootScreen.EscribirResena -> {
                         EscribirResenaScreen(
                             nombreItem = screen.targetName,
+                            storeId = lastStoreId,
+                            userEmail = currentUserEmail,
                             onPublicarResena = { rating, comentario ->
                                 DomainMockData.resenasList.add(
                                     0,
