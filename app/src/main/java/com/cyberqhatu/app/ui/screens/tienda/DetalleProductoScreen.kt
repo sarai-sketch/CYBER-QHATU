@@ -1,10 +1,9 @@
 package com.cyberqhatu.app.ui.screens.tienda
-import com.cyberqhatu.app.core.session.SesionActual
-import com.cyberqhatu.app.feature.tienda.data.repository.FavoritosSync
 
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -12,7 +11,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cyberqhatu.app.feature.tienda.data.repository.SqliteCloudTiendaRepository
 import com.cyberqhatu.app.tienda.EstadoProducto
 import com.cyberqhatu.app.tienda.FavoritoProducto
 import com.cyberqhatu.app.tienda.Producto
@@ -48,9 +47,26 @@ fun DetalleProductoScreen(
     isLoggedIn: Boolean = false,
     onBackClick: () -> Unit = {},
     onRequireLogin: () -> Unit = {},
-    onEscribirResenaClick: (nombreItem: String) -> Unit = {}
+    onEscribirResenaClick: (nombreItem: String) -> Unit = {},
+    onNavigateToStoreProfile: (storeId: String) -> Unit = {}
 ) {
     val context = LocalContext.current
+    var nombreTienda by remember { mutableStateOf("Puesto Verificado") }
+    val tiendaRepo = remember { SqliteCloudTiendaRepository() }
+
+    LaunchedEffect(producto.idTienda) {
+        val tiendaLocal = DomainMockData.tiendas.firstOrNull { it.idTienda == producto.idTienda }
+        if (tiendaLocal != null) {
+            nombreTienda = tiendaLocal.nombre
+        } else {
+            try {
+                val tiendaRemota = tiendaRepo.obtenerTiendaPorId(producto.idTienda)
+                if (tiendaRemota != null) {
+                    nombreTienda = tiendaRemota.nombre
+                }
+            } catch (_: Exception) {}
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -66,21 +82,21 @@ fun DetalleProductoScreen(
                     }
                 },
                 actions = {
-                    val esFavoritoNube = DomainMockData.favoritosProductos.any { it.idProducto == producto.idProducto }
-                    var esFavorito by remember(esFavoritoNube) { mutableStateOf(esFavoritoNube) }
+                    var esFavorito by remember {
+                        mutableStateOf(DomainMockData.favoritosProductos.any { it.idProducto == producto.idProducto })
+                    }
                     IconButton(
                         onClick = {
                             if (!isLoggedIn) {
                                 onRequireLogin()
                             } else {
                                 esFavorito = !esFavorito
-                                FavoritosSync.setProducto(producto, esFavorito)
                                 if (esFavorito) {
                                     if (DomainMockData.favoritosProductos.none { it.idProducto == producto.idProducto }) {
                                         DomainMockData.favoritosProductos.add(
                                             FavoritoProducto(
                                                 idFavorito = System.currentTimeMillis().toString(),
-                                                idUsuario = SesionActual.idUsuario.orEmpty(),
+                                                idUsuario = "USR-101",
                                                 idProducto = producto.idProducto
                                             )
                                         )
@@ -180,7 +196,9 @@ fun DetalleProductoScreen(
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onNavigateToStoreProfile(producto.idTienda) },
                 ) {
                     Row(
                         modifier = Modifier.padding(14.dp),
@@ -193,15 +211,29 @@ fun DetalleProductoScreen(
                                 .background(MaterialTheme.colorScheme.primaryContainer),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("MA", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                            Text(
+                                text = nombreTienda.take(2).uppercase(),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
                         }
 
                         Spacer(Modifier.width(12.dp))
 
                         Column(Modifier.weight(1f)) {
-                            Text("Moda Andina", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+                            Text(
+                                text = nombreTienda,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
                             Spacer(Modifier.height(2.dp))
-                            Text("4.8 (${DomainMockData.resenasList.size} reseñas)", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(
+                                text = "5.0 (${DomainMockData.resenasList.size} reseñas)",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
 
                         Text("Ver tienda ›", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)

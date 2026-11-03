@@ -70,6 +70,50 @@ class SqliteCloudTiendaRepository {
         }
     }
 
+    suspend fun obtenerTiendaPorId(idTienda: String): Tienda? {
+        return try {
+            val id = SqliteCloudSql.esc(idTienda)
+            val sql = "SELECT id_tienda, id_propietario, nombre, descripcion, tipo, link_whatsapp, estado, strikes FROM tiendas WHERE id_tienda = '$id' LIMIT 1;"
+            val response = apiService.ejecutarSql(SqliteCloudQueryRequest(sql = sql))
+
+            val dataList = response.body()?.data.parseAsListOfMaps()
+            if (response.isSuccessful && dataList.isNotEmpty()) {
+                val row = dataList.first()
+                val idT = row["id_tienda"]?.toString() ?: idTienda
+                val idProp = row["id_propietario"]?.toString() ?: "u1"
+                val nombre = row["nombre"]?.toString() ?: "Tienda Local"
+                val desc = row["descripcion"]?.toString() ?: ""
+                val tipoStr = row["tipo"]?.toString() ?: "FISICA"
+                val dir = row["direccion"]?.toString() ?: row["direccion_google_maps"]?.toString()
+                val apertura = row["horario_apertura"]?.toString()
+                val cierre = row["horario_cierre"]?.toString()
+                val wa = row["link_whatsapp"]?.toString()
+                val strikes = (row["strikes"] as? Number)?.toInt() ?: 0
+
+                val tipoEnum = try { TipoTienda.valueOf(tipoStr) } catch (_: Exception) { TipoTienda.FISICA }
+
+                Tienda(
+                    idTienda = idT,
+                    idPropietario = idProp,
+                    nombre = nombre,
+                    descripcion = desc,
+                    logo = null,
+                    tipo = tipoEnum,
+                    direccionGoogleMaps = dir,
+                    horarioApertura = apertura,
+                    horarioCierre = cierre,
+                    linkWhatsapp = wa,
+                    strikes = strikes,
+                )
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            Log.e("SqliteCloud", "Error consultando tienda por id $idTienda: ${e.message}", e)
+            null
+        }
+    }
+
     suspend fun obtenerTiendaPorPropietario(idPropietario: String): Tienda? {
         return try {
             val sql = "SELECT id_tienda, id_propietario, nombre, descripcion, tipo, link_whatsapp, estado, strikes FROM tiendas WHERE id_propietario = '$idPropietario' LIMIT 1;"

@@ -528,6 +528,10 @@ fun MainNavigationApp() {
                                 onEscribirResenaClick = { productName ->
                                     currentScreen = RootScreen.EscribirResena(productName)
                                 },
+                                onNavigateToStoreProfile = { storeId ->
+                                    lastStoreId = storeId
+                                    currentScreen = RootScreen.StoreProfile(storeId)
+                                },
                                 onBackClick = {
                                     currentScreen = RootScreen.Home
                                 }

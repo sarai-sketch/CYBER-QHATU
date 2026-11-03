@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cyberqhatu.app.core.session.SesionActual
 import com.cyberqhatu.app.feature.tienda.data.repository.SqliteCloudProductoRepository
 import com.cyberqhatu.app.feature.tienda.data.repository.SqliteCloudResenaRepository
 import com.cyberqhatu.app.feature.tienda.data.repository.SqliteCloudTiendaRepository
@@ -56,35 +57,36 @@ fun StoreProfileScreen(
         
         LaunchedEffect(storeId) {
             try {
+                // 1. Buscar por ID especifico en SQLite Cloud
+                val tiendaRemota = tiendaRepo.obtenerTiendaPorId(storeId)
+                if (tiendaRemota != null) {
+                    tienda = tiendaRemota
+                    return@LaunchedEffect
+                }
+
+                // 2. Buscar en memoria local DomainMockData
                 val tiendaLocal = DomainMockData.tiendas.firstOrNull { it.idTienda == storeId }
-                    ?: DomainMockData.tiendas.firstOrNull()
                 if (tiendaLocal != null) {
                     tienda = tiendaLocal
-                } else {
-                    val tiendasRemotas = try { tiendaRepo.obtenerTiendasRemotas().firstOrNull() } catch (_: Exception) { emptyList() }
-                    tienda = tiendasRemotas?.firstOrNull { it.idTienda == storeId }
-                        ?: tiendasRemotas?.firstOrNull()
-                        ?: Tienda(
-                            idTienda = storeId,
-                            idPropietario = "u1",
-                            nombre = "Puesto Local Verificado",
-                            descripcion = "Comercio verificado en feria.",
-                            logo = null,
-                            tipo = TipoTienda.FISICA,
-                            linkWhatsapp = "https://wa.me/59170000000"
-                        )
+                    return@LaunchedEffect
                 }
-            } catch (_: Exception) {
-                tienda = Tienda(
-                    idTienda = storeId,
-                    idPropietario = "u1",
-                    nombre = "Puesto Local Verificado",
-                    descripcion = "Comercio verificado en feria.",
-                    logo = null,
-                    tipo = TipoTienda.FISICA,
-                    linkWhatsapp = "https://wa.me/59170000000"
-                )
-            }
+
+                // 3. Buscar la tienda del usuario activo
+                val idUsuario = SesionActual.idUsuario
+                if (idUsuario != null) {
+                    val tiendaUsuario = tiendaRepo.obtenerTiendaDeUsuario(idUsuario)
+                    if (tiendaUsuario != null) {
+                        tienda = tiendaUsuario
+                        return@LaunchedEffect
+                    }
+                }
+
+                // 4. Buscar la primera tienda remota disponible
+                val primeraTienda = tiendaRepo.obtenerTiendasRemotas().firstOrNull()?.firstOrNull()
+                if (primeraTienda != null) {
+                    tienda = primeraTienda
+                }
+            } catch (_: Exception) {}
         }
         
         val resenaRepo = remember { SqliteCloudResenaRepository() }
