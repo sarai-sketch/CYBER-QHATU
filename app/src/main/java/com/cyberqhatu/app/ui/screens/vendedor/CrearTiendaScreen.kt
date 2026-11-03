@@ -10,6 +10,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -18,17 +19,14 @@ import com.cyberqhatu.app.feature.tienda.data.repository.SqliteCloudTiendaReposi
 import com.cyberqhatu.app.tienda.Tienda
 import com.cyberqhatu.app.tienda.TipoTienda
 import com.cyberqhatu.app.ui.screens.tienda.DomainMockData
-import com.cyberqhatu.app.ui.theme.QhatuPurple
 import kotlinx.coroutines.launch
-
-import androidx.compose.ui.graphics.Color
 import java.util.UUID
 
 private val HORA_REGEX = Regex("^([01]\\d|2[0-3]):[0-5]\\d$")
 
 /**
  * Paso 2 para vender: formulario para crear y registrar la tienda.
- * Devuelve la Tienda creada en onTiendaCreada.
+ * Incluye selección del tipo de tienda (Física o Virtual).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,6 +40,7 @@ fun CrearTiendaScreen(
 
     var nombre by remember { mutableStateOf("") }
     var descripcion by remember { mutableStateOf("") }
+    var tipoSeleccionado by remember { mutableStateOf(TipoTienda.FISICA) }
     var direccion by remember { mutableStateOf("") }
     var apertura by remember { mutableStateOf("08:00") }
     var cierre by remember { mutableStateOf("18:00") }
@@ -52,7 +51,6 @@ fun CrearTiendaScreen(
     val horarioOk = horasValidas && apertura < cierre
     val whatsappOk = whatsapp.length == 8 && (whatsapp.first() == '6' || whatsapp.first() == '7')
     
-    // Todos los campos excepto nombre y whatsapp son opcionales
     val formularioValido = nombreOk && whatsappOk && (apertura.isEmpty() || cierre.isEmpty() || horarioOk)
 
     Scaffold(
@@ -98,6 +96,25 @@ fun CrearTiendaScreen(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
                 )
+
+                Text("Tipo de Comercio / Puesto *", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    FilterChip(
+                        selected = tipoSeleccionado == TipoTienda.FISICA,
+                        onClick = { tipoSeleccionado = TipoTienda.FISICA },
+                        label = { Text("Puesto / Tienda Física") },
+                        modifier = Modifier.weight(1f)
+                    )
+                    FilterChip(
+                        selected = tipoSeleccionado == TipoTienda.VIRTUAL,
+                        onClick = { tipoSeleccionado = TipoTienda.VIRTUAL },
+                        label = { Text("Tienda Virtual / Online") },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
 
                 OutlinedTextField(
                     value = descripcion,
@@ -162,13 +179,12 @@ fun CrearTiendaScreen(
 
                 var guardando by remember { mutableStateOf(false) }
                 var errorNube by remember { mutableStateOf<String?>(null) }
-                
+
                 if (errorNube != null) {
                     Text(
                         text = errorNube!!,
                         color = MaterialTheme.colorScheme.error,
-                        fontSize = 14.sp,
-                        modifier = Modifier.fillMaxWidth()
+                        fontSize = 13.sp
                     )
                 }
 
@@ -181,14 +197,13 @@ fun CrearTiendaScreen(
                             nombre = nombre.trim(),
                             descripcion = descripcion.trim(),
                             logo = null,
-                            tipo = TipoTienda.FISICA,
+                            tipo = tipoSeleccionado,
                             direccionGoogleMaps = direccion.trim(),
                             horarioApertura = apertura,
                             horarioCierre = cierre,
                             linkWhatsapp = "https://wa.me/591$whatsapp"
                         )
                         
-                        // Guardar en memoria local
                         DomainMockData.tiendas.add(0, nuevaTienda)
 
                         coroutineScope.launch {

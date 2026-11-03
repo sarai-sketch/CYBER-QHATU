@@ -30,8 +30,8 @@ object DomainMockData {
     val reputaciones = mutableMapOf<String, Double>()
     val transacciones = mutableMapOf<String, Int>()
 
-    val favoritosProductos = mutableListOf<FavoritoProducto>()
-    val favoritosTiendas = mutableListOf<FavoritoTienda>()
+    val favoritosProductos = mutableStateListOf<FavoritoProducto>()
+    val favoritosTiendas = mutableStateListOf<FavoritoTienda>()
 
     val resenasList = mutableStateListOf<Resena>()
 }

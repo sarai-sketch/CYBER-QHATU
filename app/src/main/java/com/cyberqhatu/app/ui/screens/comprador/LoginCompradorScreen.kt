@@ -21,25 +21,23 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.cyberqhatu.app.feature.perfil.data.repository.SqliteCloudUsuarioRepository
-import com.cyberqhatu.app.usuarios.Vendedor
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 /**
  * Pantalla de Inicio de Sesión con dos pestañas: "Ingresar" y "Registrarse".
- * onLoginSuccess recibe el correo con el que se ingresó o registró.
+ * onLoginSuccess recibe el correo y el teléfono del usuario.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginCompradorScreen(
-    onLoginSuccess: (email: String) -> Unit = {},
+    onLoginSuccess: (email: String, phone: String) -> Unit = { _, _ -> },
     onBackClick: () -> Unit = {},
     authViewModel: AuthViewModel = viewModel(factory = AuthViewModel.provideFactory())
 ) {
     var tab by remember { mutableIntStateOf(0) } // 0 = Ingresar, 1 = Registrarse
     var nombre by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
+    var telefono by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmar by remember { mutableStateOf("") }
     var verPassword by remember { mutableStateOf(false) }
@@ -50,19 +48,7 @@ fun LoginCompradorScreen(
     LaunchedEffect(authState) {
         when (val state = authState) {
             is AuthState.Success -> {
-                // Guardar perfil de usuario en la base de datos de SQLite Cloud
-                launch(Dispatchers.IO) {
-                    val usuarioRepo = SqliteCloudUsuarioRepository()
-                    val nuevoUsuario = Vendedor(
-                        idUsuario = state.email,
-                        nombre = nombre.ifBlank { state.email.substringBefore("@") },
-                        correo = state.email,
-                        telefonoWhatsapp = "+59170000000"
-                    )
-                    usuarioRepo.guardarOCrearUsuario(nuevoUsuario)
-                }
-                
-                onLoginSuccess(state.email)
+                onLoginSuccess(state.email, state.phone)
                 authViewModel.resetState()
             }
             is AuthState.Error -> {
@@ -74,9 +60,10 @@ fun LoginCompradorScreen(
     }
 
     val emailValido = Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()
+    val telefonoValido = telefono.trim().length >= 8
     val coinciden = password == confirmar
     val puedeIngresar = emailValido && password.isNotBlank()
-    val puedeRegistrar = emailValido && password.length >= 6 && coinciden && nombre.isNotBlank()
+    val puedeRegistrar = emailValido && telefonoValido && password.length >= 6 && coinciden && nombre.isNotBlank()
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -126,7 +113,7 @@ fun LoginCompradorScreen(
                 )
                 Text(
                     text = if (tab == 0) "Accede para guardar favoritos y conectar con tiendas."
-                    else "Regístrate con tu correo para empezar.",
+                    else "Regístrate con tus datos de contacto para empezar.",
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -135,7 +122,7 @@ fun LoginCompradorScreen(
                     OutlinedTextField(
                         value = nombre,
                         onValueChange = { nombre = it },
-                        label = { Text("Nombre completo") },
+                        label = { Text("Nombre completo *") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
@@ -145,7 +132,7 @@ fun LoginCompradorScreen(
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
-                    label = { Text("Correo electrónico") },
+                    label = { Text("Correo electrónico *") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     isError = email.isNotEmpty() && !emailValido,
@@ -154,10 +141,24 @@ fun LoginCompradorScreen(
                     shape = RoundedCornerShape(12.dp)
                 )
 
+                if (tab == 1) {
+                    OutlinedTextField(
+                        value = telefono,
+                        onValueChange = { telefono = it },
+                        label = { Text("Número de WhatsApp / Teléfono *") },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                        isError = telefono.isNotEmpty() && !telefonoValido,
+                        supportingText = { if (telefono.isNotEmpty() && !telefonoValido) Text("Mínimo 8 dígitos (Ej. 70000000)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                }
+
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = { Text("Contraseña") },
+                    label = { Text("Contraseña *") },
                     singleLine = true,
                     visualTransformation = if (verPassword) VisualTransformation.None else PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -179,7 +180,7 @@ fun LoginCompradorScreen(
                     OutlinedTextField(
                         value = confirmar,
                         onValueChange = { confirmar = it },
-                        label = { Text("Confirmar contraseña") },
+                        label = { Text("Confirmar contraseña *") },
                         singleLine = true,
                         visualTransformation = if (verPassword) VisualTransformation.None else PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -195,7 +196,7 @@ fun LoginCompradorScreen(
                         if (tab == 0) {
                             authViewModel.login(email.trim(), password)
                         } else {
-                            authViewModel.register(nombre.trim(), email.trim(), password)
+                            authViewModel.register(nombre.trim(), email.trim(), telefono.trim(), password)
                         }
                     },
                     enabled = (if (tab == 0) puedeIngresar else puedeRegistrar) && authState !is AuthState.Loading,

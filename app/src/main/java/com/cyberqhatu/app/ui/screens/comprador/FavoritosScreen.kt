@@ -21,7 +21,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cyberqhatu.app.feature.tienda.data.repository.SqliteCloudFavoritoRepository
-import com.cyberqhatu.app.ui.screens.tienda.DomainMockData
+import android.util.Log
+import com.cyberqhatu.app.core.session.SesionActual
+import com.cyberqhatu.app.feature.tienda.data.repository.FavProductoRow
+import com.cyberqhatu.app.feature.tienda.data.repository.FavTiendaRow
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * Pantalla dedicada a los Favoritos del Comprador (Productos y Tiendas marcadas con corazón).
@@ -37,10 +43,31 @@ fun FavoritosScreen(
 ) {
     val favoritoRepository = remember { SqliteCloudFavoritoRepository() }
 
-    LaunchedEffect(isLogged) {
-        if (isLogged) {
-            favoritoRepository.consultarFavoritosTiendas()
-            favoritoRepository.consultarProductosFavoritos()
+    var tiendas by remember { mutableStateOf<List<FavTiendaRow>>(emptyList()) }
+    var prods by remember { mutableStateOf<List<FavProductoRow>>(emptyList()) }
+    var cargando by remember { mutableStateOf(false) }
+    var errorCarga by remember { mutableStateOf<String?>(null) }
+    var recargar by remember { mutableStateOf(0) }
+
+    LaunchedEffect(isLogged, recargar) {
+        val idUsuario = SesionActual.idUsuario
+        if (isLogged && idUsuario != null) {
+            cargando = true
+            errorCarga = null
+            try {
+                val (p, t) = withContext(Dispatchers.IO) {
+                    favoritoRepository.obtenerProductos(idUsuario) to favoritoRepository.obtenerTiendas(idUsuario)
+                }
+                prods = p
+                tiendas = t
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e("FavoritosScreen", "Error cargando favoritos: ${e.message}", e)
+                errorCarga = e.message ?: "No se pudieron cargar los favoritos"
+            } finally {
+                cargando = false
+            }
         }
     }
 
@@ -82,10 +109,19 @@ fun FavoritosScreen(
                     }
                 }
             } else {
-                val prods = DomainMockData.productos.filter { p -> DomainMockData.favoritosProductos.any { it.idProducto == p.idProducto } }
-                val tiendas = DomainMockData.tiendas.filter { t -> DomainMockData.favoritosTiendas.any { it.idTienda == t.idTienda } }
-
-                if (prods.isEmpty() && tiendas.isEmpty()) {
+                if (cargando) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                } else if (errorCarga != null) {
+                    Box(modifier = Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text("No se pudieron cargar tus favoritos", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
+                            Text(errorCarga.orEmpty(), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Button(onClick = { recargar++ }) { Text("Reintentar") }
+                        }
+                    }
+                } else if (prods.isEmpty() && tiendas.isEmpty()) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Icon(Icons.Default.Favorite, contentDescription = null, modifier = Modifier.size(48.dp), tint = Color.LightGray)

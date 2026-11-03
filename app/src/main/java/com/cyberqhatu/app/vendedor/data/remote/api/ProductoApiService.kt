@@ -1,5 +1,6 @@
 package com.cyberqhatu.app.vendedor.data.remote.api
 
+import com.cyberqhatu.app.core.network.SqliteCloudHttp
 import com.cyberqhatu.app.vendedor.data.remote.dto.*
 import retrofit2.Response
 import retrofit2.Retrofit
@@ -57,6 +58,7 @@ object ProductoRetrofitClient {
     val instance: ProductoApiService by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
+            .client(SqliteCloudHttp.client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ProductoApiService::class.java)

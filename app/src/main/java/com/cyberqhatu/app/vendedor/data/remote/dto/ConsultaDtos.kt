@@ -7,8 +7,8 @@ import com.google.gson.annotations.SerializedName
  * Endpoint: https://clxgbyqcvz.g6.gateway.sqlite.cloud/v2/functions/listar_productos
  */
 data class ListarProductosRequestDto(
-    @SerializedName("id_tienda") val idTienda: String = "t1",
-    @SerializedName("id_usuario") val idUsuario: String = "USR-101"
+    @SerializedName("id_tienda") val idTienda: String,
+    @SerializedName("id_usuario") val idUsuario: String
 )
 
 /**
@@ -16,7 +16,7 @@ data class ListarProductosRequestDto(
  * Endpoint: https://clxgbyqcvz.g6.gateway.sqlite.cloud/v2/functions/listar_historial_movimientos
  */
 data class ListarMovimientosRequestDto(
-    @SerializedName("id_tienda") val idTienda: String = "t1",
+    @SerializedName("id_tienda") val idTienda: String,
     @SerializedName("limite") val limite: Int = 100
 )
 
@@ -25,7 +25,7 @@ data class ListarMovimientosRequestDto(
  * Endpoint: https://clxgbyqcvz.g6.gateway.sqlite.cloud/v2/functions/listar_colaboradores
  */
 data class ListarColaboradoresRequestDto(
-    @SerializedName("id_tienda") val idTienda: String = "t1"
+    @SerializedName("id_tienda") val idTienda: String
 )
 
 /**
@@ -33,7 +33,7 @@ data class ListarColaboradoresRequestDto(
  * Endpoint: https://clxgbyqcvz.g6.gateway.sqlite.cloud/v2/functions/estadisticas_ventas
  */
 data class EstadisticasVentasRequestDto(
-    @SerializedName("id_tienda") val idTienda: String = "t1",
+    @SerializedName("id_tienda") val idTienda: String,
     @SerializedName("rango_tiempo") val rangoTiempo: String = "-30 days"
 )
 

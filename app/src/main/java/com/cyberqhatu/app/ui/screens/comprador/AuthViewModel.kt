@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 sealed class AuthState {
     object Idle : AuthState()
     object Loading : AuthState()
-    data class Success(val email: String, val message: String, val isLogin: Boolean) : AuthState()
+    data class Success(val email: String, val phone: String, val message: String, val isLogin: Boolean) : AuthState()
     data class Error(val message: String) : AuthState()
 }
 
@@ -31,11 +31,11 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
         viewModelScope.launch {
             val result = authRepository.login(email, contrasena)
             result.fold(
-                onSuccess = { isVerified ->
+                onSuccess = { (isVerified, phone) ->
                     if (isVerified) {
-                        _authState.value = AuthState.Success(email, "Inicio de sesión exitoso", true)
+                        _authState.value = AuthState.Success(email, phone, "Inicio de sesión exitoso", true)
                     } else {
-                        _authState.value = AuthState.Error("Por favor verifica tu correo electrónico. Se ha reenviado un enlace de verificación.")
+                        _authState.value = AuthState.Error("Por favor verifica tu correo electrónico.")
                     }
                 },
                 onFailure = { exception ->
@@ -45,13 +45,13 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
         }
     }
 
-    fun register(nombre: String, email: String, contrasena: String) {
+    fun register(nombre: String, email: String, telefono: String, contrasena: String) {
         _authState.value = AuthState.Loading
         viewModelScope.launch {
-            val result = authRepository.register(nombre, email, contrasena)
+            val result = authRepository.register(nombre, email, telefono, contrasena)
             result.fold(
-                onSuccess = {
-                    _authState.value = AuthState.Success(email, "Registro exitoso. Se ha enviado un enlace de verificación a tu correo.", false)
+                onSuccess = { phone ->
+                    _authState.value = AuthState.Success(email, phone, "Registro exitoso", false)
                 },
                 onFailure = { exception ->
                     _authState.value = AuthState.Error(exception.message ?: "Error al registrar la cuenta")

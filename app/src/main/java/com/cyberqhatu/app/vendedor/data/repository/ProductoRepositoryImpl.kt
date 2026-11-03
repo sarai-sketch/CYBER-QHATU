@@ -1,5 +1,7 @@
 package com.cyberqhatu.app.vendedor.data.repository
 
+import android.util.Log
+import com.cyberqhatu.app.core.network.cuerpoOExcepcion
 import com.cyberqhatu.app.data.local.dao.ProductoDao
 import com.cyberqhatu.app.data.local.entity.MovimientoInventarioEntity
 import com.cyberqhatu.app.tienda.Producto
@@ -19,6 +21,10 @@ class ProductoRepositoryImpl(
     private val productoDao: ProductoDao,
     private val apiService: ProductoApiService = ProductoRetrofitClient.instance
 ) : ProductoRepository {
+
+    private companion object {
+        const val TAG = "ProductoRepository"
+    }
 
     override suspend fun guardarProducto(
         nombre: String,
@@ -50,8 +56,9 @@ class ProductoRepositoryImpl(
                 stock = stock
             )
             apiService.guardarProducto(requestDto)
-        } catch (_: Exception) {
-            // Modo offline
+                .cuerpoOExcepcion("Guardar producto", { it.error ?: it.message }, { it.success })
+        } catch (e: Exception) {
+            Log.e(TAG, "No se pudo sincronizar guardar_producto (queda solo en local)", e)
         }
     }
 
@@ -62,8 +69,9 @@ class ProductoRepositoryImpl(
         // 2. Sincronizar eliminación en SQLite Cloud (https://clxgbyqcvz.g6.gateway.sqlite.cloud/v2/functions/eliminar_producto)
         try {
             apiService.eliminarProducto(EliminarProductoRequestDto(idProducto = idProducto))
-        } catch (_: Exception) {
-            // Modo offline
+                .cuerpoOExcepcion("Eliminar producto", { it.error ?: it.message }, { it.success })
+        } catch (e: Exception) {
+            Log.e(TAG, "No se pudo sincronizar eliminar_producto", e)
         }
     }
 
@@ -74,8 +82,9 @@ class ProductoRepositoryImpl(
         // 2. Sincronizar en SQLite Cloud (https://clxgbyqcvz.g6.gateway.sqlite.cloud/v2/functions/ocultar_producto)
         try {
             apiService.ocultarProducto(OcultarProductoRequestDto(idProducto = idProducto, estado = estado))
-        } catch (_: Exception) {
-            // Modo offline
+                .cuerpoOExcepcion("Ocultar producto", { it.error ?: it.message }, { it.success })
+        } catch (e: Exception) {
+            Log.e(TAG, "No se pudo sincronizar ocultar_producto", e)
         }
     }
 
@@ -99,15 +108,18 @@ class ProductoRepositoryImpl(
 
         // 2. Sincronizar en SQLite Cloud (https://clxgbyqcvz.g6.gateway.sqlite.cloud/v2/functions/guardar_entrada_inventario)
         try {
+            val idTienda = productoActual?.idTienda
+                ?: throw IllegalStateException("Producto $idProducto no existe en local; no se conoce su tienda")
             apiService.guardarEntradaInventario(
                 EntradaInventarioRequestDto(
                     idProducto = idProducto,
+                    idTienda = idTienda,
                     cantidad = cantidad,
                     motivo = motivo
                 )
-            )
-        } catch (_: Exception) {
-            // Modo offline
+            ).cuerpoOExcepcion("Entrada de inventario", { it.error ?: it.message }, { it.success })
+        } catch (e: Exception) {
+            Log.e(TAG, "No se pudo sincronizar guardar_entrada_inventario", e)
         }
     }
 
@@ -130,15 +142,18 @@ class ProductoRepositoryImpl(
 
         // 2. Sincronizar en SQLite Cloud (https://clxgbyqcvz.g6.gateway.sqlite.cloud/v2/functions/guardar_ajuste_inventario)
         try {
+            val idTienda = productoActual?.idTienda
+                ?: throw IllegalStateException("Producto $idProducto no existe en local; no se conoce su tienda")
             apiService.guardarAjusteInventario(
                 AjusteInventarioRequestDto(
                     idProducto = idProducto,
+                    idTienda = idTienda,
                     nuevoStock = nuevoStock,
                     motivo = motivo
                 )
-            )
-        } catch (_: Exception) {
-            // Modo offline
+            ).cuerpoOExcepcion("Ajuste de inventario", { it.error ?: it.message }, { it.success })
+        } catch (e: Exception) {
+            Log.e(TAG, "No se pudo sincronizar guardar_ajuste_inventario", e)
         }
     }
 
@@ -165,17 +180,20 @@ class ProductoRepositoryImpl(
 
         // 2. Sincronizar en SQLite Cloud (https://clxgbyqcvz.g6.gateway.sqlite.cloud/v2/functions/guardar_venta)
         try {
+            val idTienda = productoActual?.idTienda
+                ?: throw IllegalStateException("Producto $idProducto no existe en local; no se conoce su tienda")
             apiService.guardarVenta(
                 GuardarVentaRequestDto(
                     idVenta = idVentaGenerada,
+                    idTienda = idTienda,
                     idProducto = idProducto,
                     cantidad = cantidad,
                     precioUnitario = precioUnitario,
                     canalVenta = canalVenta
                 )
-            )
-        } catch (_: Exception) {
-            // Modo offline
+            ).cuerpoOExcepcion("Guardar venta", { it.error ?: it.message }, { it.success })
+        } catch (e: Exception) {
+            Log.e(TAG, "No se pudo sincronizar guardar_venta", e)
         }
 
         return idVentaGenerada
@@ -186,9 +204,9 @@ class ProductoRepositoryImpl(
         try {
             apiService.eliminarVenta(
                 EliminarVentaRequestDto(idVenta = idVenta)
-            )
-        } catch (_: Exception) {
-            // Modo offline
+            ).cuerpoOExcepcion("Eliminar venta", { it.error ?: it.message }, { it.success })
+        } catch (e: Exception) {
+            Log.e(TAG, "No se pudo sincronizar eliminar_venta", e)
         }
     }
 

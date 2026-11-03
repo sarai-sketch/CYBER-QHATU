@@ -7,9 +7,9 @@ import com.google.gson.annotations.SerializedName
  * Endpoint: https://clxgbyqcvz.g6.gateway.sqlite.cloud/v2/functions/guardar_colaborador
  */
 data class GuardarColaboradorRequestDto(
-    @SerializedName("id_tienda") val idTienda: String = "t1",
+    @SerializedName("id_tienda") val idTienda: String,
     @SerializedName("correo_colaborador") val correoColaborador: String,
-    @SerializedName("rol") val rol: String = "ADMINISTRADOR_COLABORADOR"
+    @SerializedName("rol") val rol: String = "ADMINISTRADOR"
 )
 
 /**
@@ -19,6 +19,15 @@ data class GuardarColaboradorResponseDto(
     @SerializedName("status") val status: String? = null,
     @SerializedName("success") val success: Boolean = true,
     @SerializedName("message") val message: String? = null,
+    @SerializedName("error") val error: String? = null,
+    @SerializedName("codigo_invitacion") val codigoInvitacionRaiz: String? = null,
+    @SerializedName("data") val data: DatosInvitacion? = null
+) {
+    /** Codigo real devuelto por el servidor (data.codigo_invitacion), nunca uno inventado. */
+    val codigoInvitacion: String? get() = data?.codigoInvitacion ?: codigoInvitacionRaiz
+}
+
+data class DatosInvitacion(
     @SerializedName("codigo_invitacion") val codigoInvitacion: String? = null
 )
 
@@ -36,7 +45,7 @@ data class AceptarInvitacionRequestDto(
  * Endpoint: https://clxgbyqcvz.g6.gateway.sqlite.cloud/v2/functions/eliminar_colaborador
  */
 data class EliminarColaboradorRequestDto(
-    @SerializedName("id_tienda") val idTienda: String = "t1",
+    @SerializedName("id_tienda") val idTienda: String,
     @SerializedName("id_colaborador") val idColaborador: String
 )
 
@@ -53,7 +62,7 @@ data class EliminarInvitacionRequestDto(
  * Endpoint: https://clxgbyqcvz.g6.gateway.sqlite.cloud/v2/functions/cambiar_rol_colaborador
  */
 data class CambiarRolColaboradorRequestDto(
-    @SerializedName("id_tienda") val idTienda: String = "t1",
+    @SerializedName("id_tienda") val idTienda: String,
     @SerializedName("id_colaborador") val idColaborador: String,
     @SerializedName("nuevo_rol") val nuevoRol: String
 )

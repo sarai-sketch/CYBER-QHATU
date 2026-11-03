@@ -46,6 +46,7 @@ fun GestionTiendaHubScreen(
     onAgregarProducto: () -> Unit = {},
     onVerInventario: () -> Unit = {},
     onGestionarColaboradores: () -> Unit = {},
+    puedeGestionarColaboradores: Boolean = true,
     onBackClick: () -> Unit = {}
 ) {
     Scaffold(
@@ -279,7 +280,12 @@ fun GestionTiendaHubScreen(
                     titulo = "Modificar Descripción y Horarios",
                     descripcion = "Cambia el texto informativo y los horarios de atención",
                     icon = Icons.Default.Edit,
-                    onClick = { mostrarDialogoInfo = true }
+                    onClick = {
+                        descripcionTienda = uiState.descripcion
+                        horarioApertura = uiState.horarioApertura
+                        horarioCierre = uiState.horarioCierre
+                        mostrarDialogoInfo = true
+                    }
                 )
 
                 BotonOpcionHub(
@@ -303,12 +309,14 @@ fun GestionTiendaHubScreen(
                     onClick = onVerInventario
                 )
 
-                BotonOpcionHub(
-                    titulo = "Administradores de la Tienda",
-                    descripcion = "Agrega o remueve colaboradores con cuenta activa",
-                    icon = Icons.Default.Group,
-                    onClick = onGestionarColaboradores
-                )
+                if (puedeGestionarColaboradores) {
+                    BotonOpcionHub(
+                        titulo = "Administradores de la Tienda",
+                        descripcion = "Agrega o remueve colaboradores con cuenta activa",
+                        icon = Icons.Default.Group,
+                        onClick = onGestionarColaboradores
+                    )
+                }
             }
         }
     }

@@ -8,8 +8,8 @@ import com.google.gson.annotations.SerializedName
  */
 data class GuardarProductoRequestDto(
     @SerializedName("id_producto") val idProducto: String? = null,
-    @SerializedName("id_tienda") val idTienda: String = "t1",
-    @SerializedName("id_categoria") val idCategoria: String = "c1",
+    @SerializedName("id_tienda") val idTienda: String,
+    @SerializedName("id_categoria") val idCategoria: String? = null,
     @SerializedName("nombre") val nombre: String,
     @SerializedName("descripcion") val descripcion: String,
     @SerializedName("precio") val precio: Double,
@@ -23,6 +23,7 @@ data class GuardarProductoResponseDto(
     @SerializedName("status") val status: String? = null,
     @SerializedName("success") val success: Boolean = true,
     @SerializedName("message") val message: String? = null,
+    @SerializedName("error") val error: String? = null,
     @SerializedName("id_producto") val idProducto: String? = null
 )
 
@@ -49,7 +50,7 @@ data class OcultarProductoRequestDto(
  */
 data class EntradaInventarioRequestDto(
     @SerializedName("id_producto") val idProducto: String,
-    @SerializedName("id_tienda") val idTienda: String = "t1",
+    @SerializedName("id_tienda") val idTienda: String,
     @SerializedName("cantidad") val cantidad: Int,
     @SerializedName("motivo") val motivo: String = "REABASTECIMIENTO"
 )
@@ -60,7 +61,7 @@ data class EntradaInventarioRequestDto(
  */
 data class AjusteInventarioRequestDto(
     @SerializedName("id_producto") val idProducto: String,
-    @SerializedName("id_tienda") val idTienda: String = "t1",
+    @SerializedName("id_tienda") val idTienda: String,
     @SerializedName("nuevo_stock") val nuevoStock: Int,
     @SerializedName("motivo") val motivo: String
 )
@@ -71,7 +72,7 @@ data class AjusteInventarioRequestDto(
  */
 data class GuardarVentaRequestDto(
     @SerializedName("id_venta") val idVenta: String? = null,
-    @SerializedName("id_tienda") val idTienda: String = "t1",
+    @SerializedName("id_tienda") val idTienda: String,
     @SerializedName("id_producto") val idProducto: String,
     @SerializedName("cantidad") val cantidad: Int,
     @SerializedName("precio_unitario") val precioUnitario: Double,
@@ -92,5 +93,6 @@ data class EliminarVentaRequestDto(
 data class ApiResponseDto(
     @SerializedName("status") val status: String? = null,
     @SerializedName("success") val success: Boolean = true,
-    @SerializedName("message") val message: String? = null
+    @SerializedName("message") val message: String? = null,
+    @SerializedName("error") val error: String? = null
 )

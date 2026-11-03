@@ -1,4 +1,6 @@
 package com.cyberqhatu.app.vendedor.ui
+import android.util.Log
+import kotlinx.coroutines.CancellationException
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -202,19 +204,23 @@ fun PublicarProductoScreen(
                                     stock = formState.stock.toIntOrNull() ?: 1,
                                     estado = EstadoProducto.ACTIVO
                                 )
-                                // Guardar en memoria local y en la base de datos
-                                DomainMockData.productos.add(0, nuevoProducto)
                                 try {
-                                    roomRepository.guardarProducto(nuevoProducto)
-                                } catch (_: Exception) {}
-                                try {
-                                    sqliteCloudRepository.guardarProductoRemoto(nuevoProducto)
-                                } catch (_: Exception) {}
-                                
-                                formState = formState.copy(
-                                    mensajeError = null,
-                                    esExitoso = true
-                                )
+                                    // 1) Nube primero: si falla, se muestra el error y NO se da por publicado
+                                    sqliteCloudRepository.guardarProducto(nuevoProducto)
+                                    DomainMockData.productos.add(0, nuevoProducto)
+                                    try {
+                                        roomRepository.guardarProducto(nuevoProducto)
+                                    } catch (_: Exception) {}
+                                    formState = formState.copy(
+                                        mensajeError = null,
+                                        esExitoso = true
+                                    )
+                                } catch (e: CancellationException) {
+                                    throw e
+                                } catch (e: Exception) {
+                                    Log.e("PublicarProducto", "No se pudo publicar: ${e.message}", e)
+                                    formState = formState.copy(mensajeError = e.message ?: "No se pudo publicar el producto")
+                                }
                             }
                         }
                     },

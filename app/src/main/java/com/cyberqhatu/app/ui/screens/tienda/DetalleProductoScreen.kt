@@ -1,4 +1,6 @@
 package com.cyberqhatu.app.ui.screens.tienda
+import com.cyberqhatu.app.core.session.SesionActual
+import com.cyberqhatu.app.feature.tienda.data.repository.FavoritosSync
 
 import android.content.Intent
 import android.net.Uri
@@ -64,21 +66,21 @@ fun DetalleProductoScreen(
                     }
                 },
                 actions = {
-                    var esFavorito by remember {
-                        mutableStateOf(DomainMockData.favoritosProductos.any { it.idProducto == producto.idProducto })
-                    }
+                    val esFavoritoNube = DomainMockData.favoritosProductos.any { it.idProducto == producto.idProducto }
+                    var esFavorito by remember(esFavoritoNube) { mutableStateOf(esFavoritoNube) }
                     IconButton(
                         onClick = {
                             if (!isLoggedIn) {
                                 onRequireLogin()
                             } else {
                                 esFavorito = !esFavorito
+                                FavoritosSync.setProducto(producto, esFavorito)
                                 if (esFavorito) {
                                     if (DomainMockData.favoritosProductos.none { it.idProducto == producto.idProducto }) {
                                         DomainMockData.favoritosProductos.add(
                                             FavoritoProducto(
                                                 idFavorito = System.currentTimeMillis().toString(),
-                                                idUsuario = "USR-101",
+                                                idUsuario = SesionActual.idUsuario.orEmpty(),
                                                 idProducto = producto.idProducto
                                             )
                                         )

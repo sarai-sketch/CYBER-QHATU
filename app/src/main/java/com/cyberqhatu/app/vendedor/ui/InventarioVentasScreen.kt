@@ -1,18 +1,10 @@
 package com.cyberqhatu.app.vendedor.ui
+import android.util.Log
+import android.widget.Toast
+import kotlinx.coroutines.CancellationException
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -22,14 +14,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,48 +30,66 @@ import com.cyberqhatu.app.data.local.database.QhatuDatabase
 import com.cyberqhatu.app.feature.tienda.data.repository.ProductoRepository
 import com.cyberqhatu.app.feature.tienda.data.repository.SqliteCloudProductoRepository
 import com.cyberqhatu.app.tienda.EstadoProducto
-import com.cyberqhatu.app.ui.theme.QhatuCoral
-import com.cyberqhatu.app.ui.theme.QhatuLime
-import com.cyberqhatu.app.ui.theme.QhatuLimeDark
-import com.cyberqhatu.app.ui.theme.QhatuPurple
-import com.cyberqhatu.app.ui.theme.QhatuPurpleLight
+import com.cyberqhatu.app.tienda.Producto
+import com.cyberqhatu.app.ui.theme.*
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InventarioVentasScreen(
+    nombreTienda: String = "Mi tienda",
+    idTienda: String = "t1",
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    val repository = remember(context) {
-        ProductoRepository(QhatuDatabase.getInstance(context).productoDao())
-    }
     val sqliteCloudRepository = remember { SqliteCloudProductoRepository() }
 
-    val productosRoomFlow = remember(repository) {
-        repository.obtenerTodosLosProductos()
-    }
-    val productosRoom by productosRoomFlow.collectAsState(initial = emptyList())
-
+    var productosRemotos by remember { mutableStateOf<List<Producto>>(emptyList()) }
     var state by remember { mutableStateOf(ResumenVentasState()) }
+    var cargandoInventario by remember { mutableStateOf(true) }
+    var errorInventario by remember { mutableStateOf<String?>(null) }
+    var recargar by remember { mutableStateOf(0) }
 
-    val productosInventario = if (productosRoom.isNotEmpty()) {
-        productosRoom.map { p ->
-            ProductoInventario(
-                id = p.idProducto,
-                titulo = p.nombre,
-                categoria = p.idCategoria,
-                precio = p.precio,
-                stock = p.stock,
-                ventasRealizadas = 0,
-                estado = if (p.stock > 0) EstadoInventario.ACTIVO else EstadoInventario.AGOTADO
-            )
+    // Inventario = SOLO los productos de esta tienda, desde SQLite Cloud
+    LaunchedEffect(idTienda, recargar) {
+        cargandoInventario = true
+        errorInventario = null
+        try {
+            productosRemotos = sqliteCloudRepository.obtenerProductosDeTienda(idTienda)
+            try {
+                val (ingresos, ventas) = sqliteCloudRepository.estadisticasMes(idTienda)
+                state = state.copy(totalIngresos = ingresos, totalVentasMes = ventas)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e("Inventario", "No se pudieron cargar las estadisticas: ${e.message}", e)
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e("Inventario", "Error cargando inventario: ${e.message}", e)
+            errorInventario = e.message ?: "No se pudo cargar el inventario"
+        } finally {
+            cargandoInventario = false
         }
-    } else {
-        state.listaProductos
+    }
+
+    val productosUnificados = productosRemotos
+
+    val productosInventario = productosUnificados.map { p ->
+        ProductoInventario(
+            id = p.idProducto,
+            titulo = p.nombre,
+            categoria = p.idCategoria,
+            precio = p.precio,
+            stock = p.stock,
+            ventasRealizadas = 0,
+            estado = if (p.stock > 0) EstadoInventario.ACTIVO else EstadoInventario.AGOTADO
+        )
     }
 
     var productoAEditar by remember { mutableStateOf<ProductoInventario?>(null) }
@@ -169,25 +174,22 @@ fun InventarioVentasScreen(
                     onClick = {
                         val stockInt = nuevoStockText.toIntOrNull() ?: prod.stock
                         val precioDouble = nuevoPrecioText.toDoubleOrNull() ?: prod.precio
-                        val estadoFinal = if (stockInt <= 0) EstadoProducto.OCULTO else EstadoProducto.ACTIVO
+                        val estadoProd = if (nuevoEstado == EstadoInventario.ACTIVO) EstadoProducto.ACTIVO else EstadoProducto.OCULTO
 
                         coroutineScope.launch {
-                            repository.actualizarProducto(
-                                idProducto = prod.id,
-                                nuevoStock = stockInt,
-                                nuevoPrecio = precioDouble,
-                                nuevoEstado = estadoFinal
-                            )
-                            sqliteCloudRepository.actualizarStockYPrecioRemoto(
-                                idProducto = prod.id,
-                                nuevoStock = stockInt,
-                                nuevoPrecio = precioDouble,
-                                nuevoEstado = estadoFinal
-                            )
+                            try {
+                                sqliteCloudRepository.actualizarProducto(prod.id, stockInt, precioDouble, estadoProd)
+                                recargar++
+                            } catch (e: CancellationException) {
+                                throw e
+                            } catch (e: Exception) {
+                                Log.e("Inventario", "Error guardando cambios: ${e.message}", e)
+                                Toast.makeText(context, e.message ?: "No se pudieron guardar los cambios", Toast.LENGTH_LONG).show()
+                            }
                         }
                         productoAEditar = null
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    colors = ButtonDefaults.buttonColors(containerColor = QhatuPurple)
                 ) {
                     Text("Guardar Cambios")
                 }
@@ -200,23 +202,24 @@ fun InventarioVentasScreen(
         )
     }
 
-    // Registrar venta
+    // Registrar Venta Rápida
     productoAVender?.let { prod ->
         var cantidadText by remember { mutableStateOf("1") }
-        var metodoPago by remember { mutableStateOf("QR / Transferencia") }
+        var metodoPago by remember { mutableStateOf("EFECTIVO") }
 
         AlertDialog(
             onDismissRequest = { productoAVender = null },
-            title = { Text("Registrar Venta Rápida", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary) },
+            title = { Text("Registrar Venta", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("Producto: ${prod.titulo}", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
-                    Text("Stock disponible: ${prod.stock} unidades", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(prod.titulo, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    Text("Precio unitario: Bs ${prod.precio}", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("Stock actual: ${prod.stock}", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
                     OutlinedTextField(
                         value = cantidadText,
                         onValueChange = { cantidadText = it },
-                        label = { Text("Cantidad a vender") },
+                        label = { Text("Cantidad vendida") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         colors = textFieldColors,
                         shape = RoundedCornerShape(12.dp),
@@ -224,9 +227,9 @@ fun InventarioVentasScreen(
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    Text("Método de Pago:", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface)
+                    Text("Método de pago:", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        listOf("QR / Transferencia", "Efectivo", "Tarjeta").forEach { metodo ->
+                        listOf("EFECTIVO", "QR / TRANSFERENCIA").forEach { metodo ->
                             FilterChip(
                                 selected = metodoPago == metodo,
                                 onClick = { metodoPago = metodo },
@@ -248,24 +251,22 @@ fun InventarioVentasScreen(
                         val cantInt = cantidadText.toIntOrNull() ?: 1
                         if (cantInt > 0 && cantInt <= prod.stock) {
                             coroutineScope.launch {
-                                repository.registrarVentaRapida(
-                                    idProducto = prod.id,
-                                    cantidad = cantInt,
-                                    stockActual = prod.stock,
-                                    precioUnitario = prod.precio
-                                )
-                                val nuevoStock = (prod.stock - cantInt).coerceAtLeast(0)
-                                val nuevoEstado = if (nuevoStock == 0) EstadoProducto.OCULTO else EstadoProducto.ACTIVO
-                                sqliteCloudRepository.actualizarStockYPrecioRemoto(
-                                    idProducto = prod.id,
-                                    nuevoStock = nuevoStock,
-                                    nuevoPrecio = prod.precio,
-                                    nuevoEstado = nuevoEstado
-                                )
-                                state = state.copy(
-                                    totalIngresos = state.totalIngresos + (prod.precio * cantInt),
-                                    totalVentasMes = state.totalVentasMes + 1
-                                )
+                                try {
+                                    sqliteCloudRepository.registrarVenta(
+                                        idTienda = idTienda,
+                                        idProducto = prod.id,
+                                        nombreProducto = prod.titulo,
+                                        cantidad = cantInt,
+                                        precioUnitario = prod.precio,
+                                        canalVenta = if (metodoPago.startsWith("QR")) "QR" else "EFECTIVO"
+                                    )
+                                    recargar++
+                                } catch (e: CancellationException) {
+                                    throw e
+                                } catch (e: Exception) {
+                                    Log.e("Inventario", "Error registrando venta: ${e.message}", e)
+                                    Toast.makeText(context, e.message ?: "No se pudo registrar la venta", Toast.LENGTH_LONG).show()
+                                }
                             }
                         }
                         productoAVender = null
@@ -286,7 +287,7 @@ fun InventarioVentasScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "Inventario y Ventas", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary) },
+                title = { Text(text = "Inventario: $nombreTienda", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
@@ -335,7 +336,7 @@ fun InventarioVentasScreen(
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "Moda Andina",
+                                text = nombreTienda,
                                 style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
@@ -349,7 +350,7 @@ fun InventarioVentasScreen(
                                 .padding(horizontal = 12.dp, vertical = 6.dp)
                         ) {
                             Text(
-                                text = "✓ Verificada",
+                                text = "Verificada",
                                 style = MaterialTheme.typography.labelMedium,
                                 color = QhatuLimeDark,
                                 fontWeight = FontWeight.Bold
@@ -461,7 +462,20 @@ fun InventarioVentasScreen(
                     }
                 }
 
-                if (productosFiltrados.isEmpty()) {
+                if (cargandoInventario) {
+                    Box(modifier = Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                } else if (errorInventario != null) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text("No se pudo cargar el inventario", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
+                        Text(errorInventario.orEmpty(), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Button(onClick = { recargar++ }) { Text("Reintentar") }
+                    }
+                } else if (productosFiltrados.isEmpty()) {
                     Card(
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant
@@ -528,12 +542,17 @@ fun TarjetaProductoInventario(
             ) {
                 Box(
                     modifier = Modifier
+                        .size(50.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                        .padding(12.dp),
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = ".", style = MaterialTheme.typography.titleLarge)
+                    Icon(
+                        imageVector = Icons.Default.ShoppingBag,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
                 }
 
                 Spacer(modifier = Modifier.width(12.dp))
@@ -578,42 +597,29 @@ fun TarjetaProductoInventario(
                             text = "Bs ${String.format(Locale.US, "%.0f", producto.precio)}",
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = QhatuCoral
                         )
 
-                        Text(
-                            text = "${producto.ventasRealizadas} ventas",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedButton(
+                                onClick = onEditar,
+                                shape = RoundedCornerShape(10.dp),
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                                modifier = Modifier.height(32.dp)
+                            ) {
+                                Text("Editar", style = MaterialTheme.typography.labelMedium)
+                            }
+                            Button(
+                                onClick = onVender,
+                                shape = RoundedCornerShape(10.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = QhatuCoral),
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                                modifier = Modifier.height(32.dp)
+                            ) {
+                                Text("Vender", style = MaterialTheme.typography.labelMedium, color = Color.White)
+                            }
+                        }
                     }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                OutlinedButton(
-                    onClick = onEditar,
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("️ Editar", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
-                }
-
-                Button(
-                    onClick = onVender,
-                    enabled = producto.stock > 0,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = QhatuCoral
-                    ),
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("Venta Rápida", style = MaterialTheme.typography.labelMedium, color = Color.White, fontWeight = FontWeight.Bold)
                 }
             }
         }

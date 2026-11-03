@@ -1,87 +1,154 @@
 package com.cyberqhatu.app.feature.tienda.data.repository
 
 import android.util.Log
-import com.cyberqhatu.app.core.network.SqliteCloudClient
-import com.cyberqhatu.app.core.network.SqliteCloudQueryRequest
-import com.cyberqhatu.app.core.network.parseAsListOfMaps
+import com.cyberqhatu.app.core.network.ApiException
+import com.cyberqhatu.app.core.network.SqliteCloudSql
 import com.cyberqhatu.app.tienda.EstadoProducto
 import com.cyberqhatu.app.tienda.Producto
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import java.util.UUID
 
+/**
+ * Productos, inventario y ventas con SQL directo contra SQLite Cloud.
+ * Las funciones "suspend" sin sufijo lanzan ApiException si algo falla (para mostrar el error);
+ * las versiones antiguas (Flow / Boolean) se mantienen para no romper el resto de pantallas.
+ */
 class SqliteCloudProductoRepository {
 
-    private val apiService = SqliteCloudClient.apiService
+    private fun e(s: String?) = SqliteCloudSql.esc(s)
 
+    private fun filaAProducto(row: Map<String, Any?>): Producto? {
+        val idProd = row["id_producto"]?.toString() ?: return null
+        val estadoStr = row["estado"]?.toString() ?: "ACTIVO"
+        return Producto(
+            idProducto = idProd,
+            idTienda = row["id_tienda"]?.toString() ?: "",
+            idCategoria = row["id_categoria"]?.toString() ?: "c1",
+            nombre = row["nombre"]?.toString() ?: "Producto",
+            descripcion = row["descripcion"]?.toString() ?: "",
+            precio = row["precio"]?.toString()?.toDoubleOrNull() ?: 0.0,
+            stock = row["stock"]?.toString()?.toDoubleOrNull()?.toInt() ?: 0,
+            estado = if (estadoStr == "ACTIVO") EstadoProducto.ACTIVO else EstadoProducto.OCULTO
+        )
+    }
+
+    // ---------- Lecturas ----------
+
+    /** Todos los productos (catalogo de Home y perfiles). Si falla, registra el error y devuelve lista vacia. */
     fun obtenerProductosRemotos(): Flow<List<Producto>> = flow {
+        val lista = try {
+            SqliteCloudSql.ejecutar("SELECT * FROM productos ORDER BY rowid DESC;").mapNotNull { filaAProducto(it) }
+        } catch (ex: CancellationException) {
+            throw ex
+        } catch (ex: Exception) {
+            Log.e("SqliteCloud", "Error obteniendo productos remotos: ${ex.message}", ex)
+            emptyList()
+        }
+        emit(lista)
+    }
+
+    /** Productos de UNA tienda (inventario). Lanza ApiException si falla. */
+    suspend fun obtenerProductosDeTienda(idTienda: String): List<Producto> {
+        if (idTienda.isBlank()) throw ApiException(null, "No se conoce la tienda")
+        return SqliteCloudSql.ejecutar(
+            "SELECT * FROM productos WHERE id_tienda = '${e(idTienda)}' ORDER BY rowid DESC;"
+        ).mapNotNull { filaAProducto(it) }
+    }
+
+    /** Ingresos y numero de ventas del mes actual de la tienda. */
+    suspend fun estadisticasMes(idTienda: String): Pair<Double, Int> {
+        val fila = SqliteCloudSql.ejecutar(
+            "SELECT COALESCE(SUM(cantidad * precio_unitario), 0) AS ingresos, COUNT(*) AS ventas " +
+                "FROM ventas_registro WHERE id_tienda = '${e(idTienda)}' " +
+                "AND fecha >= (strftime('%s', 'now', 'start of month') * 1000);"
+        ).firstOrNull() ?: return 0.0 to 0
+        val ingresos = fila["ingresos"]?.toString()?.toDoubleOrNull() ?: 0.0
+        val ventas = fila["ventas"]?.toString()?.toDoubleOrNull()?.toInt() ?: 0
+        return ingresos to ventas
+    }
+
+    // ---------- Escrituras ----------
+
+    /** Inserta/reemplaza un producto. Lanza ApiException si falla. */
+    suspend fun guardarProducto(producto: Producto) {
+        if (producto.idTienda.isBlank()) throw ApiException(null, "No se conoce la tienda del producto")
+        val id = producto.idProducto.ifBlank { "p-${System.currentTimeMillis()}" }
+        val valoresBase = "'${e(id)}', '${e(producto.idTienda)}', '${e(producto.nombre)}', " +
+            "'${e(producto.descripcion)}', ${producto.precio}, ${producto.stock}, '${producto.estado.name}', 'NUEVO'"
         try {
-            val sql = "SELECT id_producto, id_tienda, nombre, descripcion, precio, stock, estado, condicion, id_categoria FROM productos;"
-            val response = apiService.ejecutarSql(SqliteCloudQueryRequest(sql = sql))
-
-            val dataList = response.body()?.data.parseAsListOfMaps()
-            if (response.isSuccessful && dataList.isNotEmpty()) {
-                val lista = dataList.mapNotNull { row ->
-                    val idProd = row["id_producto"]?.toString() ?: return@mapNotNull null
-                    val idTienda = row["id_tienda"]?.toString() ?: "t1"
-                    val idCat = row["id_categoria"]?.toString() ?: "c1"
-                    val nombre = row["nombre"]?.toString() ?: "Producto"
-                    val desc = row["descripcion"]?.toString() ?: ""
-                    val precio = (row["precio"] as? Number)?.toDouble() ?: 0.0
-                    val stock = (row["stock"] as? Number)?.toInt() ?: 0
-                    val estadoStr = row["estado"]?.toString() ?: "ACTIVO"
-
-                    Producto(
-                        idProducto = idProd,
-                        idTienda = idTienda,
-                        idCategoria = idCat,
-                        nombre = nombre,
-                        descripcion = desc,
-                        precio = precio,
-                        stock = stock,
-                        estado = if (estadoStr == "ACTIVO") EstadoProducto.ACTIVO else EstadoProducto.OCULTO
-                    )
-                }
-                emit(lista)
+            SqliteCloudSql.ejecutar(
+                "INSERT OR REPLACE INTO productos (id_producto, id_tienda, nombre, descripcion, precio, stock, estado, condicion, id_categoria) " +
+                    "VALUES ($valoresBase, '${e(producto.idCategoria.ifBlank { "c1" })}');"
+            )
+        } catch (ex: ApiException) {
+            // Si la tabla aun no tiene la columna id_categoria, guardar sin ella
+            if (ex.message?.contains("id_categoria") == true) {
+                SqliteCloudSql.ejecutar(
+                    "INSERT OR REPLACE INTO productos (id_producto, id_tienda, nombre, descripcion, precio, stock, estado, condicion) " +
+                        "VALUES ($valoresBase);"
+                )
             } else {
-                emit(emptyList())
+                throw ex
             }
-        } catch (e: Exception) {
-            Log.e("SqliteCloud", "Error obteniendo productos remotos: ${e.message}", e)
-            emit(emptyList())
         }
     }
 
+    suspend fun actualizarProducto(idProducto: String, nuevoStock: Int, nuevoPrecio: Double, nuevoEstado: EstadoProducto) {
+        SqliteCloudSql.ejecutar(
+            "UPDATE productos SET stock = $nuevoStock, precio = $nuevoPrecio, estado = '${nuevoEstado.name}' " +
+                "WHERE id_producto = '${e(idProducto)}';"
+        )
+    }
+
+    /**
+     * Registra la venta (tabla ventas_registro) y descuenta el stock.
+     * Primero la venta: si falla, no se toca el stock.
+     */
+    suspend fun registrarVenta(
+        idTienda: String,
+        idProducto: String,
+        nombreProducto: String,
+        cantidad: Int,
+        precioUnitario: Double,
+        canalVenta: String
+    ) {
+        if (cantidad <= 0) throw ApiException(null, "Cantidad no valida")
+        val idVenta = "v-${System.currentTimeMillis()}-${(1000..9999).random()}"
+        SqliteCloudSql.ejecutar(
+            "INSERT INTO ventas_registro (id_venta, id_tienda, id_producto, nombre_producto, cantidad, precio_unitario, canal_venta) " +
+                "VALUES ('$idVenta', '${e(idTienda)}', '${e(idProducto)}', '${e(nombreProducto)}', $cantidad, $precioUnitario, '${e(canalVenta)}');"
+        )
+        SqliteCloudSql.ejecutar(
+            "UPDATE productos SET " +
+                "estado = CASE WHEN stock - $cantidad <= 0 THEN 'OCULTO' ELSE estado END, " +
+                "stock = MAX(stock - $cantidad, 0) " +
+                "WHERE id_producto = '${e(idProducto)}';"
+        )
+    }
+
+    // ---------- Compatibilidad con codigo anterior ----------
+
     suspend fun guardarProductoRemoto(producto: Producto): Boolean {
         return try {
-            val id = producto.idProducto.ifBlank { "p-${UUID.randomUUID().toString().take(8)}" }
-            val idTienda = if (producto.idTienda.isNotBlank()) producto.idTienda else "t1"
-            val idCategoria = if (producto.idCategoria.isNotBlank()) producto.idCategoria else "c1"
-            val nombreStr = producto.nombre.replace("'", "''")
-            val descStr = producto.descripcion.replace("'", "''")
-            
-            val sql = "INSERT OR REPLACE INTO productos (id_producto, id_tienda, nombre, descripcion, precio, stock, estado, condicion, id_categoria) VALUES ('$id', '$idTienda', '$nombreStr', '$descStr', ${producto.precio}, ${producto.stock}, '${producto.estado.name}', 'NUEVO', '$idCategoria');"
-            
-            val response = apiService.ejecutarSql(SqliteCloudQueryRequest(sql = sql))
-            
-            if (response.body()?.error != null) {
-                Log.e("SqliteCloud", "Error en DB al guardar producto: ${response.body()?.error}")
-                return false
-            }
-            response.isSuccessful
-        } catch (e: Exception) {
-            Log.e("SqliteCloud", "Error al guardar producto remoto: ${e.message}", e)
+            guardarProducto(producto)
+            true
+        } catch (ex: CancellationException) {
+            throw ex
+        } catch (ex: Exception) {
+            Log.e("SqliteCloud", "Error al guardar producto remoto: ${ex.message}", ex)
             false
         }
     }
 
     suspend fun actualizarStockYPrecioRemoto(idProducto: String, nuevoStock: Int, nuevoPrecio: Double, nuevoEstado: EstadoProducto): Boolean {
         return try {
-            val sql = "UPDATE productos SET stock = $nuevoStock, precio = $nuevoPrecio, estado = '${nuevoEstado.name}' WHERE id_producto = '$idProducto';"
-            val response = apiService.ejecutarSql(SqliteCloudQueryRequest(sql = sql))
-            response.isSuccessful
-        } catch (e: Exception) {
-            Log.e("SqliteCloud", "Error al actualizar stock/precio remoto: ${e.message}", e)
+            actualizarProducto(idProducto, nuevoStock, nuevoPrecio, nuevoEstado)
+            true
+        } catch (ex: CancellationException) {
+            throw ex
+        } catch (ex: Exception) {
+            Log.e("SqliteCloud", "Error al actualizar stock/precio remoto: ${ex.message}", ex)
             false
         }
     }

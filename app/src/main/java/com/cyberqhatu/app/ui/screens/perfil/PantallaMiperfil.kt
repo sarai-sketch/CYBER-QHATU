@@ -200,7 +200,7 @@ fun PantallaMiPerfil(
 
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                    text = if (estadoVerificacion) "Estado C.I.: Verificado ✅" else "Estado C.I.: No verificado ⏳",
+                                    text = if (estadoVerificacion) "Estado C.I.: Verificado" else "Estado C.I.: No verificado",
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = if (estadoVerificacion) Color(0xFF2E7D32) else Color(0xFFC62828)

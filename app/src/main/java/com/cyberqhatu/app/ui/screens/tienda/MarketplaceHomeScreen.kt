@@ -1,4 +1,6 @@
 package com.cyberqhatu.app.ui.screens.tienda
+import com.cyberqhatu.app.core.session.SesionActual
+import com.cyberqhatu.app.feature.tienda.data.repository.FavoritosSync
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -291,21 +293,21 @@ fun MarketplaceHomeScreen(
                                                 maxLines = 1,
                                                 modifier = Modifier.weight(1f)
                                             )
-                                            var esFavTienda by remember {
-                                                mutableStateOf(DomainMockData.favoritosTiendas.any { it.idTienda == tienda.idTienda })
-                                            }
+                                            val esFavTiendaNube = DomainMockData.favoritosTiendas.any { it.idTienda == tienda.idTienda }
+                                            var esFavTienda by remember(esFavTiendaNube) { mutableStateOf(esFavTiendaNube) }
                                             IconButton(
                                                 onClick = {
                                                     if (!isLoggedIn) {
                                                         onNavigateToPerfil()
                                                     } else {
                                                         esFavTienda = !esFavTienda
+                                                        FavoritosSync.setTienda(tienda, esFavTienda)
                                                         if (esFavTienda) {
                                                             if (DomainMockData.favoritosTiendas.none { it.idTienda == tienda.idTienda }) {
                                                                 DomainMockData.favoritosTiendas.add(
                                                                     FavoritoTienda(
                                                                         idFavorito = System.currentTimeMillis().toString(),
-                                                                        idUsuario = "USR-101",
+                                                                        idUsuario = SesionActual.idUsuario.orEmpty(),
                                                                         idTienda = tienda.idTienda
                                                                     )
                                                                 )
@@ -336,7 +338,7 @@ fun MarketplaceHomeScreen(
                                             )
                                             Spacer(modifier = Modifier.width(2.dp))
                                             Text(
-                                                text = "${DomainMockData.reputaciones[tienda.idTienda] ?: 4.8} (${DomainMockData.transacciones[tienda.idTienda] ?: 50})",
+                                                text = "${DomainMockData.reputaciones[tienda.idTienda] ?: 5.0} (${DomainMockData.transacciones[tienda.idTienda] ?: 0})",
                                                 fontSize = 11.sp,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
@@ -409,21 +411,21 @@ fun MarketplaceHomeScreen(
                                 )
                             }
 
-                            var esFavProd by remember {
-                                mutableStateOf(DomainMockData.favoritosProductos.any { it.idProducto == producto.idProducto })
-                            }
+                            val esFavProdNube = DomainMockData.favoritosProductos.any { it.idProducto == producto.idProducto }
+                            var esFavProd by remember(esFavProdNube) { mutableStateOf(esFavProdNube) }
                             IconButton(
                                 onClick = {
                                     if (!isLoggedIn) {
                                         onNavigateToPerfil()
                                     } else {
                                         esFavProd = !esFavProd
+                                        FavoritosSync.setProducto(producto, esFavProd)
                                         if (esFavProd) {
                                             if (DomainMockData.favoritosProductos.none { it.idProducto == producto.idProducto }) {
                                                 DomainMockData.favoritosProductos.add(
                                                     FavoritoProducto(
                                                         idFavorito = System.currentTimeMillis().toString(),
-                                                        idUsuario = "USR-101",
+                                                        idUsuario = SesionActual.idUsuario.orEmpty(),
                                                         idProducto = producto.idProducto
                                                     )
                                                 )
