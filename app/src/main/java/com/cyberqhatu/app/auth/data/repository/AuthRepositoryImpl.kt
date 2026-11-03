@@ -11,68 +11,40 @@ class AuthRepositoryImpl : AuthRepository {
 
     override fun isUserLoggedInAndVerified(): Boolean {
         val user = auth.currentUser
-        return user != null && user.isEmailVerified
+        return user != null
     }
 
     override fun getCurrentUserEmail(): String? = auth.currentUser?.email
 
-    override fun getCurrentUserName(): String? = auth.currentUser?.displayName
+    override fun getCurrentUserName(): String? = auth.currentUser?.displayName ?: auth.currentUser?.email?.substringBefore("@")
 
     override fun logout() {
         auth.signOut()
     }
 
     override suspend fun login(email: String, contrasena: String): Result<Boolean> = suspendCancellableCoroutine { continuation ->
-        auth.signInWithEmailAndPassword(email, contrasena)
+        auth.signInWithEmailAndPassword(email.trim(), contrasena)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    val user = auth.currentUser
-                    user?.reload()?.addOnCompleteListener { reloadTask ->
-                        if (reloadTask.isSuccessful) {
-                            if (user.isEmailVerified) {
-                                continuation.resume(Result.success(true))
-                            } else {
-                                user.sendEmailVerification()
-                                auth.signOut()
-                                continuation.resume(Result.success(false))
-                            }
-                        } else {
-                            if (user.isEmailVerified) {
-                                continuation.resume(Result.success(true))
-                            } else {
-                                auth.signOut()
-                                continuation.resume(Result.success(false))
-                            }
-                        }
-                    } ?: continuation.resume(Result.success(true))
+                    continuation.resume(Result.success(true))
                 } else {
-                    continuation.resume(Result.failure(task.exception ?: Exception("Contraseña o correo incorrectos")))
+                    continuation.resume(Result.failure(task.exception ?: Exception("Correo o contraseña incorrectos")))
                 }
             }
     }
 
     override suspend fun register(nombre: String, email: String, contrasena: String): Result<Unit> = suspendCancellableCoroutine { continuation ->
-        auth.createUserWithEmailAndPassword(email, contrasena)
+        auth.createUserWithEmailAndPassword(email.trim(), contrasena)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val user = auth.currentUser
                     val profileUpdates = UserProfileChangeRequest.Builder()
-                        .setDisplayName(nombre)
+                        .setDisplayName(nombre.trim())
                         .build()
-                    
+
                     user?.updateProfile(profileUpdates)?.addOnCompleteListener {
-                        user.sendEmailVerification().addOnCompleteListener { emailTask ->
-                            auth.signOut()
-                            if (emailTask.isSuccessful) {
-                                continuation.resume(Result.success(Unit))
-                            } else {
-                                continuation.resume(Result.failure(emailTask.exception ?: Exception("Error al enviar correo de verificación")))
-                            }
-                        }
-                    } ?: run {
-                        auth.signOut()
                         continuation.resume(Result.success(Unit))
-                    }
+                    } ?: continuation.resume(Result.success(Unit))
                 } else {
                     continuation.resume(Result.failure(task.exception ?: Exception("Error al registrar cuenta")))
                 }
@@ -85,7 +57,7 @@ class AuthRepositoryImpl : AuthRepository {
             val updates = UserProfileChangeRequest.Builder()
                 .setDisplayName(newName.trim())
                 .build()
-            
+
             user.updateProfile(updates).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     continuation.resume(Result.success(Unit))

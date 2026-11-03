@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cyberqhatu.app.confianza.Resena
 import com.cyberqhatu.app.tienda.FavoritoTienda
 import com.cyberqhatu.app.ui.theme.*
 

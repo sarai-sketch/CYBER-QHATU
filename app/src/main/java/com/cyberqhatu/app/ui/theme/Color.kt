@@ -2,33 +2,33 @@ package com.cyberqhatu.app.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Paleta de Colores de la Marca Cyber Qhatu
-val QhatuPrimary = Color(0xFF27C5F5)        // Color 1: #27C5F5
-val QhatuPrimaryContainer = Color(0xFF0F98C2) // Variante oscura
-val QhatuPrimaryLight = Color(0xFFD4F3FC)     // Variante clara
+// Paleta de Colores Oficiales CyberQhatu (Morado Normal + Verde Claro / Lima)
+val QhatuPurple = Color(0xFF5320E6)          // Morado Marca Principal
+val QhatuPurpleContainer = Color(0xFF6C3CE9) // Morado Variante
+val QhatuPurpleLight = Color(0xFFEBE6FF)     // Lavanda Claro de Fondo de Tarjetas
 
-val QhatuSecondary = Color(0xFFF5275E)      // Color 2: #F5275E
-val QhatuSecondaryPressed = Color(0xFFC71746)
+val QhatuLime = Color(0xFFBDFF38)            // Verde Claro / Lima Vibrante
+val QhatuLimeDark = Color(0xFF285000)        // Verde Texto e Insignias
+val QhatuLimeLight = Color(0xFFF1FFCB)       // Verde Claro Fondo Suave
 
-val QhatuTertiary = Color(0xFFF5BE27)       // Color 3: #F5BE27
-val QhatuTertiaryDark = Color(0xFFC79515)
+val QhatuCoral = Color(0xFFFF644E)           // Coral para Alertas y Botones
+val QhatuCoralPressed = Color(0xFFE54F3B)
 
-val QhatuBackground = Color(0xFFF2F8FA)
-val QhatuSurface = Color(0xFFFFFFFF)
-val QhatuTextPrimary = Color(0xFF0B2129)
-val QhatuTextSecondary = Color(0xFF55717C)
-val QhatuBorder = Color(0xFFD4E6ED)
+val QhatuBackground = Color(0xFFF4F3FA)      // Fondo General
+val QhatuSurface = Color(0xFFFFFFFF)         // Superficies Blancas
+val QhatuTextPrimary = Color(0xFF1B1838)     // Texto Principal
+val QhatuTextSecondary = Color(0xFF6E6B8A)   // Texto Secundario
+val QhatuBorder = Color(0xFFE2DFF5)          // Bordes Suaves
 
-// Compatibilidad (Aliases para no romper los archivos existentes temporalmente)
-val QhatuPurple = QhatuPrimary
-val QhatuPurpleContainer = QhatuPrimaryContainer
-val QhatuPurpleLight = QhatuPrimaryLight
-val QhatuCoral = QhatuSecondary
-val QhatuCoralPressed = QhatuSecondaryPressed
-val QhatuLime = QhatuTertiary
-val QhatuLimeDark = QhatuTertiaryDark
+// Aliases para compatibilidad completa
+val QhatuPrimary = QhatuPurple
+val QhatuPrimaryContainer = QhatuPurpleContainer
+val QhatuPrimaryLight = QhatuPurpleLight
+val QhatuSecondary = QhatuCoral
+val QhatuSecondaryPressed = QhatuCoralPressed
+val QhatuTertiary = QhatuLime
+val QhatuTertiaryDark = QhatuLimeDark
 
-// Compatibilidad con esquema de temas predeterminado
 val Purple80 = Color(0xFFD0BCFF)
 val PurpleGrey80 = Color(0xFFCCC2DC)
 val Pink80 = Color(0xFFEFB8C8)
@@ -37,10 +37,9 @@ val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
-// Paleta oficial
-val CqIndigo = QhatuPrimary      // Confianza — encabezados, botones primarios
-val CqIndigoDark = QhatuPrimaryContainer
-val CqLima = QhatuTertiary        // Verificado — insignias, estados activos
-val CqCoral = QhatuSecondary       // Accion — reportes, alertas
-val CqLavanda = QhatuPrimaryLight     // Fondo de pantallas y tarjetas
+val CqIndigo = QhatuPurple
+val CqIndigoDark = QhatuPurpleContainer
+val CqLima = QhatuLime
+val CqCoral = QhatuCoral
+val CqLavanda = QhatuPurpleLight
 val CqTextSub = QhatuTextSecondary

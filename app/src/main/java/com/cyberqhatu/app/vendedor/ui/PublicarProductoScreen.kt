@@ -61,6 +61,7 @@ import com.cyberqhatu.app.feature.tienda.data.repository.ProductoRepository
 import com.cyberqhatu.app.feature.tienda.data.repository.SqliteCloudProductoRepository
 import com.cyberqhatu.app.tienda.EstadoProducto
 import com.cyberqhatu.app.tienda.Producto
+import com.cyberqhatu.app.ui.screens.tienda.DomainMockData
 import com.cyberqhatu.app.ui.theme.QhatuCoral
 import com.cyberqhatu.app.ui.theme.QhatuPurple
 import com.cyberqhatu.app.ui.theme.QhatuPurpleLight
@@ -77,6 +78,7 @@ fun PublicarProductoScreen(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val sqliteCloudRepository = remember { SqliteCloudProductoRepository() }
+    val roomRepository = remember(context) { ProductoRepository(QhatuDatabase.getInstance(context).productoDao()) }
 
     var formState by remember { mutableStateOf(PublicarProductoFormState()) }
     var dropdownExpanded by remember { mutableStateOf(false) }
@@ -200,8 +202,15 @@ fun PublicarProductoScreen(
                                     stock = formState.stock.toIntOrNull() ?: 1,
                                     estado = EstadoProducto.ACTIVO
                                 )
-                                // Solo lo guardamos en la nube
-                                sqliteCloudRepository.guardarProductoRemoto(nuevoProducto)
+                                // Guardar en memoria local y en la base de datos
+                                DomainMockData.productos.add(0, nuevoProducto)
+                                try {
+                                    roomRepository.guardarProducto(nuevoProducto)
+                                } catch (_: Exception) {}
+                                try {
+                                    sqliteCloudRepository.guardarProductoRemoto(nuevoProducto)
+                                } catch (_: Exception) {}
+                                
                                 formState = formState.copy(
                                     mensajeError = null,
                                     esExitoso = true

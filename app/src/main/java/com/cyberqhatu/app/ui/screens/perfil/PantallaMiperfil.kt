@@ -10,7 +10,7 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Storefront
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,7 +35,54 @@ fun PantallaMiPerfil(
     onVerificarIdentidadClick: () -> Unit = {},
     onBackClick: () -> Unit = {},
 ) {
+    var mostrarDialogoEditar by remember { mutableStateOf(false) }
+    var nuevoNombre by remember { mutableStateOf(nombreUsuario) }
+    var nuevoTelefono by remember { mutableStateOf(telefonoUsuario) }
+
     CyberQhatuTheme {
+        if (mostrarDialogoEditar) {
+            AlertDialog(
+                onDismissRequest = { mostrarDialogoEditar = false },
+                title = { Text("Editar Mi Perfil", fontWeight = FontWeight.Bold, color = QhatuPurple) },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        OutlinedTextField(
+                            value = nuevoNombre,
+                            onValueChange = { nuevoNombre = it },
+                            label = { Text("Nombre Completo") },
+                            singleLine = true,
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        OutlinedTextField(
+                            value = nuevoTelefono,
+                            onValueChange = { nuevoTelefono = it },
+                            label = { Text("Teléfono de WhatsApp") },
+                            singleLine = true,
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            mostrarDialogoEditar = false
+                            onEditarPerfilClick()
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = QhatuPurple)
+                    ) {
+                        Text("Guardar Cambios", fontWeight = FontWeight.Bold)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { mostrarDialogoEditar = false }) {
+                        Text("Cancelar")
+                    }
+                }
+            )
+        }
+
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -185,7 +232,7 @@ fun PantallaMiPerfil(
                     Spacer(modifier = Modifier.weight(1f))
 
                     OutlinedButton(
-                        onClick = onEditarPerfilClick,
+                        onClick = { mostrarDialogoEditar = true },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp),

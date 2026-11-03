@@ -60,7 +60,7 @@ interface SqliteCloudFunctionsApiService {
         "Authorization: Bearer t4pCQWrW0zPXHfbRF68ttrJXMijVP4m9PFmnfTiWO8s",
         "Content-Type: application/json"
     )
-    @POST("functions/consultar-favoritos")
+    @POST("functions/consultar-favoritos?database=cyberQhatu.sqlite")
     suspend fun consultarFavoritos(
         @Body request: ConsultarFavoritosRequest
     ): Response<SqliteCloudFunctionResponse>
@@ -69,7 +69,7 @@ interface SqliteCloudFunctionsApiService {
         "Authorization: Bearer t4pCQWrW0zPXHfbRF68ttrJXMijVP4m9PFmnfTiWO8s",
         "Content-Type: application/json"
     )
-    @POST("functions/productos-favoritos")
+    @POST("functions/productos-favoritos?database=cyberQhatu.sqlite")
     suspend fun productosFavoritos(
         @Body request: ProductosFavoritosRequest
     ): Response<SqliteCloudFunctionResponse>
@@ -78,7 +78,7 @@ interface SqliteCloudFunctionsApiService {
         "Authorization: Bearer t4pCQWrW0zPXHfbRF68ttrJXMijVP4m9PFmnfTiWO8s",
         "Content-Type: application/json"
     )
-    @POST("functions/resenas")
+    @POST("functions/resenas?database=cyberQhatu.sqlite")
     suspend fun resenas(
         @Body request: ResenasRequest
     ): Response<SqliteCloudFunctionResponse>
@@ -87,7 +87,7 @@ interface SqliteCloudFunctionsApiService {
         "Authorization: Bearer t4pCQWrW0zPXHfbRF68ttrJXMijVP4m9PFmnfTiWO8s",
         "Content-Type: application/json"
     )
-    @POST("functions/guardar_eliminar-favoritos")
+    @POST("functions/guardar_eliminar-favoritos?database=cyberQhatu.sqlite")
     suspend fun guardarEliminarFavoritos(
         @Body request: GuardarEliminarFavoritosRequest
     ): Response<SqliteCloudFunctionResponse>
@@ -96,17 +96,17 @@ interface SqliteCloudFunctionsApiService {
         "Authorization: Bearer t4pCQWrW0zPXHfbRF68ttrJXMijVP4m9PFmnfTiWO8s",
         "Content-Type: application/json"
     )
-    @POST("functions/resena-comprador")
+    @POST("functions/resena-comprador?database=cyberQhatu.sqlite")
     suspend fun resenaComprador(
         @Body request: ResenaCompradorRequest
     ): Response<SqliteCloudFunctionResponse>
 
-    // Peticiones dinamicas a Edge Functions
+    // Peticiones dinamicas a Edge Functions especificando la base de datos cyberQhatu.sqlite
     @Headers(
         "Authorization: Bearer t4pCQWrW0zPXHfbRF68ttrJXMijVP4m9PFmnfTiWO8s",
         "Content-Type: application/json"
     )
-    @POST("functions/{functionName}")
+    @POST("functions/{functionName}?database=cyberQhatu.sqlite")
     suspend fun ejecutarEdgeFunction(
         @Path("functionName") functionName: String,
         @Body params: Map<String, Any?> = mapOf("filter" to "a")

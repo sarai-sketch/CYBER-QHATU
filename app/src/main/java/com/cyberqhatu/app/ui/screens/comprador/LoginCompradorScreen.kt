@@ -21,6 +21,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.cyberqhatu.app.feature.perfil.data.repository.SqliteCloudUsuarioRepository
+import com.cyberqhatu.app.usuarios.Vendedor
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 /**
@@ -47,14 +50,20 @@ fun LoginCompradorScreen(
     LaunchedEffect(authState) {
         when (val state = authState) {
             is AuthState.Success -> {
-                if (state.isLogin) {
-                    onLoginSuccess(state.email)
-                    authViewModel.resetState()
-                } else {
-                    launch { snackbarHostState.showSnackbar(state.message) }
-                    tab = 0
-                    authViewModel.resetState()
+                // Guardar perfil de usuario en la base de datos de SQLite Cloud
+                launch(Dispatchers.IO) {
+                    val usuarioRepo = SqliteCloudUsuarioRepository()
+                    val nuevoUsuario = Vendedor(
+                        idUsuario = state.email,
+                        nombre = nombre.ifBlank { state.email.substringBefore("@") },
+                        correo = state.email,
+                        telefonoWhatsapp = "+59170000000"
+                    )
+                    usuarioRepo.guardarOCrearUsuario(nuevoUsuario)
                 }
+                
+                onLoginSuccess(state.email)
+                authViewModel.resetState()
             }
             is AuthState.Error -> {
                 launch { snackbarHostState.showSnackbar(state.message) }
